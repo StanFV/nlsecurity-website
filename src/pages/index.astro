@@ -17,12 +17,11 @@ import Navigation from '../components/Navigation.astro';
       </div>
       
       <div class="container hero-content-center reveal">
-        <span class="badge white-badge">NL Security</span>
         <h1>Welkom bij <br/><span class="orange-text">NL Security</span></h1>
         <p class="hero-tagline">Als beveiligen anders moet — beter moet — scherper moet.</p>
         <p class="hero-description">Met een hecht team van vele honderden beveiligers beschermen wij dagelijks onze en uw eigendommen.</p>
         <div class="hero-actions">
-          <a href={`${import.meta.env.BASE_URL}/onze-film`} class="btn-glow">Bekijk onze film</a>
+          <button id="play-video" class="btn-glow">Bekijk onze film</button>
           <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="btn-outline-white">Onze diensten</a>
         </div>
       </div>
@@ -31,6 +30,22 @@ import Navigation from '../components/Navigation.astro';
         <div class="mouse"></div>
       </div>
     </section>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="video-modal">
+      <div class="modal-content">
+        <button id="close-modal" class="close-modal">&times;</button>
+        <video id="modal-video" controls>
+          <source src={`${import.meta.env.BASE_URL}/assets/video/film.mp4`} type="video/mp4" />
+        </video>
+      </div>
+    </div>
+
+    <!-- Floating Call Button -->
+    <a href="tel:0880202800" class="floating-call-btn" title="Bel NL Security">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.18-2.18a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+      <span>Bel direct</span>
+    </a>
 
     <!-- Marquee Clients -->
     <section class="clients-light bg-light">
@@ -373,9 +388,107 @@ import Navigation from '../components/Navigation.astro';
     opacity: 0.6;
   }
 
+  /* Video Modal Styles */
+  .video-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  .video-modal.active {
+    display: flex;
+  }
+
+  .modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    aspect-ratio: 16 / 9;
+  }
+
+  #modal-video {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+
+  .close-modal {
+    position: absolute;
+    top: -3rem;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 3rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* Floating Call Button Styles */
+  .floating-call-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--brand-orange);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 10px 30px rgba(255, 102, 0, 0.3);
+    z-index: 1500;
+    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .floating-call-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(255, 102, 0, 0.4);
+    background: var(--brand-blue);
+  }
+
   @media (max-width: 768px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .hero-light h1 { font-size: 3rem; }
     .cta-card { flex-direction: column; text-align: center; gap: 3rem; padding: 3rem; }
+    .floating-call-btn span { display: none; }
+    .floating-call-btn { padding: 1.25rem; border-radius: 50%; }
   }
 </style>
+
+<script>
+  // Video Modal Logic
+  const playBtn = document.getElementById('play-video');
+  const closeBtn = document.getElementById('close-modal');
+  const modal = document.getElementById('video-modal');
+  const modalVideo = document.getElementById('modal-video') as HTMLVideoElement;
+
+  playBtn?.addEventListener('click', () => {
+    modal?.classList.add('active');
+    modalVideo?.play();
+    document.body.style.overflow = 'hidden';
+  });
+
+  const closeModal = () => {
+    modal?.classList.remove('active');
+    modalVideo?.pause();
+    modalVideo.currentTime = 0;
+    document.body.style.overflow = 'auto';
+  };
+
+  closeBtn?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+</script>
