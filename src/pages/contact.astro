@@ -1,0 +1,186 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
+<BaseLayout title="Contact">
+  <Navigation />
+  
+  <main class="page-contact">
+    <section class="contact-hero">
+      <div class="container text-center reveal">
+        <h1>Laten we <span class="gradient-text">Praten</span></h1>
+        <p class="lead">Heeft u vragen over onze diensten of wilt u een directe offerte? Wij staan voor u klaar.</p>
+      </div>
+    </section>
+
+    <section class="contact-grid-elite">
+      <div class="container grid grid-2">
+        <div class="contact-form-elite glass reveal">
+          <h2>Stuur een <span class="orange-text">bericht</span></h2>
+          <form class="elite-form">
+            <div class="form-row">
+              <input type="text" placeholder="Volledige naam" required />
+              <input type="email" placeholder="E-mailadres" required />
+            </div>
+            <input type="tel" placeholder="Telefoonnummer" />
+            <textarea placeholder="Waarmee kunnen we u helpen?" rows="6" required></textarea>
+            <button type="submit" class="btn-glow">Bericht Verzenden</button>
+          </form>
+        </div>
+
+        <div class="contact-details-elite reveal" style="transition-delay: 0.2s">
+          <div class="info-block">
+            <span class="badge">Vestigingen</span>
+            <div class="office">
+              <h3>Hoofdkantoor Zoetermeer</h3>
+              <p>Boerhaavelaan 31, 2713 HA Zoetermeer</p>
+            </div>
+            <div class="office">
+              <h3>Regio Den Haag</h3>
+              <p>Stadhouderslaan 9, 2517 HV Den Haag</p>
+            </div>
+          </div>
+
+          <div class="info-block">
+            <span class="badge">Direct Contact</span>
+            <div class="contact-method">
+              <span class="label">Telefoon</span>
+              <a href="tel:0880202800" class="value">088 - 02 02 800</a>
+            </div>
+            <div class="contact-method">
+              <span class="label">E-mail</span>
+              <a href="mailto:info@nl-security.nl" class="value">info@nl-security.nl</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .text-center { text-align: center; }
+  .grid { display: grid; gap: 4rem; }
+  .grid-2 { grid-template-columns: 1.2fr 0.8fr; }
+
+  .contact-hero {
+    padding: 12rem 1rem 6rem;
+  }
+
+  .contact-hero h1 {
+    font-size: 5rem;
+  }
+
+  .contact-grid-elite {
+    padding-bottom: 10rem;
+  }
+
+  .contact-form-elite {
+    padding: 5rem;
+    border-radius: 40px;
+    background: white;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.05);
+  }
+
+  .contact-form-elite h2 {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .elite-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .elite-form input, 
+  .elite-form textarea {
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    background: var(--bg-light);
+    border: 1px solid transparent;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: 0.3s;
+  }
+
+  .elite-form input:focus, 
+  .elite-form textarea:focus {
+    outline: none;
+    border-color: var(--brand-orange);
+    background: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  }
+
+  .contact-details-elite {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    padding-top: 2rem;
+  }
+
+  .info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .office h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--brand-blue);
+  }
+
+  .contact-method {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .contact-method .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+  }
+
+  .contact-method .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: 0.3s;
+  }
+
+  .contact-method .value:hover {
+    color: var(--brand-orange);
+  }
+
+  .badge {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    background: rgba(0,0,0,0.05);
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 1024px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .form-row { grid-template-columns: 1fr; }
+    .contact-hero h1 { font-size: 3.5rem; }
+    .contact-form-elite { padding: 2.5rem; }
+  }
+</style>

@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
+<BaseLayout title="Werken bij">
+  <Navigation />
+  
+  <main class="page-careers">
+    <section class="careers-hero">
+      <div class="container text-center reveal">
+        <span class="badge">Carrière</span>
+        <h1>Word een <span class="gradient-text">Elite Beveiliger</span></h1>
+        <p class="lead">Bij NL Security bieden we niet zomaar een baan, maar een plek waar jouw scherpte en professionaliteit echt worden gewaardeerd.</p>
+      </div>
+    </section>
+
+    <section class="benefits-careers bg-light">
+      <div class="container grid grid-2 items-center">
+        <div class="text reveal">
+          <h2>Jouw groei, <span class="orange-text">onze missie</span></h2>
+          <p>Wij investeren continu in de training en ontwikkeling van ons personeel. Of je nu aan het begin van je loopbaan staat of een ervaren professional bent, bij NL Security tillen we je vakmanschap naar een hoger niveau.</p>
+          <ul class="benefit-list">
+            <li>Modern materieel en uitrusting</li>
+            <li>Focus op preventieve tactieken</li>
+            <li>Doorgroeimogelijkheden binnen de Envido Groep</li>
+            <li>Een hecht team van honderden collega's</li>
+          </ul>
+        </div>
+        <div class="visual reveal" style="transition-delay: 0.2s">
+          <img src="/assets/images/control-center.jpg" alt="Team" class="careers-img shadow-lg" />
+        </div>
+      </div>
+    </section>
+
+    <section class="apply-now">
+      <div class="container">
+        <div class="cta-box glass reveal">
+          <h2>Klaar voor de <span class="orange-text">volgende stap?</span></h2>
+          <p>Bekijk onze openstaande vacatures of stuur een open sollicitatie.</p>
+          <div class="actions">
+            <a href="mailto:info@nl-security.nl" class="btn-glow">Solliciteer direct</a>
+            <a href="tel:0880202800" class="btn-outline">Bel Recruiter</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .text-center { text-align: center; }
+  .bg-light { background-color: var(--bg-light); }
+  .items-center { align-items: center; }
+
+  .careers-hero {
+    padding: 12rem 1rem 6rem;
+    background: radial-gradient(circle at 80% 20%, rgba(255, 102, 0, 0.05), transparent);
+  }
+
+  .careers-hero h1 {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+  }
+
+  .benefits-careers {
+    padding: 10rem 1rem;
+  }
+
+  .benefits-careers h2 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .benefit-list {
+    list-style: none;
+    margin-top: 2rem;
+  }
+
+  .benefit-list li {
+    padding: 1rem 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .benefit-list li::before {
+    content: '→';
+    color: var(--brand-orange);
+    font-weight: 800;
+  }
+
+  .careers-img {
+    width: 100%;
+    border-radius: 40px;
+  }
+
+  .apply-now {
+    padding: 10rem 1rem;
+  }
+
+  .cta-box {
+    padding: 6rem;
+    border-radius: 40px;
+    text-align: center;
+    background: white;
+  }
+
+  .cta-box h2 {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-box p {
+    font-size: 1.25rem;
+    margin-bottom: 3rem;
+    color: var(--text-secondary);
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .actions { flex-direction: column; }
+    .cta-box { padding: 3rem; }
+  }
+</style>

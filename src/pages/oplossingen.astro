@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+
+const solutions = [
+  { title: 'Objectbeveiliging', icon: '🏢', desc: 'Professionele bewaking voor kantoorpanden, zorginstellingen en industriële locaties.' },
+  { title: 'Alarmopvolging', icon: '🚨', desc: 'Directe actie bij alarmmeldingen door onze mobiele surveillancedienst.' },
+  { title: 'Mobiele Surveillance', icon: '🚗', desc: 'Proactieve patrouilles om onregelmatigheden op uw terrein te voorkomen.' },
+  { title: 'Verkeersregelaars', icon: '🚦', desc: 'Gecertificeerde inzet voor infrastructuur en grootschalige projecten.' },
+  { title: 'Brandwachten', icon: '🔥', desc: 'Specialistisch toezicht bij brandgevaarlijke werkzaamheden of systeemuitval.' },
+  { title: 'Evenementen', icon: '🎪', desc: 'Gastvrije beveiliging die naadloos aansluit bij de sfeer van uw event.' },
+];
+---
+
+<BaseLayout title="Oplossingen">
+  <Navigation />
+  
+  <main class="page-solutions">
+    <section class="solutions-hero">
+      <div class="container text-center reveal">
+        <h1>Onze <span class="gradient-text">Oplossingen</span></h1>
+        <p class="lead">Veiligheid op maat voor elke branche en uitdaging.</p>
+      </div>
+    </section>
+
+    <section class="solutions-grid-elite bg-light">
+      <div class="container grid grid-3">
+        {solutions.map((sol, index) => (
+          <div class="elite-card reveal" style={`transition-delay: ${index * 0.1}s`}>
+            <div class="card-number">0{index + 1}</div>
+            <h3>{sol.title}</h3>
+            <p>{sol.desc}</p>
+            <div class="card-footer">
+              <a href="/contact" class="text-cta">Meer informatie →</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="specialist-highlight">
+      <div class="container grid grid-2 items-center">
+        <div class="visual reveal">
+          <img src="/assets/images/control-center.jpg" alt="Specialist" class="rounded-image shadow-lg" />
+        </div>
+        <div class="text reveal" style="transition-delay: 0.2s">
+          <span class="badge">Specialistisch Advies</span>
+          <h2>Beveiligingsplan <span class="orange-text">op maat</span></h2>
+          <p>Elke situatie is uniek. Onze experts stellen kosteloos een analyse op die exact aansluit bij uw specifieke risicoprofiel en wensen.</p>
+          <a href="/contact" class="btn-glow">Plan een gesprek</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .text-center { text-align: center; }
+  .bg-light { background-color: var(--bg-light); }
+  .items-center { align-items: center; }
+
+  .solutions-hero {
+    padding: 12rem 1rem 6rem;
+    background: radial-gradient(circle at 10% 20%, rgba(0, 81, 159, 0.03), transparent);
+  }
+
+  .solutions-hero h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .solutions-grid-elite {
+    padding: 8rem 1rem;
+  }
+
+  .elite-card {
+    background: white;
+    padding: 4rem 3rem;
+    border-radius: 32px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .elite-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+  }
+
+  .card-number {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--brand-orange);
+    margin-bottom: 2rem;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--brand-orange);
+    width: fit-content;
+  }
+
+  .elite-card h3 {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    color: var(--brand-blue);
+  }
+
+  .elite-card p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    flex-grow: 1;
+  }
+
+  .text-cta {
+    color: var(--brand-orange);
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .specialist-highlight {
+    padding: 10rem 1rem;
+  }
+
+  .rounded-image {
+    width: 100%;
+    border-radius: 40px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background: rgba(0, 81, 159, 0.1);
+    color: var(--brand-blue);
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>

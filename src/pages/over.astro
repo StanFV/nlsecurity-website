@@ -1,0 +1,140 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
+<BaseLayout title="Over Ons">
+  <Navigation />
+  
+  <main class="page-about">
+    <!-- Story Hero -->
+    <section class="about-hero">
+      <div class="container grid grid-2 items-center">
+        <div class="hero-text reveal">
+          <span class="badge">Sinds 2006</span>
+          <h1>Passie voor <br/><span class="orange-text">Veiligheid</span></h1>
+          <p class="lead">Vanuit onze passie voor het vak bewaken wij dagelijks wat voor u waardevol is. NL Security staat voor scherpte, betrouwbaarheid en innovatie.</p>
+        </div>
+        <div class="hero-image reveal" style="transition-delay: 0.2s">
+          <img src="/assets/images/banner-city.png" alt="Over NL Security" class="about-img" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Vision Blocks -->
+    <section class="vision-blocks bg-light">
+      <div class="container">
+        <div class="grid grid-2">
+          <div class="vision-card glass reveal">
+            <h2>Onze <span class="orange-text">Visie</span></h2>
+            <p>De wereld verandert in een razendsnel tempo. Wij geloven dat beveiliging niet alleen gaat over aanwezigheid, maar over proactief handelen en de slimme inzet van technologie om risico's te minimaliseren voordat ze ontstaan.</p>
+          </div>
+          <div class="vision-card glass reveal" style="transition-delay: 0.1s">
+            <h2>De <span class="brand-blue-text">Envido Groep</span></h2>
+            <p>Als trotse partner van de Envido Groep putten wij uit een diepe bron van kennis en stabiliteit. Deze samenwerking stelt ons in staat om onze klanten een totaalpakket aan veiligheidsoplossingen te bieden.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values -->
+    <section class="core-values">
+      <div class="container">
+        <h2 class="text-center reveal">Onze <span class="orange-text">Kernwaarden</span></h2>
+        <div class="grid grid-3">
+          <div class="value-item reveal">
+            <div class="value-num">01</div>
+            <h3>Scherpte</h3>
+            <p>Alertheid is onze natuur. Wij zien wat anderen missen.</p>
+          </div>
+          <div class="value-item reveal" style="transition-delay: 0.1s">
+            <div class="value-num">02</div>
+            <h3>Integriteit</h3>
+            <p>Vertrouwen is de basis van elke veilige relatie.</p>
+          </div>
+          <div class="value-item reveal" style="transition-delay: 0.2s">
+            <div class="value-num">03</div>
+            <h3>Ontzorging</h3>
+            <p>Zodat u zich kunt focussen op wat voor u echt belangrijk is.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .items-center { align-items: center; }
+  .text-center { text-align: center; }
+  .bg-light { background-color: var(--bg-light); }
+  .brand-blue-text { color: var(--brand-blue); }
+
+  .about-hero {
+    padding: 12rem 1rem 8rem;
+  }
+
+  .about-hero h1 {
+    font-size: 4.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .about-img {
+    width: 100%;
+    border-radius: 40px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.1);
+  }
+
+  .vision-blocks {
+    padding: 10rem 1rem;
+  }
+
+  .vision-card {
+    padding: 5rem;
+    border-radius: 40px;
+    background: white;
+  }
+
+  .vision-card h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .core-values {
+    padding: 10rem 1rem;
+  }
+
+  .core-values h2 {
+    font-size: 3.5rem;
+    margin-bottom: 5rem;
+  }
+
+  .value-item {
+    padding: 3rem;
+    border-radius: 24px;
+    background: var(--bg-light);
+    transition: 0.3s;
+  }
+
+  .value-item:hover {
+    background: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+  }
+
+  .value-num {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--brand-orange);
+    margin-bottom: 1.5rem;
+  }
+
+  .value-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .about-hero h1 { font-size: 3rem; }
+    .vision-card { padding: 3rem; }
+  }
+</style>

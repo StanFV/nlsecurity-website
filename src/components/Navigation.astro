@@ -1,0 +1,65 @@
+---
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/oplossingen', label: 'Oplossingen' },
+  { href: '/over', label: 'Over' },
+  { href: '/werken-bij', label: 'Werken bij' },
+];
+---
+
+<nav class="site-nav glass">
+  <div class="container nav-content">
+    <a href="/">
+      <img src="/assets/images/logo.png" alt="Logo" class="nav-logo" />
+    </a>
+    <div class="nav-links">
+      {navItems.map(item => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+      <a href="/contact" class="btn-glow">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .site-nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-logo {
+    height: 40px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: 0.3s;
+  }
+
+  .nav-links a:hover {
+    color: var(--brand-orange);
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+  }
+</style>
