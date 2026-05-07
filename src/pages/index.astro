@@ -161,14 +161,36 @@ import Navigation from '../components/Navigation.astro';
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   }
 
-  .btn-outline-white {
-    padding: 1rem 2.5rem;
-    border: 2px solid var(--brand-blue);
+  .hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .btn-glow, .btn-outline-white {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 3.5rem;
+    padding: 0 2.5rem;
     border-radius: 50px;
-    color: var(--brand-blue);
-    text-decoration: none;
     font-weight: bold;
+    text-decoration: none;
     transition: 0.3s;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .btn-glow {
+    background: var(--brand-orange);
+    color: white;
+    border: none;
+  }
+
+  .btn-outline-white {
+    border: 2px solid var(--brand-blue);
+    color: var(--brand-blue);
     background: white;
   }
 
