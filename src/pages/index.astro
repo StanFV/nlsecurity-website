@@ -11,7 +11,7 @@ import Navigation from '../components/Navigation.astro';
     <section class="hero-video-light">
       <div class="hero-bg">
         <video autoplay muted loop playsinline class="bg-video">
-          <source src="/assets/video/film.mp4" type="video/mp4" />
+          <source src={`${import.meta.env.BASE_URL}/assets/video/film.mp4`} type="video/mp4" />
         </video>
         <div class="video-overlay"></div>
       </div>
@@ -21,8 +21,8 @@ import Navigation from '../components/Navigation.astro';
         <h1>Veiligheid door <br/><span class="orange-text">Innovatie</span></h1>
         <p>Wij combineren jarenlange expertise met moderne technologie om een veilige omgeving te creëren voor uw mensen en bezittingen.</p>
         <div class="hero-actions">
-          <a href="/onze-film" class="btn-glow">Bekijk onze film</a>
-          <a href="/oplossingen" class="btn-outline-white">Onze diensten</a>
+          <a href={`${import.meta.env.BASE_URL}/onze-film`} class="btn-glow">Bekijk onze film</a>
+          <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="btn-outline-white">Onze diensten</a>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ import Navigation from '../components/Navigation.astro';
             <h2>Klaar voor een <span class="orange-text">vrijblijvende analyse?</span></h2>
             <p>Laat onze experts uw beveiligingssituatie in kaart brengen.</p>
           </div>
-          <a href="/contact" class="btn-glow">Nu aanvragen</a>
+          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Nu aanvragen</a>
         </div>
       </div>
     </section>
@@ -90,7 +90,7 @@ import Navigation from '../components/Navigation.astro';
   <footer class="footer-light">
     <div class="container">
       <div class="footer-content">
-        <img src="/assets/images/logo.png" alt="Logo" class="footer-logo" />
+        <img src={`${import.meta.env.BASE_URL}/assets/images/logo.png`} alt="Logo" class="footer-logo" />
         <p>&copy; 2026 NL Security. Modern, Scherper, Beter.</p>
       </div>
     </div>
