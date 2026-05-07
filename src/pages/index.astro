@@ -51,12 +51,30 @@ import Navigation from '../components/Navigation.astro';
     <section class="clients-light bg-light">
       <div class="marquee-container">
         <div class="marquee-content">
-          {['Pensioenfonds Horeca', 'Kennisnet', 'Ombudsman', 'Rijksoverheid', 'Lidl', 'Gemeente Lansingerland'].map(name => (
-            <div class="client-badge">{name}</div>
+          {[
+            { name: 'Pensioenfonds Horeca', logo: 'Pensioenfonds Horeca Logo.jpg' },
+            { name: 'Kennisnet', logo: 'Kennisnet logo.png' },
+            { name: 'Ombudsman', logo: 'Ombudsman logo.png' },
+            { name: 'Rijksoverheid', logo: 'Rijksoverheid logo.png' },
+            { name: 'Lidl', logo: 'Lidl_logo-700x700.jpg.jpg' },
+            { name: 'Gemeente Lansingerland', logo: 'Gemeente Lansingerland logo.png' }
+          ].map(client => (
+            <div class="client-logo-wrap">
+              <img src={`${import.meta.env.BASE_URL}/assets/images/${client.logo}`} alt={client.name} class="client-logo" />
+            </div>
           ))}
-          {/* Repeat for loop */}
-          {['Pensioenfonds Horeca', 'Kennisnet', 'Ombudsman', 'Rijksoverheid', 'Lidl', 'Gemeente Lansingerland'].map(name => (
-            <div class="client-badge">{name}</div>
+          {/* Repeat for infinite scroll */}
+          {[
+            { name: 'Pensioenfonds Horeca', logo: 'Pensioenfonds Horeca Logo.jpg' },
+            { name: 'Kennisnet', logo: 'Kennisnet logo.png' },
+            { name: 'Ombudsman', logo: 'Ombudsman logo.png' },
+            { name: 'Rijksoverheid', logo: 'Rijksoverheid logo.png' },
+            { name: 'Lidl', logo: 'Lidl_logo-700x700.jpg.jpg' },
+            { name: 'Gemeente Lansingerland', logo: 'Gemeente Lansingerland logo.png' }
+          ].map(client => (
+            <div class="client-logo-wrap">
+              <img src={`${import.meta.env.BASE_URL}/assets/images/${client.logo}`} alt={client.name} class="client-logo" />
+            </div>
           ))}
         </div>
       </div>
@@ -305,6 +323,29 @@ import Navigation from '../components/Navigation.astro';
     font-size: 1.5rem;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  .client-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    padding: 0 2rem;
+  }
+
+  .client-logo {
+    max-height: 50px;
+    max-width: 180px;
+    width: auto;
+    height: auto;
+    filter: grayscale(100%);
+    opacity: 0.5;
+    transition: 0.3s ease;
+  }
+
+  .client-logo:hover {
+    filter: grayscale(0%);
+    opacity: 1;
   }
 
   @keyframes scroll {
