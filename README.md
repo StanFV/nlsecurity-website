@@ -1,0 +1,69 @@
+# NL Security Website (Modern)
+
+Dit is de moderne website voor **NL Security**, gebouwd met [Astro](https://astro.build/). De website is ontworpen om een professionele en scherpe uitstraling te geven aan de beveiligingsdiensten van NL Security.
+
+## 🚀 Technologieën
+
+- **Framework:** [Astro 4.0](https://astro.build/)
+- **Styling:** Vanilla CSS (Modern & Responsive)
+- **Deployment:** GitHub Actions & GitHub Pages
+- **Taal:** TypeScript / JavaScript
+
+## 📁 Projectstructuur
+
+```text
+/
+├── public/              # Statische assets (logo's, video's, banners)
+├── src/
+│   ├── components/      # Herbruikbare UI-componenten (bijv. Navigation)
+│   ├── layouts/         # Pagina layouts (BaseLayout)
+│   ├── pages/           # Website pagina's (index, over, contact, etc.)
+│   └── styles/          # Globale CSS en thema-instellingen
+├── astro.config.mjs     # Astro configuratie
+└── package.json         # Project afhankelijkheden en scripts
+```
+
+## 🛠️ Installatie & Ontwikkeling
+
+Om dit project lokaal te draaien, volg je deze stappen:
+
+1.  **Clone de repository:**
+    ```bash
+    git clone https://github.com/StanFV/nlsecurity-website.git
+    cd nlsecurity-website
+    ```
+
+2.  **Installeer de dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Start de development server:**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open de website:**
+    Navigeer naar `http://localhost:4321/nlsecurity-website/` in je browser.
+
+## 📦 Build & Deployment
+
+Het project is geconfigureerd om automatisch te builden en te deployen naar GitHub Pages via GitHub Actions wanneer er een push plaatsvindt naar de `main` branch.
+
+**Handmatig builden:**
+```bash
+npm run build
+```
+De output wordt gegenereerd in de `dist/` map.
+
+## ✨ Kenmerken
+
+- **Modern Design:** Gebruik van video-backgrounds, glassmorphism en vloeiende animaties.
+- **Responsive:** Volledig geoptimaliseerd voor desktop, tablet en mobiel.
+- **SEO Vriendelijk:** Snelle laadtijden en schone HTML dankzij de statische generatie van Astro.
+- **Client Marquee:** Dynamische weergave van partners en opdrachtgevers.
+- **Direct Contact:** Zwevende bel-knop voor snelle interactie op mobiel.
+
+---
+
+*Ontwikkeld voor NL Security — Modern, Scherper, Beter.*
