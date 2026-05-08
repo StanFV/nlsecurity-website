@@ -23,20 +23,114 @@ const { title } = Astro.props;
 		<slot />
 		
 		<script>
-			// Scroll reveal observer
-			const observerOptions = {
-				threshold: 0.1
-			};
-
-			const observer = new IntersectionObserver((entries) => {
+			// --- Scroll reveal ---
+			const revealObserver = new IntersectionObserver((entries) => {
 				entries.forEach(entry => {
 					if (entry.isIntersecting) {
 						entry.target.classList.add('active');
+						revealObserver.unobserve(entry.target);
 					}
 				});
-			}, observerOptions);
+			}, { threshold: 0.12, rootMargin: '0px 0px -100px 0px' });
 
-			document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+			document.querySelectorAll('.grid').forEach(grid => {
+				grid.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-fade').forEach((child, i) => {
+					if (!child.style.transitionDelay) {
+						child.style.transitionDelay = `${i * 0.15}s`;
+					}
+				});
+			});
+
+			document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-fade')
+				.forEach(el => revealObserver.observe(el));
+
+			// --- Typewriter ---
+			function wrapChars(el: Element) {
+				function processNode(node: Node) {
+					if (node.nodeType === Node.TEXT_NODE) {
+						const text = node.textContent || '';
+						const frag = document.createDocumentFragment();
+						[...text].forEach(char => {
+							const span = document.createElement('span');
+							span.className = 'tw-char';
+							span.textContent = char;
+							frag.appendChild(span);
+						});
+						node.parentNode?.replaceChild(frag, node);
+					} else if (node.nodeType === Node.ELEMENT_NODE) {
+						[...node.childNodes].forEach(processNode);
+					}
+				}
+				processNode(el);
+			}
+
+			const revealClasses = ['reveal', 'reveal-left', 'reveal-right', 'reveal-fade'];
+			const twSelector = 'h1, h2, h3, li';
+			const fadeSelector = 'p';
+
+			function selfIsReveal(el: Element) {
+				return revealClasses.some(c => el.classList.contains(c));
+			}
+
+			function insideReveal(el: Element) {
+				let p = el.parentElement;
+				while (p) {
+					if (revealClasses.some(c => p!.classList.contains(c))) return true;
+					p = p.parentElement;
+				}
+				return false;
+			}
+
+			function eligible(el: Element) {
+				return !selfIsReveal(el) && !insideReveal(el);
+			}
+
+			function initSection(section: Element) {
+				section.querySelectorAll(twSelector).forEach(el => {
+					if (eligible(el)) (el as HTMLElement).style.opacity = '0';
+				});
+				section.querySelectorAll(fadeSelector).forEach(el => {
+					if (eligible(el)) {
+						const h = el as HTMLElement;
+						h.style.opacity = '0';
+						h.style.transition = 'opacity 0.7s ease';
+					}
+				});
+			}
+
+			function revealSection(section: Element) {
+				section.querySelectorAll(twSelector).forEach(el => {
+					if (!eligible(el)) return;
+					(el as HTMLElement).style.opacity = '1';
+					wrapChars(el);
+					el.querySelectorAll<HTMLElement>('.tw-char').forEach((char, i) => {
+						char.style.transitionDelay = `${i * 0.012}s`;
+					});
+				});
+				section.querySelectorAll(fadeSelector).forEach(el => {
+					if (!eligible(el)) return;
+					(el as HTMLElement).style.opacity = '1';
+				});
+				requestAnimationFrame(() => {
+					section.querySelectorAll<HTMLElement>('.tw-char').forEach(char => {
+						char.style.opacity = '1';
+					});
+				});
+			}
+
+			const sections = document.querySelectorAll('main section, main .portal-hero');
+			sections.forEach(s => initSection(s));
+
+			const twObserver = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						revealSection(entry.target);
+						twObserver.unobserve(entry.target);
+					}
+				});
+			}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+			sections.forEach(s => twObserver.observe(s));
 		</script>
 	</body>
 </html>
