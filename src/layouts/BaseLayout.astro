@@ -23,6 +23,8 @@ const { title } = Astro.props;
 		<slot />
 		
 		<script>
+			if (!document.documentElement.dataset.app) {
+
 			// --- Scroll reveal ---
 			const revealObserver = new IntersectionObserver((entries) => {
 				entries.forEach(entry => {
@@ -131,6 +133,8 @@ const { title } = Astro.props;
 			}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
 			sections.forEach(s => twObserver.observe(s));
+
+			} // end if not app
 		</script>
 	</body>
 </html>
