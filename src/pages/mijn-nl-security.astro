@@ -10,9 +10,9 @@ import Footer from '../components/Footer.astro';
   <main class="portal-page">
     <section class="portal-hero">
       <div class="container">
-        <div class="hero-content reveal">
+        <div class="hero-content reveal-left">
           <span class="badge-orange">Binnenkort Beschikbaar</span>
-          <h1>Mijn <span class="orange-text">NL Security</span></h1>
+          <h1>Mijn <span class="gradient-text">NL Security</span></h1>
           <p class="lead">Het centrale platform voor maximale transparantie, controle en efficiëntie in uw beveiliging.</p>
         </div>
       </div>
@@ -21,12 +21,12 @@ import Footer from '../components/Footer.astro';
     <section class="portal-intro">
       <div class="container">
         <div class="grid grid-2 items-center">
-          <div class="intro-text reveal">
+          <div class="intro-text reveal-left">
             <h2>Volledige <span class="gradient-text">Controle</span> in Handbereik</h2>
             <p>Bij NL Security geloven we in transparantie. Daarom bouwen we aan een geavanceerd klantportaal waar onze opdrachtgevers 24/7 inzicht hebben in de operationele status van hun beveiliging.</p>
             <p>Dit portaal is niet alleen een dashboard, maar een strategisch hulpmiddel om de veiligheid op uw locatie naar een hoger niveau te tillen.</p>
           </div>
-          <div class="intro-visual reveal" style="transition-delay: 0.2s">
+          <div class="intro-visual reveal-right" style="transition-delay: 0.2s">
             <div class="portal-mockup glass">
               <div class="mockup-header">
                 <div class="header-controls">
@@ -58,19 +58,21 @@ import Footer from '../components/Footer.astro';
                     <div class="card-line long"></div>
                     <div class="card-line short"></div>
                     <div class="chart-preview">
-                      <div class="bar" style="height: 40%"></div>
-                      <div class="bar" style="height: 70%"></div>
-                      <div class="bar" style="height: 50%"></div>
-                      <div class="bar" style="height: 90%"></div>
-                      <div class="bar" style="height: 60%"></div>
+                      <div class="bar bar-1"></div>
+                      <div class="bar bar-2"></div>
+                      <div class="bar bar-3"></div>
+                      <div class="bar bar-4"></div>
+                      <div class="bar bar-5"></div>
+                      <div class="bar bar-6"></div>
+                      <div class="bar bar-7"></div>
                     </div>
                   </div>
                   <div class="mockup-grid">
-                    <div class="mockup-card small">
+                    <div class="mockup-card small hoverable">
                       <div class="card-icon blue"></div>
                       <div class="card-line mini"></div>
                     </div>
-                    <div class="mockup-card small">
+                    <div class="mockup-card small hoverable">
                       <div class="card-icon orange"></div>
                       <div class="card-line mini"></div>
                     </div>
@@ -83,59 +85,84 @@ import Footer from '../components/Footer.astro';
       </div>
     </section>
 
-    <section class="portal-features bg-light">
+    <section class="portal-features">
       <div class="container">
-        <div class="section-header text-center reveal">
-          <h2>Wat kunt u verwachten?</h2>
-          <p>Een overzicht van de functies die we momenteel ontwikkelen voor onze opdrachtgevers.</p>
+        <div class="section-header text-center">
+          <span class="badge-blue">Onze Klantbediening</span>
+          <h2>Wat kunt u <span class="orange-text">verwachten?</span></h2>
+          <p>Goede beveiliging begint bij een sterke relatie. Wij geloven dat onze opdrachtgevers te allen tijde inzicht, grip en een directe lijn verdienen — niet alleen in crisissituaties. Het portaal is de digitale vertaling van hoe wij klantbediening zien: proactief, transparant en altijd bereikbaar.</p>
         </div>
 
         <div class="grid grid-3">
-          <div class="feature-card glass reveal">
-            <div class="icon">📊</div>
+          <div class="feature-card reveal">
+            <div class="card-icon">📊</div>
             <h3>Real-time Dashboard</h3>
-            <p>Direct inzicht in incidenten, dagrapportages en actuele status van uw objecten. Data-driven veiligheid voor gefundeerde beslissingen.</p>
+            <ul>
+              <li>Incidenten & dagrapportages</li>
+              <li>Status van al uw objecten</li>
+              <li>Data-driven beslissingen</li>
+            </ul>
           </div>
 
-          <div class="feature-card glass reveal" style="transition-delay: 0.1s">
-            <div class="icon">📅</div>
+          <div class="feature-card reveal" style="transition-delay:0.15s">
+            <div class="card-icon">📅</div>
             <h3>Planning & Bezetting</h3>
-            <p>Bekijk exact welke beveiligers op welk moment op uw locatie zijn ingepland. Inclusief profielen en kwalificaties van het personeel.</p>
+            <ul>
+              <li>Wie staat er ingepland?</li>
+              <li>Profielen & kwalificaties</li>
+              <li>Geen verrassingen</li>
+            </ul>
           </div>
 
-          <div class="feature-card glass reveal" style="transition-delay: 0.2s">
-            <div class="icon">🔄</div>
+          <div class="feature-card reveal" style="transition-delay:0.30s">
+            <div class="card-icon">🔄</div>
             <h3>Wijzigingen Doorgeven</h3>
-            <p>Eenvoudig extra inzet aanvragen, ad-hoc wijzigingen in instructies doorgeven of incidenten direct escaleren naar de juiste contactpersoon.</p>
+            <ul>
+              <li>Extra inzet aanvragen</li>
+              <li>Instructies bijstellen</li>
+              <li>Incidenten escaleren</li>
+            </ul>
           </div>
 
-          <div class="feature-card glass reveal" style="transition-delay: 0.3s">
-            <div class="icon">📄</div>
+          <div class="feature-card reveal" style="transition-delay:0.45s">
+            <div class="card-icon">📄</div>
             <h3>Documentenbeheer</h3>
-            <p>Alle contracten, instructies, keurmerken en facturatie overzichtelijk op één centrale plek. Altijd voldaan aan de laatste wet- en regelgeving.</p>
+            <ul>
+              <li>Contracten & instructies</li>
+              <li>Keurmerken & facturatie</li>
+              <li>Altijd compliant</li>
+            </ul>
           </div>
 
-          <div class="feature-card glass reveal" style="transition-delay: 0.4s">
-            <div class="icon">📈</div>
+          <div class="feature-card reveal" style="transition-delay:0.60s">
+            <div class="card-icon">📈</div>
             <h3>Analyse & Rapportage</h3>
-            <p>Maandelijkse rapportages en trendanalyses van incidenten. Samen kijken we vooruit om risico's te minimaliseren.</p>
+            <ul>
+              <li>Maandelijkse rapportages</li>
+              <li>Trendanalyses incidenten</li>
+              <li>Risico's structureel verlagen</li>
+            </ul>
           </div>
 
-          <div class="feature-card glass reveal" style="transition-delay: 0.5s">
-            <div class="icon">📱</div>
+          <div class="feature-card reveal" style="transition-delay:0.75s">
+            <div class="card-icon">📱</div>
             <h3>Direct Contact</h3>
-            <p>Een directe lijn met uw accountmanager en onze meldkamer. Snel schakelen wanneer elke seconde telt.</p>
+            <ul>
+              <li>Vaste accountmanager</li>
+              <li>Meldkamer 24/7 bereikbaar</li>
+              <li>Snel schakelen</li>
+            </ul>
           </div>
         </div>
       </div>
     </section>
 
     <section class="portal-cta">
-      <div class="container text-center reveal">
-        <h2>Wilt u ook profiteren van deze innovatie?</h2>
+      <div class="container text-center reveal-fade">
+        <h2>Wilt u ook profiteren van <span class="gradient-text">deze innovatie?</span></h2>
         <p>Word klant bij NL Security en krijg als een van de eersten toegang tot ons vernieuwde portaal.</p>
         <div class="cta-actions">
-          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Contact opnemen</a>
+          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-outline">Contact opnemen</a>
         </div>
       </div>
     </section>
@@ -255,8 +282,11 @@ import Footer from '../components/Footer.astro';
     height: 12px;
     background: #e2e8f0;
     border-radius: 4px;
+    transition: 0.2s;
+    cursor: default;
   }
   .side-item.active { background: var(--brand-blue); }
+  .side-item:hover { background: rgba(var(--brand-blue-rgb), 0.4); transform: scaleX(1.1); }
 
   .mockup-main {
     flex: 1;
@@ -280,6 +310,14 @@ import Footer from '../components/Footer.astro';
     gap: 0.4rem;
     align-items: center;
     font-size: 0.6rem;
+    cursor: default;
+    transition: 0.2s;
+  }
+
+  .stat-pill:hover {
+    background: #e2eaf4;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   }
 
   .pill-label { color: #64748b; }
@@ -291,6 +329,14 @@ import Footer from '../components/Footer.astro';
     border: 1px solid #f1f5f9;
     border-radius: 6px;
     padding: 0.8rem;
+    transition: 0.2s;
+  }
+
+  .mockup-card.hoverable:hover {
+    background: #eef2f8;
+    border-color: rgba(var(--brand-blue-rgb), 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
 
   .hero-stat {
@@ -319,11 +365,30 @@ import Footer from '../components/Footer.astro';
 
   .bar {
     flex: 1;
-    background: rgba(var(--brand-blue-rgb), 0.1);
     border-radius: 2px 2px 0 0;
-    transition: 0.3s;
+    transition: height 0.4s ease;
+    transform-origin: bottom;
   }
-  .bar:nth-child(even) { background: rgba(255, 102, 0, 0.1); }
+
+  .bar-1 { background: rgba(var(--brand-blue-rgb), 0.15); animation: pulse-bar 3.2s ease-in-out infinite; --h1: 40%; --h2: 55%; }
+  .bar-2 { background: rgba(255, 102, 0, 0.15); animation: pulse-bar 2.8s ease-in-out infinite 0.3s; --h1: 70%; --h2: 45%; }
+  .bar-3 { background: rgba(var(--brand-blue-rgb), 0.15); animation: pulse-bar 3.5s ease-in-out infinite 0.6s; --h1: 50%; --h2: 75%; }
+  .bar-4 { background: rgba(255, 102, 0, 0.15); animation: pulse-bar 2.6s ease-in-out infinite 0.1s; --h1: 90%; --h2: 65%; }
+  .bar-5 { background: rgba(var(--brand-blue-rgb), 0.15); animation: pulse-bar 3.0s ease-in-out infinite 0.5s; --h1: 60%; --h2: 80%; }
+  .bar-6 { background: rgba(255, 102, 0, 0.15); animation: pulse-bar 3.3s ease-in-out infinite 0.2s; --h1: 35%; --h2: 58%; }
+  .bar-7 { background: rgba(var(--brand-blue-rgb), 0.15); animation: pulse-bar 2.9s ease-in-out infinite 0.4s; --h1: 75%; --h2: 50%; }
+
+  @keyframes pulse-bar {
+    0%, 100% { height: var(--h1); }
+    50% { height: var(--h2); }
+  }
+
+  .chart-preview:hover .bar { opacity: 0.4; }
+  .chart-preview:hover .bar:hover {
+    opacity: 1;
+    background: var(--brand-orange) !important;
+    transform: scaleX(1.15);
+  }
 
   .mockup-grid {
     display: grid;
@@ -344,58 +409,138 @@ import Footer from '../components/Footer.astro';
     padding: 0.6rem;
   }
 
+  .portal-features {
+    padding: 10rem 0;
+    background: var(--brand-blue);
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .portal-features::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 100% 0%, rgba(255, 102, 0, 0.05) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .badge-blue {
+    display: inline-block;
+    padding: 0.6rem 1.4rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
   .section-header {
-    max-width: 700px;
-    margin: 0 auto 4rem;
+    max-width: 800px;
+    margin: 0 auto 5rem;
   }
 
   .section-header h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    color: white;
+  }
+
+  .section-header p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
   }
 
   .feature-card {
+    background: rgba(255, 255, 255, 0.03);
     padding: 2.5rem;
-    border-radius: 20px;
-    transition: 0.3s;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .feature-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.07);
     border-color: var(--brand-orange);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   }
 
-  .feature-card .icon {
-    font-size: 2.5rem;
+  .feature-card .card-icon {
+    font-size: 1.2rem;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 102, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
     margin-bottom: 1.5rem;
-    display: block;
+    transition: 0.4s;
+  }
+
+  .feature-card:hover .card-icon {
+    background: var(--brand-orange);
+    transform: rotate(5deg) scale(1.1);
   }
 
   .feature-card h3 {
+    font-size: 1.25rem;
     margin-bottom: 1rem;
+    color: white;
   }
 
-  .bg-light {
-    background-color: var(--bg-light);
+  .feature-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .feature-card ul li {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+
+  .feature-card ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--brand-orange);
+    font-weight: 700;
   }
 
   .portal-cta {
-    background: var(--brand-blue);
-    color: white;
-    padding: 6rem 0;
+    background: white;
+    padding: 8rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
   }
 
   .portal-cta h2 {
-    color: white;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
+    color: var(--text-primary);
   }
 
   .portal-cta p {
     font-size: 1.2rem;
-    opacity: 0.9;
+    color: var(--text-secondary);
     margin-bottom: 2.5rem;
   }
+
 
   @media (max-width: 768px) {
     .hero-content h1 { font-size: 2.5rem; }
