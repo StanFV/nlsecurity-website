@@ -8,17 +8,21 @@ import Footer from '../components/Footer.astro';
   <Navigation />
   
   <main class="page-contact">
+    <!-- Hero -->
     <section class="contact-hero">
       <div class="container text-center reveal">
-        <h1>Laten we <span class="gradient-text">Praten</span></h1>
-        <p class="lead">Heeft u vragen over onze diensten of wilt u een directe offerte? Wij staan voor u klaar.</p>
+        <span class="badge-blue">Neem Contact Op</span>
+        <h1>Zorg nu voor optimale <br/><span class="gradient-text">Beveiliging</span></h1>
+        <p class="lead max-700 mx-auto">Heeft u vragen over onze diensten of wilt u een directe offerte? Onze experts staan voor u klaar om uw veiligheid naar een hoger niveau te tillen.</p>
       </div>
     </section>
 
     <section class="contact-grid-elite">
       <div class="container grid grid-2">
+        <!-- Form Column -->
         <div class="contact-form-elite glass reveal">
           <h2>Stuur een <span class="orange-text">bericht</span></h2>
+          <p class="form-intro">Laat uw gegevens achter en wij nemen binnen 24 uur contact met u op.</p>
           <form class="elite-form">
             <div class="form-row">
               <input type="text" placeholder="Volledige naam" required />
@@ -30,30 +34,65 @@ import Footer from '../components/Footer.astro';
           </form>
         </div>
 
+        <!-- Details Column -->
         <div class="contact-details-elite reveal" style="transition-delay: 0.2s">
           <div class="info-block">
-            <span class="badge">Vestigingen</span>
-            <div class="office">
-              <h3>Hoofdkantoor Zoetermeer</h3>
-              <p>Boerhaavelaan 31, 2713 HA Zoetermeer</p>
+            <span class="detail-label">Onze Vestigingen</span>
+            <div class="office-card">
+              <div class="office-icon">🏢</div>
+              <div class="office-info">
+                <h3>Hoofdkantoor Zoetermeer</h3>
+                <p>Boerhaavelaan 31, 2713 HA Zoetermeer</p>
+              </div>
             </div>
-            <div class="office">
-              <h3>Regio Den Haag</h3>
-              <p>Stadhouderslaan 9, 2517 HV Den Haag</p>
+            <div class="office-card">
+              <div class="office-icon">📍</div>
+              <div class="office-info">
+                <h3>Regio Den Haag</h3>
+                <p>Stadhouderslaan 9, 2517 HV Den Haag</p>
+              </div>
             </div>
           </div>
 
           <div class="info-block">
-            <span class="badge">Direct Contact</span>
+            <span class="detail-label">Direct Contact</span>
             <div class="contact-method">
-              <span class="label">Telefoon</span>
-              <a href="tel:0880202800" class="value">088 - 02 02 800</a>
+              <span class="method-icon">📞</span>
+              <div class="method-text">
+                <span class="label">Telefoon</span>
+                <a href="tel:0880202800" class="value">088 - 02 02 800</a>
+              </div>
             </div>
             <div class="contact-method">
-              <span class="label">E-mail</span>
-              <a href="mailto:info@nl-security.nl" class="value">info@nl-security.nl</a>
+              <span class="method-icon">✉️</span>
+              <div class="method-text">
+                <span class="label">E-mail</span>
+                <a href="mailto:info@nl-security.nl" class="value">info@nl-security.nl</a>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section bg-light">
+      <div class="container">
+        <div class="section-header text-center reveal">
+          <h2>Vind ons op de <span class="orange-text">Kaart</span></h2>
+          <p>Bezoek een van onze locaties voor een persoonlijk gesprek.</p>
+        </div>
+        <div class="map-wrapper reveal">
+          <!-- Google Maps Embed for Zoetermeer location as default -->
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1d2452.20235738418!2d4.484252677134371!3d52.07222446979603!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c5d19488349079%3A0xe5f86663f707f1d!2sBoerhaavelaan%2031%2C%202713%20HA%20Zoetermeer!5e0!3m2!1snl!2snl!4v1715180000000!5m2!1snl!2snl" 
+            width="100%" 
+            height="500" 
+            style="border:0; border-radius: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.1);" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
         </div>
       </div>
     </section>
@@ -66,13 +105,30 @@ import Footer from '../components/Footer.astro';
   .text-center { text-align: center; }
   .grid { display: grid; gap: 4rem; }
   .grid-2 { grid-template-columns: 1.2fr 0.8fr; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .max-700 { max-width: 700px; }
+  .bg-light { background-color: var(--bg-light); }
 
   .contact-hero {
     padding: 12rem 1rem 6rem;
   }
 
   .contact-hero h1 {
-    font-size: 5rem;
+    font-size: 4rem;
+    margin-bottom: 2rem;
+  }
+
+  .badge-blue {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(0, 81, 159, 0.08);
+    color: var(--brand-blue);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
   }
 
   .contact-grid-elite {
@@ -88,6 +144,11 @@ import Footer from '../components/Footer.astro';
 
   .contact-form-elite h2 {
     font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-intro {
+    color: var(--text-secondary);
     margin-bottom: 3rem;
   }
 
@@ -127,35 +188,74 @@ import Footer from '../components/Footer.astro';
     display: flex;
     flex-direction: column;
     gap: 4rem;
-    padding-top: 2rem;
+    padding-top: 1rem;
   }
 
   .info-block {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
-  .office h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
+  .detail-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--brand-orange);
+    letter-spacing: 1px;
+  }
+
+  .office-card {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .office-icon {
+    font-size: 1.5rem;
+    width: 50px;
+    height: 50px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  }
+
+  .office-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
     color: var(--brand-blue);
+  }
+
+  .office-info p {
+    color: var(--text-secondary);
   }
 
   .contact-method {
     display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .method-icon {
+    font-size: 1.2rem;
+  }
+
+  .method-text {
+    display: flex;
     flex-direction: column;
   }
 
-  .contact-method .label {
-    font-size: 0.8rem;
+  .method-text .label {
+    font-size: 0.75rem;
     text-transform: uppercase;
     font-weight: 800;
     color: var(--text-secondary);
-    letter-spacing: 1px;
   }
 
-  .contact-method .value {
+  .method-text .value {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -163,18 +263,22 @@ import Footer from '../components/Footer.astro';
     transition: 0.3s;
   }
 
-  .contact-method .value:hover {
+  .method-text .value:hover {
     color: var(--brand-orange);
   }
 
-  .badge {
-    align-self: flex-start;
-    padding: 0.5rem 1rem;
-    background: rgba(0,0,0,0.05);
-    border-radius: 50px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
+  /* Map Section */
+  .map-section {
+    padding: 10rem 1rem;
+  }
+
+  .section-header {
+    margin-bottom: 4rem;
+  }
+
+  .map-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
   @media (max-width: 1024px) {
@@ -183,10 +287,8 @@ import Footer from '../components/Footer.astro';
 
   @media (max-width: 768px) {
     .form-row { grid-template-columns: 1fr; }
-    .contact-hero h1 { font-size: 3.5rem; }
+    .contact-hero h1 { font-size: 3rem; }
     .contact-form-elite { padding: 2.5rem; }
-  }
-</style>
-adding: 2.5rem; }
+    .method-text .value { font-size: 1.25rem; }
   }
 </style>

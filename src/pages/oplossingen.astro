@@ -4,12 +4,14 @@ import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 
 const solutions = [
-  { title: 'Objectbeveiliging', icon: '🏢', desc: 'Professionele bewaking voor kantoorpanden, zorginstellingen en industriële locaties.' },
-  { title: 'Alarmopvolging', icon: '🚨', desc: 'Directe actie bij alarmmeldingen door onze mobiele surveillancedienst.' },
-  { title: 'Mobiele Surveillance', icon: '🚗', desc: 'Proactieve patrouilles om onregelmatigheden op uw terrein te voorkomen.' },
-  { title: 'Verkeersregelaars', icon: '🚦', desc: 'Gecertificeerde inzet voor infrastructuur en grootschalige projecten.' },
-  { title: 'Brandwachten', icon: '🔥', desc: 'Specialistisch toezicht bij brandgevaarlijke werkzaamheden of systeemuitval.' },
-  { title: 'Evenementen', icon: '🎪', desc: 'Gastvrije beveiliging die naadloos aansluit bij de sfeer van uw event.' },
+  { title: 'Objectbeveiliging', icon: '🏢', desc: 'Scherpe bewaking van uw panden en terreinen. Onze professionals zijn getraind om in te grijpen én weten preventief te handelen.' },
+  { title: 'Alarmopvolging', icon: '🚨', desc: 'Razendsnelle opvolging en professioneel sleutelbeheer bij elke alarmmelding, 24/7 paraat.' },
+  { title: 'Mobiele Surveillance', icon: '🚗', desc: 'Proactieve patrouilles en controlerondes om onregelmatigheden te voorkomen voordat ze ontstaan.' },
+  { title: 'Verkeersregelaars', icon: '🚦', desc: 'Veilige doorstroming en professioneel verkeersbeheer bij bouwlocaties, evenementen en infrastructuur.' },
+  { title: 'Receptiediensten', icon: '🛎️', desc: 'Het gastvrije gezicht van uw organisatie gecombineerd met een scherp oog voor veiligheid en toegangscontrole.' },
+  { title: 'Brandwachten', icon: '🔥', desc: 'Gecertificeerd toezicht bij brandgevaarlijke werkzaamheden of bij uitval van uw brandmeldinstallatie.' },
+  { title: 'Evenementen', icon: '🎪', desc: 'Veiligheid die bijdraagt aan de sfeer. Wij bewaken de rust zodat uw gasten zorgeloos kunnen genieten.' },
+  { title: 'Aanbestedingen', icon: '📝', desc: 'Wij ondersteunen en adviseren bij complexe beveiligingsvraagstukken en aanbestedingstrajecten.' },
 ];
 ---
 
@@ -19,8 +21,9 @@ const solutions = [
   <main class="page-solutions">
     <section class="solutions-hero">
       <div class="container text-center reveal">
-        <h1>Onze <span class="gradient-text">Oplossingen</span></h1>
-        <p class="lead">Veiligheid op maat voor elke branche en uitdaging.</p>
+        <span class="badge-blue">Onze Diensten</span>
+        <h1>Beveiliging <span class="gradient-text">op Maat</span></h1>
+        <p class="lead max-700 mx-auto">De beveiligingsaanpak van NL Security richt zich vooral op preventief beveiligen. Voorkomen is immers beter dan genezen.</p>
       </div>
     </section>
 
@@ -32,7 +35,7 @@ const solutions = [
             <h3>{sol.title}</h3>
             <p>{sol.desc}</p>
             <div class="card-footer">
-              <a href={`${import.meta.env.BASE_URL}/contact`} class="text-cta">Meer informatie →</a>
+              <a href={`${import.meta.env.BASE_URL}/contact`} class="text-cta">Offerte aanvragen →</a>
             </div>
           </div>
         ))}
@@ -45,10 +48,13 @@ const solutions = [
           <img src={`${import.meta.env.BASE_URL}/assets/images/control-center.jpg`} alt="Specialist" class="rounded-image shadow-lg" />
         </div>
         <div class="text reveal" style="transition-delay: 0.2s">
-          <span class="badge">Specialistisch Advies</span>
-          <h2>Beveiligingsplan <span class="orange-text">op maat</span></h2>
-          <p>Elke situatie is uniek. Onze experts stellen kosteloos een analyse op die exact aansluit bij uw specifieke risicoprofiel en wensen.</p>
-          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Plan een gesprek</a>
+          <span class="badge">Heldere Analyse</span>
+          <h2>Gratis <span class="orange-text">Presentatie</span></h2>
+          <p>Goede beveiliging begint met een heldere analyse. Tijdens een (gratis) presentatie laten we u graag zien hoe onze diensten exact aansluiten bij uw behoefte. Onze analisten stellen kosteloos uw beveiligingsplan op.</p>
+          <div class="actions-group">
+            <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Afspraak Inplannen</a>
+            <a href="tel:0880202800" class="btn-outline">Bel: 088 - 02 02 800</a>
+          </div>
         </div>
       </div>
     </section>
@@ -61,10 +67,11 @@ const solutions = [
   .text-center { text-align: center; }
   .bg-light { background-color: var(--bg-light); }
   .items-center { align-items: center; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .max-700 { max-width: 700px; }
 
   .solutions-hero {
     padding: 12rem 1rem 6rem;
-    background: radial-gradient(circle at 10% 20%, rgba(0, 81, 159, 0.03), transparent);
   }
 
   .solutions-hero h1 {
@@ -112,6 +119,7 @@ const solutions = [
     color: var(--text-secondary);
     margin-bottom: 2rem;
     flex-grow: 1;
+    line-height: 1.6;
   }
 
   .text-cta {
@@ -144,7 +152,14 @@ const solutions = [
     margin-bottom: 2rem;
   }
 
+  .actions-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
   @media (max-width: 768px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .actions-group { flex-direction: column; }
   }
 </style>

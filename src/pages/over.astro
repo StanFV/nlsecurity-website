@@ -13,7 +13,7 @@ import Footer from '../components/Footer.astro';
       <div class="container text-center reveal">
         <span class="badge">Sinds 2006</span>
         <h1>Passie voor <br/><span class="orange-text">Veiligheid</span></h1>
-        <p class="lead max-700 mx-auto">Vanuit onze passie voor het vak bewaken wij dagelijks wat voor u waardevol is. NL Security staat voor scherpte, betrouwbaarheid en innovatie.</p>
+        <p class="lead max-700 mx-auto">NL Security zorgt voor uw Veiligheid en Beveiliging. De wereld verandert, behoeften veranderen. Wij stellen ons dagelijks de vraag: hoe houden we deze nieuwe wereld veilig?</p>
       </div>
       
       <div class="container-large reveal" style="transition-delay: 0.2s; margin-top: 4rem;">
@@ -27,35 +27,47 @@ import Footer from '../components/Footer.astro';
         <div class="grid grid-2">
           <div class="vision-card glass reveal">
             <h2>Onze <span class="orange-text">Visie</span></h2>
-            <p>De wereld verandert in een razendsnel tempo. Wij geloven dat beveiliging niet alleen gaat over aanwezigheid, maar over proactief handelen en de slimme inzet van technologie om risico's te minimaliseren voordat ze ontstaan.</p>
+            <p>Welke instrumenten passen bij razendsnelle ontwikkelingen? Meer cameratoezicht, meer beveiligers on the spot, of dranghekken? Wij toetsen continu of wij nog de meest passende antwoorden hebben op de veiligheidsvraagstukken van vandaag en morgen.</p>
           </div>
           <div class="vision-card glass reveal" style="transition-delay: 0.1s">
-            <h2>De <span class="brand-blue-text">Envido Groep</span></h2>
-            <p>Als trotse partner van de Envido Groep putten wij uit een diepe bron van kennis en stabiliteit. Deze samenwerking stelt ons in staat om onze klanten een totaalpakket aan veiligheidsoplossingen te bieden.</p>
+            <h2>NL Security <span class="brand-blue-text">Ontzorgt</span></h2>
+            <p>Wij ontzorgen onze relaties volledig op het gebied van veiligheid. De synergie binnen onze diverse specialisaties vormt een krachtig instrument om uw eigendommen en mensen optimaal te beschermen.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Envido Group Section -->
+    <section class="envido-section">
+      <div class="container">
+        <div class="envido-banner reveal">
+          <div class="envido-content">
+            <h2>Onderdeel van de <span class="orange-text">Envido Groep</span></h2>
+            <p>NL Security is onderdeel van de Envido Groep. Hiermee hebben wij een solide moedermaatschappij die stabiliteit, professionaliteit en duurzame groei waarborgt. Deze samenwerking stelt ons in staat om op elk niveau topkwaliteit te leveren.</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Values -->
-    <section class="core-values">
+    <section class="core-values bg-light">
       <div class="container">
         <h2 class="text-center reveal">Onze <span class="orange-text">Kernwaarden</span></h2>
         <div class="grid grid-3">
           <div class="value-item reveal">
             <div class="value-num">01</div>
             <h3>Scherpte</h3>
-            <p>Alertheid is onze natuur. Wij zien wat anderen missen.</p>
+            <p>Alertheid is onze natuur. Wij zien wat anderen missen door onze preventieve focus.</p>
           </div>
           <div class="value-item reveal" style="transition-delay: 0.1s">
             <div class="value-num">02</div>
             <h3>Integriteit</h3>
-            <p>Vertrouwen is de basis van elke veilige relatie.</p>
+            <p>Vertrouwen is de basis. Onze beveiliger is loyaal, integer en representatief.</p>
           </div>
           <div class="value-item reveal" style="transition-delay: 0.2s">
             <div class="value-num">03</div>
-            <h3>Ontzorging</h3>
-            <p>Zodat u zich kunt focussen op wat voor u echt belangrijk is.</p>
+            <h3>Vakmanschap</h3>
+            <p>Ons team is goed getraind en bijzonder ervaren in uiteenlopende situaties.</p>
           </div>
         </div>
       </div>
@@ -98,12 +110,6 @@ import Footer from '../components/Footer.astro';
     box-shadow: 0 40px 80px rgba(0,0,0,0.1);
   }
 
-  .about-img {
-    width: 100%;
-    border-radius: 40px;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.1);
-  }
-
   .vision-blocks {
     padding: 10rem 1rem;
   }
@@ -119,6 +125,32 @@ import Footer from '../components/Footer.astro';
     margin-bottom: 1.5rem;
   }
 
+  .envido-section {
+    padding: 5rem 1rem;
+  }
+
+  .envido-banner {
+    padding: 6rem;
+    background: white;
+    border-radius: 40px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.02);
+    text-align: center;
+  }
+
+  .envido-content h2 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .envido-content p {
+    font-size: 1.25rem;
+    max-width: 900px;
+    margin: 0 auto;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
   .core-values {
     padding: 10rem 1rem;
   }
@@ -131,12 +163,13 @@ import Footer from '../components/Footer.astro';
   .value-item {
     padding: 3rem;
     border-radius: 24px;
-    background: var(--bg-light);
+    background: white;
     transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
   }
 
   .value-item:hover {
-    background: white;
+    transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.05);
   }
 
@@ -156,5 +189,6 @@ import Footer from '../components/Footer.astro';
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .about-hero h1 { font-size: 3rem; }
     .vision-card { padding: 3rem; }
+    .envido-banner { padding: 3rem; }
   }
 </style>

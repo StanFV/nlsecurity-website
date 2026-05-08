@@ -2,61 +2,166 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+
+const vacancies = [
+  {
+    title: 'Professionele Beveiliger M/V',
+    type: 'Beveiliging',
+    desc: 'Wij zijn op zoek naar enthousiaste collega\'s in het bezit van MBO Beveiliger 2 die graag bij diverse opdrachtgevers (kantoren, winkels, evenementen) aan de slag gaan.',
+    requirements: [
+      'Diploma Beveiliger MBO 2',
+      'Minimaal 2 jaar ervaring in de branche',
+      'Flexibel inzetbaar (ook weekenden en nachten)',
+      'Loyaal, integer en pro-actief',
+      'Goede beheersing van de Nederlandse taal'
+    ],
+    offer: [
+      'Salaris conform CAO beveiliging',
+      'Urengarantie (96u per 4 weken)',
+      'Pensioenregeling',
+      'Doorgroeimogelijkheden binnen de Envido Groep'
+    ]
+  },
+  {
+    title: '(Junior) Salarisadministrateur',
+    type: 'Kantoor',
+    location: '40 uur per week',
+    desc: 'Werk samen in een hecht team aan de salarisverwerking en HRM-gerelateerde werkzaamheden binnen de Envido Groep.',
+    requirements: [
+      'MBO+ werk- en denkniveau (HRM of financieel)',
+      'In het bezit van PDL (Praktijkdiploma Loonadministratie)',
+      'Kennis van Excel, AFAS (Profit) is een pré',
+      'Accuraat, nauwkeurig en communicatief vaardig'
+    ],
+    offer: [
+      'Open en informeel team',
+      'Passend salaris bij functie en ervaring',
+      'Goede secundaire arbeidsvoorwaarden',
+      'Doorgroeimogelijkheden naar Senior Salarisadministrateur'
+    ]
+  },
+  {
+    title: 'Beveiligers / Receptionistes',
+    type: 'Hospitality',
+    location: 'Regio Zuid-Holland',
+    desc: 'Gecombineerde functie voor gediplomeerde beveiligers die ook uitblinken in gastvrijheid en receptiewerkzaamheden.',
+    requirements: [
+      'Diploma Beveiliger 2',
+      'Minimaal 1 jaar ervaring',
+      'Diploma BHV (EHBO is een pré)',
+      'Representatief en servicegericht (hospitality mindset)',
+      'Bereid te reizen (straal 30 km)'
+    ],
+    offer: [
+      'Afwisselende werkomgeving',
+      'Focus op hospitality en veiligheid',
+      'Professioneel team',
+      'Marktconforme arbeidsvoorwaarden'
+    ]
+  }
+];
 ---
 
 <BaseLayout title="Werken bij">
   <Navigation />
   
   <main class="page-careers">
+    <!-- Hero Section -->
     <section class="careers-hero">
       <div class="container text-center reveal">
-        <span class="badge">Carrière</span>
-        <h1>Word een <span class="gradient-text">Elite Beveiliger</span></h1>
-        <p class="lead">Bij NL Security bieden we niet zomaar een baan, maar een plek waar jouw scherpte en professionaliteit echt worden gewaardeerd.</p>
+        <span class="badge">Carrière bij NL Security</span>
+        <h1>Word onderdeel van <br/><span class="gradient-text">ons Elite Team</span></h1>
+        <p class="lead max-700 mx-auto">Bij NL Security bieden we niet zomaar een baan, maar een plek waar jouw scherpte en professionaliteit echt worden gewaardeerd. Jouw groei is onze missie.</p>
       </div>
     </section>
 
+    <!-- Why Work Here -->
     <section class="benefits-careers bg-light">
       <div class="container grid grid-2 items-center">
         <div class="text reveal">
-          <h2>Jouw groei, <span class="orange-text">onze missie</span></h2>
-          <p>Wij investeren continu in de training en ontwikkeling van ons personeel. Of je nu aan het begin van je loopbaan staat of een ervaren professional bent, bij NL Security tillen we je vakmanschap naar een hoger niveau.</p>
+          <h2>Waarom <span class="orange-text">NL Security?</span></h2>
+          <p>Als onderdeel van de Envido Groep bieden wij een stabiele en dynamische werkomgeving. Wij investeren continu in de training van ons personeel om vakmanschap naar een hoger niveau te tillen.</p>
           <ul class="benefit-list">
-            <li>Modern materieel en uitrusting</li>
-            <li>Focus op preventieve tactieken</li>
-            <li>Doorgroeimogelijkheden binnen de Envido Groep</li>
-            <li>Een hecht team van honderden collega's</li>
+            <li><strong>Preventieve Focus:</strong> Leer vooruitkijken en proactief handelen.</li>
+            <li><strong>Modern Materieel:</strong> Werk met de beste middelen en uitrusting.</li>
+            <li><strong>Hecht Team:</strong> Maak deel uit van een gemeenschap van honderden professionals.</li>
+            <li><strong>Doorgroei:</strong> Kansen binnen NL Security en de Envido Groep.</li>
           </ul>
         </div>
         <div class="visual reveal" style="transition-delay: 0.2s">
-          <img src={`${import.meta.env.BASE_URL}/assets/images/control-center.jpg`} alt="Team" class="careers-img shadow-lg" />
+          <img src={`${import.meta.env.BASE_URL}/assets/images/control-center.jpg`} alt="Werken bij NL Security" class="careers-img shadow-lg" />
         </div>
       </div>
     </section>
 
-    <section class="apply-now">
+    <!-- Vacancies Section -->
+    <section class="vacancies-section">
+      <div class="container">
+        <div class="section-header text-center reveal">
+          <h2>Openstaande <span class="orange-text">Vacatures</span></h2>
+          <p>Bekijk onze huidige mogelijkheden en solliciteer direct.</p>
+        </div>
+
+        <div class="vacancies-grid">
+          {vacancies.map((job) => (
+            <div class="vacancy-card reveal">
+              <div class="vacancy-head">
+                <span class="job-type">{job.type}</span>
+                {job.location && <span class="job-loc">{job.location}</span>}
+                <h3>{job.title}</h3>
+              </div>
+              <p class="job-desc">{job.desc}</p>
+              
+              <div class="job-details">
+                <div class="detail-col">
+                  <h4>Wij vragen:</h4>
+                  <ul>
+                    {job.requirements.map(req => <li>{req}</li>)}
+                  </ul>
+                </div>
+                <div class="detail-col">
+                  <h4>Wij bieden:</h4>
+                  <ul>
+                    {job.offer.map(off => <li>{off}</li>)}
+                  </ul>
+                </div>
+              </div>
+
+              <div class="vacancy-footer">
+                <a href="mailto:info@nl-security.nl?subject=Sollicitatie: ${job.title}" class="btn-glow">Direct Solliciteren</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Open Application -->
+    <section class="open-application bg-light">
       <div class="container">
         <div class="cta-box glass reveal">
-          <h2>Klaar voor de <span class="orange-text">volgende stap?</span></h2>
-          <p>Bekijk onze openstaande vacatures of stuur een open sollicitatie.</p>
+          <h2>Geen passende <span class="orange-text">vacature?</span></h2>
+          <p>Wij zijn altijd op zoek naar talent. Stuur een open sollicitatie met je CV en motivatie.</p>
           <div class="actions">
-            <a href="mailto:info@nl-security.nl" class="btn-glow">Solliciteer direct</a>
-            <a href="tel:0880202800" class="btn-outline">Bel Recruiter</a>
+            <a href="mailto:info@nl-security.nl" class="btn-outline">Open Sollicitatie Sturen</a>
           </div>
         </div>
       </div>
     </section>
   </main>
+
+  <Footer />
 </BaseLayout>
 
 <style>
   .text-center { text-align: center; }
   .bg-light { background-color: var(--bg-light); }
   .items-center { align-items: center; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .max-700 { max-width: 700px; }
 
   .careers-hero {
     padding: 12rem 1rem 6rem;
-    background: radial-gradient(circle at 80% 20%, rgba(255, 102, 0, 0.05), transparent);
   }
 
   .careers-hero h1 {
@@ -80,15 +185,14 @@ import Footer from '../components/Footer.astro';
 
   .benefit-list li {
     padding: 1rem 0;
-    font-weight: 600;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
     border-bottom: 1px solid rgba(0,0,0,0.05);
   }
 
   .benefit-list li::before {
-    content: '→';
+    content: '✓';
     color: var(--brand-orange);
     font-weight: 800;
   }
@@ -98,37 +202,124 @@ import Footer from '../components/Footer.astro';
     border-radius: 40px;
   }
 
-  .apply-now {
+  /* Vacancies Grid */
+  .vacancies-section {
     padding: 10rem 1rem;
   }
 
+  .section-header {
+    margin-bottom: 5rem;
+  }
+
+  .vacancies-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .vacancy-card {
+    background: white;
+    padding: 4rem;
+    border-radius: 32px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  }
+
+  .vacancy-head {
+    margin-bottom: 2rem;
+  }
+
+  .job-type, .job-loc {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: var(--bg-light);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-right: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--brand-blue);
+  }
+
+  .vacancy-card h3 {
+    font-size: 2.25rem;
+    color: var(--text-primary);
+  }
+
+  .job-desc {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    max-width: 800px;
+    line-height: 1.6;
+  }
+
+  .job-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .detail-col h4 {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--brand-blue);
+  }
+
+  .detail-col ul {
+    list-style: none;
+  }
+
+  .detail-col li {
+    padding: 0.5rem 0;
+    color: #555;
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .detail-col li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--brand-orange);
+    font-weight: bold;
+  }
+
+  .vacancy-footer {
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 2.5rem;
+  }
+
+  /* Open Application */
+  .open-application {
+    padding: 8rem 1rem;
+  }
+
   .cta-box {
-    padding: 6rem;
+    padding: 5rem;
     border-radius: 40px;
     text-align: center;
     background: white;
   }
 
   .cta-box h2 {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-bottom: 1.5rem;
-  }
-
-  .cta-box p {
-    font-size: 1.25rem;
-    margin-bottom: 3rem;
-    color: var(--text-secondary);
   }
 
   .actions {
     display: flex;
     justify-content: center;
-    gap: 2rem;
+    margin-top: 3rem;
   }
 
   @media (max-width: 768px) {
     .grid-2 { grid-template-columns: 1fr; }
-    .actions { flex-direction: column; }
+    .job-details { grid-template-columns: 1fr; gap: 2rem; }
+    .vacancy-card { padding: 2.5rem; }
+    .vacancy-card h3 { font-size: 1.75rem; }
     .cta-box { padding: 3rem; }
   }
 </style>
