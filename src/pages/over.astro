@@ -41,9 +41,20 @@ import Footer from '../components/Footer.astro';
     <section class="envido-section">
       <div class="container">
         <div class="envido-banner reveal">
-          <div class="envido-content">
-            <h2>Onderdeel van de <span class="orange-text">Envido Groep</span></h2>
-            <p>NL Security is onderdeel van de Envido Groep. Hiermee hebben wij een solide moedermaatschappij die stabiliteit, professionaliteit en duurzame groei waarborgt. Deze samenwerking stelt ons in staat om op elk niveau topkwaliteit te leveren.</p>
+          <div class="envido-grid">
+            <div class="envido-logo-box">
+              <a href="https://www.envido.nl" target="_blank" rel="noopener noreferrer">
+                <img src={`${import.meta.env.BASE_URL}/assets/images/logo-envido.png`} alt="Envido Logo" class="envido-logo" />
+              </a>
+            </div>
+            <div class="envido-content">
+              <span class="badge-blue">Onze Basis</span>
+              <h2>Onderdeel van de <span class="orange-text">Envido Groep</span></h2>
+              <p>NL Security is trots onderdeel van de Envido Groep. Hiermee hebben wij een solide moedermaatschappij die stabiliteit, professionaliteit en duurzame groei waarborgt. Deze samenwerking stelt ons in staat om op elk niveau topkwaliteit en continuïteit te leveren.</p>
+              <div class="envido-action">
+                <a href="https://www.envido.nl" target="_blank" rel="noopener noreferrer" class="btn-outline-blue">Bezoek Envido.nl →</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,17 +98,17 @@ import Footer from '../components/Footer.astro';
   .max-700 { max-width: 700px; }
 
   .about-hero {
-    padding: 10rem 1rem 3rem;
+    padding: 8rem 1rem 2rem;
   }
 
   .about-hero h1 {
     font-size: 4.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   @media (max-width: 768px) {
     .about-hero {
-      padding: 7rem 1rem 2rem;
+      padding: 6rem 1rem 1.5rem;
     }
     .about-hero h1 {
       font-size: 2.5rem;
@@ -110,21 +121,21 @@ import Footer from '../components/Footer.astro';
       padding: 0 1rem;
     }
     .vision-blocks {
-      padding: 3rem 1rem;
+      padding: 2.5rem 1rem;
     }
     .vision-card {
-      padding: 2.5rem;
+      padding: 2rem;
       border-radius: 24px;
     }
     .envido-banner {
-      padding: 3rem 1.5rem;
+      padding: 2.5rem 1.5rem;
       border-radius: 24px;
     }
     .envido-content h2 {
       font-size: 1.75rem;
     }
     .core-values {
-      padding: 4rem 1rem;
+      padding: 3rem 1rem;
     }
     .core-values h2 {
       font-size: 2.25rem;
@@ -144,18 +155,18 @@ import Footer from '../components/Footer.astro';
 
   .about-banner-img {
     width: 100%;
-    height: 500px;
+    height: 450px;
     object-fit: cover;
     border-radius: 40px;
     box-shadow: 0 40px 80px rgba(0,0,0,0.1);
   }
 
   .vision-blocks {
-    padding: 6rem 1rem;
+    padding: 4rem 1rem;
   }
 
   .vision-card {
-    padding: 4rem;
+    padding: 3rem;
     border-radius: 40px;
     background: white;
   }
@@ -167,41 +178,136 @@ import Footer from '../components/Footer.astro';
 
   .envido-section {
     padding: 3rem 1rem;
+    background: var(--bg-light);
   }
 
   .envido-banner {
     padding: 5rem;
+    background: var(--brand-blue);
+    border-radius: 48px;
+    color: white;
+    box-shadow: 0 30px 60px rgba(var(--brand-blue-rgb), 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .envido-banner::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 140%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+    transform: rotate(-15deg);
+  }
+
+  .envido-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 5rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .envido-logo-box {
     background: white;
-    border-radius: 40px;
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.02);
-    text-align: center;
+    padding: 3rem;
+    border-radius: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.4s;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  }
+
+  .envido-logo-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+  }
+
+  .envido-logo {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .envido-content {
+    text-align: left;
+  }
+
+  .badge-blue {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .envido-content h2 {
     font-size: 3rem;
     margin-bottom: 1.5rem;
+    color: white;
   }
 
   .envido-content p {
-    font-size: 1.25rem;
-    max-width: 900px;
-    margin: 0 auto;
-    color: var(--text-secondary);
+    font-size: 1.15rem;
+    color: rgba(255, 255, 255, 0.8);
     line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .btn-outline-blue {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 0.5rem;
+    transition: 0.3s;
+  }
+
+  .btn-outline-blue:hover {
+    border-color: var(--brand-orange);
+    color: var(--brand-orange);
+    padding-left: 0.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    .envido-grid {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      text-align: center;
+    }
+    .envido-content {
+      text-align: center;
+    }
+    .envido-logo-box {
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    .envido-banner {
+      padding: 4rem 2rem;
+    }
   }
 
   .core-values {
-    padding: 6rem 1rem;
+    padding: 4rem 1rem;
   }
 
   .core-values h2 {
     font-size: 3.5rem;
-    margin-bottom: 4rem;
+    margin-bottom: 2.5rem;
   }
 
   .value-item {
-    padding: 3rem;
+    padding: 2.5rem;
     border-radius: 24px;
     background: white;
     transition: 0.3s;
