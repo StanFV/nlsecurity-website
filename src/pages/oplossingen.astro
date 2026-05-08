@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
 
 const solutions = [
   { title: 'Objectbeveiliging', icon: '🏢', desc: 'Professionele bewaking voor kantoorpanden, zorginstellingen en industriële locaties.' },
@@ -31,7 +32,7 @@ const solutions = [
             <h3>{sol.title}</h3>
             <p>{sol.desc}</p>
             <div class="card-footer">
-              <a href="/contact" class="text-cta">Meer informatie →</a>
+              <a href={`${import.meta.env.BASE_URL}/contact`} class="text-cta">Meer informatie →</a>
             </div>
           </div>
         ))}
@@ -47,11 +48,13 @@ const solutions = [
           <span class="badge">Specialistisch Advies</span>
           <h2>Beveiligingsplan <span class="orange-text">op maat</span></h2>
           <p>Elke situatie is uniek. Onze experts stellen kosteloos een analyse op die exact aansluit bij uw specifieke risicoprofiel en wensen.</p>
-          <a href="/contact" class="btn-glow">Plan een gesprek</a>
+          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Plan een gesprek</a>
         </div>
       </div>
     </section>
   </main>
+  
+  <Footer />
 </BaseLayout>
 
 <style>

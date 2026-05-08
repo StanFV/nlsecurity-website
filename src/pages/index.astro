@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
 ---
 
 <BaseLayout title="Home">
@@ -84,58 +85,68 @@ import Navigation from '../components/Navigation.astro';
     <section class="services-modern">
       <div class="container">
         <div class="section-header text-center reveal">
-          <h2>Onze <span class="orange-text">Expertise</span></h2>
-          <p>Complete ontzorging op elk beveiligingsniveau.</p>
+          <span class="badge-blue">Onze Diensten</span>
+          <h2>Gespecialiseerde <span class="orange-text">Expertise</span></h2>
+          <p class="max-600 mx-auto">Wij bieden een breed scala aan beveiligingsoplossingen, altijd afgestemd op uw specifieke behoeften en risicoprofiel.</p>
         </div>
         <div class="grid grid-3">
-          <div class="service-box reveal">
-            <div class="service-icon-wrap">01</div>
+          <div class="service-card reveal">
+            <div class="card-icon">01</div>
             <h3>Objectbeveiliging</h3>
-            <p>Scherpe bewaking van uw panden en terreinen door gecertificeerde professionals.</p>
+            <p>Scherpe bewaking van uw panden en terreinen door gecertificeerde professionals die weten wat er speelt.</p>
+            <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
           </div>
-          <div class="service-box reveal" style="transition-delay: 0.1s">
-            <div class="service-icon-wrap">02</div>
+          <div class="service-card reveal" style="transition-delay: 0.1s">
+            <div class="card-icon">02</div>
             <h3>Mobiele Surveillance</h3>
-            <p>Proactieve rondes en snelle alarmopvolging met onze moderne vloot.</p>
+            <p>Proactieve rondes en razendsnelle alarmopvolging met onze moderne vloot en deskundige surveillanten.</p>
+            <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
           </div>
-          <div class="service-box reveal" style="transition-delay: 0.2s">
-            <div class="service-icon-wrap">03</div>
+          <div class="service-card reveal" style="transition-delay: 0.2s">
+            <div class="card-icon">03</div>
             <h3>Verkeersregelaars</h3>
-            <p>Veilige doorstroming en professioneel verkeersbeheer bij elk project.</p>
+            <p>Veilige doorstroming en professioneel verkeersbeheer bij elk project, van bouwlocatie tot groot evenement.</p>
+            <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Call to Action -->
-    <section class="cta-modern">
+    <section class="cta-section">
       <div class="container">
-        <div class="cta-card glass reveal">
+        <div class="cta-box-elite reveal">
           <div class="cta-content">
-            <h2>Klaar voor een <span class="orange-text">vrijblijvende analyse?</span></h2>
-            <p>Laat onze experts uw beveiligingssituatie in kaart brengen.</p>
+            <span class="badge-white">Vrijblijvend Advies</span>
+            <h2>Klaar voor een <span class="orange-text">veiligere toekomst?</span></h2>
+            <p>Laat onze experts uw huidige beveiligingssituatie analyseren en ontdek hoe het scherper en beter kan.</p>
+            <div class="cta-actions">
+              <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Nu Analyse Aanvragen</a>
+              <a href="tel:0880202800" class="btn-outline-white-real">Bel direct: 088 - 02 02 800</a>
+            </div>
           </div>
-          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Nu aanvragen</a>
+          <div class="cta-visual">
+            <div class="floating-card">
+              <span class="stat">24/7</span>
+              <span class="label">Bereikbaar</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer-light">
-    <div class="container">
-      <div class="footer-content">
-        <img src={`${import.meta.env.BASE_URL}/assets/images/logo.png`} alt="Logo" class="footer-logo" />
-        <p>&copy; 2026 NL Security. Modern, Scherper, Beter.</p>
-      </div>
-    </div>
-  </footer>
+  <Footer />
 </BaseLayout>
 
 <style>
   .items-center { align-items: center; }
   .text-center { text-align: center; }
   .bg-light { background-color: var(--bg-light); }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .max-600 { max-width: 600px; }
 
+  /* Hero Adjustments */
   .hero-video-light {
     position: relative;
     height: 100vh;
@@ -168,7 +179,7 @@ import Navigation from '../components/Navigation.astro';
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.5); /* Licht filter voor wit thema */
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(2px);
   }
 
@@ -200,11 +211,6 @@ import Navigation from '../components/Navigation.astro';
     margin-left: auto;
     margin-right: auto;
     line-height: 1.6;
-  }
-
-  .white-badge {
-    background: white !important;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   }
 
   .hero-actions {
@@ -245,6 +251,259 @@ import Navigation from '../components/Navigation.astro';
     color: white;
   }
 
+  /* Marquee */
+  .clients-light {
+    padding: 4rem 0;
+    background: #fdfdfd;
+    border-top: 1px solid rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+  }
+
+  .marquee-content {
+    display: flex;
+    gap: 5rem;
+    animation: scroll 40s linear infinite;
+    width: max-content;
+  }
+
+  .client-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+  }
+
+  .client-logo {
+    max-height: 45px;
+    filter: grayscale(100%);
+    opacity: 0.4;
+    transition: 0.4s;
+  }
+
+  .client-logo:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Services Redesign */
+  .services-modern {
+    padding: 12rem 0;
+    background: radial-gradient(circle at 0% 0%, rgba(0, 81, 159, 0.02) 0%, transparent 50%);
+  }
+
+  .section-header {
+    margin-bottom: 6rem;
+  }
+
+  .badge-blue {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(0, 81, 159, 0.08);
+    color: var(--brand-blue);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header p {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .service-card {
+    background: white;
+    padding: 4.5rem 3.5rem;
+    border-radius: 32px;
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 30px 60px rgba(0, 81, 159, 0.08);
+    border-color: rgba(0, 81, 159, 0.1);
+  }
+
+  .card-icon {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--brand-orange);
+    margin-bottom: 2.5rem;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 102, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    transition: 0.4s;
+  }
+
+  .service-card:hover .card-icon {
+    background: var(--brand-orange);
+    color: white;
+    transform: rotate(5deg) scale(1.1);
+  }
+
+  .service-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+    color: var(--brand-blue);
+  }
+
+  .service-card p {
+    color: #555;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--brand-orange);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: 0.3s;
+  }
+
+  .card-link:hover {
+    gap: 1.25rem;
+  }
+
+  /* CTA Redesign */
+  .cta-section {
+    padding: 6rem 0 12rem;
+  }
+
+  .cta-box-elite {
+    background: var(--brand-blue);
+    padding: 6rem;
+    border-radius: 48px;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0, 81, 159, 0.25);
+  }
+
+  .cta-box-elite::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    transform: rotate(-15deg);
+  }
+
+  .badge-white {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+  }
+
+  .cta-content h2 {
+    font-size: 3.5rem;
+    color: white;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-content p {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 3.5rem;
+    line-height: 1.6;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .btn-outline-white-real {
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 0.5rem;
+    transition: 0.3s;
+  }
+
+  .btn-outline-white-real:hover {
+    border-color: white;
+    padding-left: 0.5rem;
+  }
+
+  .cta-visual {
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+
+  .floating-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 32px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .floating-card .stat {
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--brand-orange);
+    line-height: 1;
+  }
+
+  .floating-card .label {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--brand-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+  }
+
+  /* Shared Components from index.astro */
   .scroll-down-indicator {
     position: absolute;
     bottom: 2rem;
@@ -276,157 +535,6 @@ import Navigation from '../components/Navigation.astro';
   @keyframes scroll-mouse {
     0% { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, 20px); }
-  }
-
-  .video-preview-card {
-    padding: 1rem;
-    border-radius: 24px;
-    position: relative;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.1);
-  }
-
-  .preview-video {
-    width: 100%;
-    border-radius: 16px;
-    display: block;
-  }
-
-  .card-tag {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    background: var(--brand-orange);
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: bold;
-  }
-
-  .clients-light {
-    padding: 3rem 0;
-    overflow: hidden;
-    border-top: 1px solid rgba(0,0,0,0.05);
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-  }
-
-  .marquee-content {
-    display: flex;
-    gap: 4rem;
-    animation: scroll 40s linear infinite;
-    width: max-content;
-  }
-
-  .client-badge {
-    font-weight: 800;
-    color: #ddd;
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .client-logo-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 80px;
-    padding: 0 2rem;
-  }
-
-  .client-logo {
-    max-height: 50px;
-    max-width: 180px;
-    width: auto;
-    height: auto;
-    filter: grayscale(100%);
-    opacity: 0.5;
-    transition: 0.3s ease;
-  }
-
-  .client-logo:hover {
-    filter: grayscale(0%);
-    opacity: 1;
-  }
-
-  @keyframes scroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-
-  .services-modern {
-    background-color: var(--bg-white);
-  }
-
-  .section-header h2 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-
-  .service-box {
-    padding: 4rem 3rem;
-    background: var(--bg-light);
-    border-radius: 24px;
-    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .service-box:hover {
-    background: white;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-    transform: translateY(-10px);
-  }
-
-  .service-box .service-icon-wrap {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--brand-orange);
-    width: 60px;
-    height: 60px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2.5rem;
-    box-shadow: 0 10px 20px rgba(255, 102, 0, 0.1);
-  }
-
-  .service-box h3 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-  }
-
-  .cta-modern {
-    padding-bottom: 10rem;
-  }
-
-  .cta-card {
-    padding: 5rem;
-    border-radius: 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(135deg, #ffffff, #f8f9fa);
-  }
-
-  .cta-content h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .footer-light {
-    padding: 4rem 0;
-    border-top: 1px solid rgba(0,0,0,0.05);
-  }
-
-  .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .footer-logo {
-    height: 30px;
-    opacity: 0.6;
   }
 
   /* Video Modal Styles */
@@ -499,10 +607,26 @@ import Navigation from '../components/Navigation.astro';
     background: var(--brand-blue);
   }
 
+  @media (max-width: 1024px) {
+    .cta-box-elite {
+      grid-template-columns: 1fr;
+      padding: 4rem;
+      text-align: center;
+    }
+    .cta-actions {
+      justify-content: center;
+    }
+    .cta-visual {
+      display: none;
+    }
+  }
+
   @media (max-width: 768px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .hero-light h1 { font-size: 3rem; }
-    .cta-card { flex-direction: column; text-align: center; gap: 3rem; padding: 3rem; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .hero-content-center h1 { font-size: 3.5rem; }
+    .section-header h2 { font-size: 2.5rem; }
+    .cta-content h2 { font-size: 2.5rem; }
+    .cta-actions { flex-direction: column; gap: 1.5rem; }
     .floating-call-btn span { display: none; }
     .floating-call-btn { padding: 1.25rem; border-radius: 50%; }
   }
