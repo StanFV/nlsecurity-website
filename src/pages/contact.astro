@@ -21,18 +21,77 @@ import Footer from '../components/Footer.astro';
       <div class="container grid grid-2">
         <!-- Form Column -->
         <div class="contact-form-elite glass reveal">
-          <h2>Stuur een <span class="orange-text">bericht</span></h2>
-          <p class="form-intro">Laat uw gegevens achter en wij nemen binnen 24 uur contact met u op.</p>
-          <form class="elite-form">
-            <div class="form-row">
-              <input type="text" placeholder="Volledige naam" required />
-              <input type="email" placeholder="E-mailadres" required />
-            </div>
-            <input type="tel" placeholder="Telefoonnummer" />
-            <textarea placeholder="Waarmee kunnen we u helpen?" rows="6" required></textarea>
-            <button type="submit" class="btn-glow">Bericht Verzenden</button>
-          </form>
+          <div id="form-container">
+            <h2>Stuur een <span class="orange-text">bericht</span></h2>
+            <p class="form-intro">Laat uw gegevens achter en wij nemen binnen 24 uur contact met u op.</p>
+            <form class="elite-form" id="contact-form" action="https://formspree.io/f/xaqvpjzv" method="POST">
+              <div class="form-row">
+                <input type="text" name="name" placeholder="Volledige naam" required />
+                <input type="email" name="email" placeholder="E-mailadres" required />
+              </div>
+              <input type="tel" name="phone" placeholder="Telefoonnummer" />
+              <textarea name="message" placeholder="Waarmee kunnen we u helpen?" rows="6" required></textarea>
+              <button type="submit" id="submit-btn" class="btn-glow">Bericht Verzenden</button>
+            </form>
+          </div>
+          <div id="success-message" style="display: none; text-align: center; padding: 3rem 0;">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
+            <h2 class="orange-text">Bericht verzonden!</h2>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); line-height: 1.6;">Bedankt voor uw bericht. Wij hebben uw aanvraag ontvangen en nemen binnen 24 uur contact met u op.</p>
+          </div>
+          <div id="error-message" style="display: none; text-align: center; padding: 1rem; color: #dc3545; background: rgba(220, 53, 69, 0.1); border-radius: 12px; margin-top: 1rem;">
+            Oeps! Er ging iets mis bij het verzenden. Probeer het later opnieuw.
+          </div>
         </div>
+
+        <script is:inline>
+          const form = document.getElementById('contact-form');
+          const formContainer = document.getElementById('form-container');
+          const successMessage = document.getElementById('success-message');
+          const errorMessage = document.getElementById('error-message');
+          const submitBtn = document.getElementById('submit-btn');
+
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Verzenden...';
+            errorMessage.style.display = 'none';
+
+            const formData = new FormData(form);
+            
+            try {
+              const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'Accept': 'application/json'
+                }
+              });
+
+              if (response.ok) {
+                formContainer.style.display = 'none';
+                successMessage.style.display = 'block';
+              } else {
+                const data = await response.json();
+                if (data.errors) {
+                  errorMessage.innerText = data.errors.map(error => error.message).join(", ");
+                } else {
+                  errorMessage.innerText = 'Oeps! Er ging iets mis bij het verzenden.';
+                }
+                errorMessage.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Bericht Verzenden';
+              }
+            } catch (error) {
+              errorMessage.innerText = 'Oeps! Er ging iets mis met de verbinding.';
+              errorMessage.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.innerText = 'Bericht Verzenden';
+            }
+          });
+        </script>
 
         <!-- Details Column -->
         <div class="contact-details-elite reveal" style="transition-delay: 0.2s">
@@ -67,7 +126,7 @@ import Footer from '../components/Footer.astro';
               <span class="method-icon">✉️</span>
               <div class="method-text">
                 <span class="label">E-mail</span>
-                <a href="mailto:info@nl-security.nl" class="value">info@nl-security.nl</a>
+                <a href="mailto:s.hudepohl@bc-capital.nl" class="value">s.hudepohl@bc-capital.nl</a>
               </div>
             </div>
           </div>
