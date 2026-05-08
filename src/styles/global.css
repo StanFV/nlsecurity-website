@@ -1,12 +1,13 @@
 :root {
   --brand-orange: #FF6600;
-  --brand-blue: #00519F;
+  --brand-blue: #002E5D;
+  --brand-blue-rgb: 0, 46, 93;
   --bg-white: #ffffff;
   --bg-light: #f8f9fa;
   --bg-card: #ffffff;
   --text-primary: #1a1a1a;
   --text-secondary: #666666;
-  --accent-blue: #00519F;
+  --accent-blue: #002E5D;
   
   --font-main: 'Inter', system-ui, sans-serif;
   --section-padding: 8rem 1rem;
