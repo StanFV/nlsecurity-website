@@ -1,0 +1,404 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Mijn NL Security - Client Portal">
+  <Navigation />
+  
+  <main class="portal-page">
+    <section class="portal-hero">
+      <div class="container">
+        <div class="hero-content reveal">
+          <span class="badge-orange">Binnenkort Beschikbaar</span>
+          <h1>Mijn <span class="orange-text">NL Security</span></h1>
+          <p class="lead">Het centrale platform voor maximale transparantie, controle en efficiëntie in uw beveiliging.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-intro">
+      <div class="container">
+        <div class="grid grid-2 items-center">
+          <div class="intro-text reveal">
+            <h2>Volledige <span class="gradient-text">Controle</span> in Handbereik</h2>
+            <p>Bij NL Security geloven we in transparantie. Daarom bouwen we aan een geavanceerd klantportaal waar onze opdrachtgevers 24/7 inzicht hebben in de operationele status van hun beveiliging.</p>
+            <p>Dit portaal is niet alleen een dashboard, maar een strategisch hulpmiddel om de veiligheid op uw locatie naar een hoger niveau te tillen.</p>
+          </div>
+          <div class="intro-visual reveal" style="transition-delay: 0.2s">
+            <div class="portal-mockup glass">
+              <div class="mockup-header">
+                <div class="header-controls">
+                  <div class="dot red"></div>
+                  <div class="dot yellow"></div>
+                  <div class="dot green"></div>
+                </div>
+                <div class="header-title">Dashboard - NL Security</div>
+              </div>
+              <div class="mockup-content">
+                <div class="mockup-sidebar">
+                  <div class="side-item active"></div>
+                  <div class="side-item"></div>
+                  <div class="side-item"></div>
+                  <div class="side-item"></div>
+                </div>
+                <div class="mockup-main">
+                  <div class="mockup-top-stats">
+                    <div class="stat-pill">
+                      <span class="pill-label">Status</span>
+                      <span class="pill-value green">Veilig</span>
+                    </div>
+                    <div class="stat-pill">
+                      <span class="pill-label">Bezetting</span>
+                      <span class="pill-value">12/12</span>
+                    </div>
+                  </div>
+                  <div class="mockup-card hero-stat">
+                    <div class="card-line long"></div>
+                    <div class="card-line short"></div>
+                    <div class="chart-preview">
+                      <div class="bar" style="height: 40%"></div>
+                      <div class="bar" style="height: 70%"></div>
+                      <div class="bar" style="height: 50%"></div>
+                      <div class="bar" style="height: 90%"></div>
+                      <div class="bar" style="height: 60%"></div>
+                    </div>
+                  </div>
+                  <div class="mockup-grid">
+                    <div class="mockup-card small">
+                      <div class="card-icon blue"></div>
+                      <div class="card-line mini"></div>
+                    </div>
+                    <div class="mockup-card small">
+                      <div class="card-icon orange"></div>
+                      <div class="card-line mini"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-features bg-light">
+      <div class="container">
+        <div class="section-header text-center reveal">
+          <h2>Wat kunt u verwachten?</h2>
+          <p>Een overzicht van de functies die we momenteel ontwikkelen voor onze opdrachtgevers.</p>
+        </div>
+
+        <div class="grid grid-3">
+          <div class="feature-card glass reveal">
+            <div class="icon">📊</div>
+            <h3>Real-time Dashboard</h3>
+            <p>Direct inzicht in incidenten, dagrapportages en actuele status van uw objecten. Data-driven veiligheid voor gefundeerde beslissingen.</p>
+          </div>
+
+          <div class="feature-card glass reveal" style="transition-delay: 0.1s">
+            <div class="icon">📅</div>
+            <h3>Planning & Bezetting</h3>
+            <p>Bekijk exact welke beveiligers op welk moment op uw locatie zijn ingepland. Inclusief profielen en kwalificaties van het personeel.</p>
+          </div>
+
+          <div class="feature-card glass reveal" style="transition-delay: 0.2s">
+            <div class="icon">🔄</div>
+            <h3>Wijzigingen Doorgeven</h3>
+            <p>Eenvoudig extra inzet aanvragen, ad-hoc wijzigingen in instructies doorgeven of incidenten direct escaleren naar de juiste contactpersoon.</p>
+          </div>
+
+          <div class="feature-card glass reveal" style="transition-delay: 0.3s">
+            <div class="icon">📄</div>
+            <h3>Documentenbeheer</h3>
+            <p>Alle contracten, instructies, keurmerken en facturatie overzichtelijk op één centrale plek. Altijd voldaan aan de laatste wet- en regelgeving.</p>
+          </div>
+
+          <div class="feature-card glass reveal" style="transition-delay: 0.4s">
+            <div class="icon">📈</div>
+            <h3>Analyse & Rapportage</h3>
+            <p>Maandelijkse rapportages en trendanalyses van incidenten. Samen kijken we vooruit om risico's te minimaliseren.</p>
+          </div>
+
+          <div class="feature-card glass reveal" style="transition-delay: 0.5s">
+            <div class="icon">📱</div>
+            <h3>Direct Contact</h3>
+            <p>Een directe lijn met uw accountmanager en onze meldkamer. Snel schakelen wanneer elke seconde telt.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-cta">
+      <div class="container text-center reveal">
+        <h2>Wilt u ook profiteren van deze innovatie?</h2>
+        <p>Word klant bij NL Security en krijg als een van de eersten toegang tot ons vernieuwde portaal.</p>
+        <div class="cta-actions">
+          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Contact opnemen</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .portal-page {
+    padding-top: 80px;
+  }
+
+  .portal-hero {
+    background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
+    padding: 10rem 0 6rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-content h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .badge-orange {
+    display: inline-block;
+    background: rgba(255, 102, 0, 0.1);
+    color: var(--brand-orange);
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .lead {
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .portal-intro {
+    padding: 8rem 0;
+  }
+
+  .intro-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .intro-text p {
+    margin-bottom: 1.2rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+  }
+
+  .portal-mockup {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    background: white;
+  }
+
+  .mockup-header {
+    background: #eef2f6;
+    padding: 0.6rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .header-controls {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27c93f; }
+
+  .header-title {
+    font-size: 0.7rem;
+    color: #718096;
+    font-weight: 600;
+  }
+
+  .mockup-content {
+    flex: 1;
+    display: flex;
+  }
+
+  .mockup-sidebar {
+    width: 50px;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    padding: 1rem 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .side-item {
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 4px;
+  }
+  .side-item.active { background: var(--brand-blue); }
+
+  .mockup-main {
+    flex: 1;
+    padding: 1.2rem;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .mockup-top-stats {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .stat-pill {
+    background: #f1f5f9;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.6rem;
+  }
+
+  .pill-label { color: #64748b; }
+  .pill-value { font-weight: 700; color: #1e293b; }
+  .pill-value.green { color: #10b981; }
+
+  .mockup-card {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 6px;
+    padding: 0.8rem;
+  }
+
+  .hero-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .card-line {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+  }
+  .card-line.long { width: 60%; }
+  .card-line.short { width: 30%; }
+  .card-line.mini { width: 40%; margin-top: 0.4rem; }
+
+  .chart-preview {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+    padding-top: 0.8rem;
+  }
+
+  .bar {
+    flex: 1;
+    background: rgba(0, 81, 159, 0.1);
+    border-radius: 2px 2px 0 0;
+    transition: 0.3s;
+  }
+  .bar:nth-child(even) { background: rgba(255, 102, 0, 0.1); }
+
+  .mockup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .card-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+  }
+  .card-icon.blue { background: rgba(0, 81, 159, 0.2); }
+  .card-icon.orange { background: rgba(255, 102, 0, 0.2); }
+
+  .mockup-card.small {
+    height: 60px;
+    padding: 0.6rem;
+  }
+
+  .section-header {
+    max-width: 700px;
+    margin: 0 auto 4rem;
+  }
+
+  .section-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card {
+    padding: 2.5rem;
+    border-radius: 20px;
+    transition: 0.3s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--brand-orange);
+  }
+
+  .feature-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+
+  .feature-card h3 {
+    margin-bottom: 1rem;
+  }
+
+  .bg-light {
+    background-color: var(--bg-light);
+  }
+
+  .portal-cta {
+    background: var(--brand-blue);
+    color: white;
+    padding: 6rem 0;
+  }
+
+  .portal-cta h2 {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .portal-cta p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .hero-content h1 { font-size: 2.5rem; }
+    .portal-mockup { height: 300px; }
+  }
+</style>

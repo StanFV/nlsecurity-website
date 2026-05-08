@@ -22,10 +22,15 @@ const navItems = [
     </button>
 
     <div class="nav-links">
-      {navItems.map(item => (
-        <a href={item.href}>{item.label}</a>
-      ))}
-      <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Contact</a>
+      <div class="menu-items">
+        {navItems.map(item => (
+          <a href={item.href}>{item.label}</a>
+        ))}
+      </div>
+      <div class="nav-btns">
+        <a href={`${import.meta.env.BASE_URL}/mijn-nl-security`} class="btn-outline portal-btn">Mijn NL Security</a>
+        <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Contact</a>
+      </div>
     </div>
   </div>
 
@@ -34,6 +39,7 @@ const navItems = [
       {navItems.map(item => (
         <a href={item.href} class="mobile-link">{item.label}</a>
       ))}
+      <a href={`${import.meta.env.BASE_URL}/mijn-nl-security`} class="mobile-link portal-link">Mijn NL Security</a>
       <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Contact</a>
     </div>
   </div>
@@ -63,7 +69,20 @@ const navItems = [
 
   .nav-links {
     display: flex;
+    flex: 1;
+    margin-left: 3rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .menu-items {
+    display: flex;
     gap: 2.5rem;
+  }
+
+  .nav-btns {
+    display: flex;
+    gap: 1.5rem;
     align-items: center;
   }
 
@@ -75,7 +94,30 @@ const navItems = [
     transition: 0.3s;
   }
 
-  .nav-links a:hover {
+  .nav-links a.btn-glow, .nav-links a.btn-outline {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .nav-links a.btn-glow {
+    color: white;
+  }
+
+  .portal-btn {
+    border-color: var(--brand-blue);
+    color: var(--brand-blue);
+  }
+
+  .portal-btn:hover {
+    background-color: var(--brand-blue);
+    color: white !important;
+  }
+
+  .portal-link {
+    color: var(--brand-orange) !important;
+  }
+
+  .nav-links a:not(.btn-glow):hover {
     color: var(--brand-orange);
   }
 
