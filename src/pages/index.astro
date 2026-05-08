@@ -283,11 +283,18 @@ import Footer from '../components/Footer.astro';
     border-bottom: 1px solid rgba(0,0,0,0.03);
   }
 
+  .marquee-container {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+  }
+
   .marquee-content {
     display: flex;
     gap: 5rem;
     animation: scroll 40s linear infinite;
     width: max-content;
+    padding-left: 2.5rem; /* Give some initial space */
   }
 
   .client-logo-wrap {
