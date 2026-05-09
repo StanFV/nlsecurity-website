@@ -1,0 +1,163 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { supabase } from "../../lib/supabase";
+
+// Auth check
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+	return Astro.redirect("/admin");
+}
+
+const { error: authError } = await supabase.auth.setSession({
+	access_token: accessToken.value,
+	refresh_token: refreshToken.value,
+});
+
+if (authError) {
+	return Astro.redirect("/admin");
+}
+---
+
+<BaseLayout title="Nieuwe Vacature">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero bg-light">
+			<div class="container">
+				<div class="form-container glass reveal">
+					<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+					<h1>Nieuwe <span class="orange-text">Vacature</span></h1>
+					
+					<form id="vacancy-form" class="elite-form">
+						<div class="form-group">
+							<label>Functietitel</label>
+							<input type="text" name="title" placeholder="bijv. Professionele Beveiliger" required />
+						</div>
+
+						<div class="form-row">
+							<div class="form-group">
+								<label>Type</label>
+								<select name="type" required>
+									<option value="Beveiliging">Beveiliging</option>
+									<option value="Hospitality">Hospitality</option>
+									<option value="Kantoor">Kantoor</option>
+									<option value="Logistiek">Logistiek</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>Locatie / Uren</label>
+								<input type="text" name="location" placeholder="bijv. Regio Zuid-Holland of 40 uur" />
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label>Beschrijving</label>
+							<textarea name="description" rows="4" placeholder="Korte introductie over de functie..." required></textarea>
+						</div>
+
+						<div class="form-group">
+							<label>Eisen (één per regel)</label>
+							<textarea name="requirements" rows="5" placeholder="Diploma Beveiliger 2&#10;Minimaal 2 jaar ervaring..." required></textarea>
+						</div>
+
+						<div class="form-group">
+							<label>Wat wij bieden (één per regel)</label>
+							<textarea name="offer" rows="5" placeholder="Salaris conform CAO&#10;Pensioenregeling..." required></textarea>
+						</div>
+
+						<div class="form-actions">
+							<button type="submit" class="btn-glow">Vacature Publiceren</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script>
+	import { supabase } from "../../lib/supabase";
+
+	const form = document.getElementById("vacancy-form") as HTMLFormElement;
+
+	form.onsubmit = async (e) => {
+		e.preventDefault();
+		const formData = new FormData(form);
+		
+		const vacancyData = {
+			title: formData.get("title"),
+			type: formData.get("type"),
+			location: formData.get("location"),
+			description: formData.get("description"),
+			requirements: (formData.get("requirements") as string).split('\n').filter(line => line.trim() !== ''),
+			offer: (formData.get("offer") as string).split('\n').filter(line => line.trim() !== ''),
+		};
+
+		const { error } = await supabase.from('vacancies').insert([vacancyData]);
+
+		if (error) {
+			alert("Fout bij opslaan: " + error.message);
+		} else {
+			alert("Vacature succesvol geplaatst!");
+			window.location.href = "/admin";
+		}
+	};
+</script>
+
+<style>
+	.admin-page { padding-top: 80px; }
+	.admin-hero { padding: 6rem 0; }
+	.form-container {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 3.5rem;
+		background: white;
+		border-radius: 32px;
+	}
+	.back-link {
+		display: inline-block;
+		margin-bottom: 2rem;
+		color: var(--text-secondary);
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.back-link:hover { color: var(--brand-orange); }
+	h1 { margin-bottom: 2.5rem; font-size: 2.5rem; }
+	.form-group { margin-bottom: 1.5rem; }
+	.form-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.5rem;
+	}
+	label {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-weight: 700;
+		color: var(--brand-blue);
+		font-size: 0.9rem;
+	}
+	input, select, textarea {
+		width: 100%;
+		padding: 1rem;
+		border-radius: 12px;
+		border: 1px solid rgba(0,0,0,0.1);
+		font-family: inherit;
+		background: #f8fafc;
+	}
+	input:focus, select:focus, textarea:focus {
+		outline: none;
+		border-color: var(--brand-orange);
+		background: white;
+	}
+	.form-actions { margin-top: 2.5rem; text-align: right; }
+	@media (max-width: 600px) {
+		.form-row { grid-template-columns: 1fr; }
+		.form-container { padding: 2rem; }
+	}
+</style>

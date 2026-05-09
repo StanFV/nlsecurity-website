@@ -2,64 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { supabase } from '../lib/supabase';
 
-const vacancies = [
-  {
-    title: 'Professionele Beveiliger M/V',
-    type: 'Beveiliging',
-    desc: 'Wij zijn op zoek naar enthousiaste collega\'s in het bezit van MBO Beveiliger 2 die graag bij diverse opdrachtgevers (kantoren, winkels, evenementen) aan de slag gaan.',
-    requirements: [
-      'Diploma Beveiliger MBO 2',
-      'Minimaal 2 jaar ervaring in de branche',
-      'Flexibel inzetbaar (ook weekenden en nachten)',
-      'Loyaal, integer en pro-actief',
-      'Goede beheersing van de Nederlandse taal'
-    ],
-    offer: [
-      'Salaris conform CAO beveiliging',
-      'Urengarantie (96u per 4 weken)',
-      'Pensioenregeling',
-      'Doorgroeimogelijkheden binnen de Envido Groep'
-    ]
-  },
-  {
-    title: '(Junior) Salarisadministrateur',
-    type: 'Kantoor',
-    location: '40 uur per week',
-    desc: 'Werk samen in een hecht team aan de salarisverwerking en HRM-gerelateerde werkzaamheden binnen de Envido Groep.',
-    requirements: [
-      'MBO+ werk- en denkniveau (HRM of financieel)',
-      'In het bezit van PDL (Praktijkdiploma Loonadministratie)',
-      'Kennis van Excel, AFAS (Profit) is een pré',
-      'Accuraat, nauwkeurig en communicatief vaardig'
-    ],
-    offer: [
-      'Open en informeel team',
-      'Passend salaris bij functie en ervaring',
-      'Goede secundaire arbeidsvoorwaarden',
-      'Doorgroeimogelijkheden naar Senior Salarisadministrateur'
-    ]
-  },
-  {
-    title: 'Beveiligers / Receptionistes',
-    type: 'Hospitality',
-    location: 'Regio Zuid-Holland',
-    desc: 'Gecombineerde functie voor gediplomeerde beveiligers die ook uitblinken in gastvrijheid en receptiewerkzaamheden.',
-    requirements: [
-      'Diploma Beveiliger 2',
-      'Minimaal 1 jaar ervaring',
-      'Diploma BHV (EHBO is een pré)',
-      'Representatief en servicegericht (hospitality mindset)',
-      'Bereid te reizen (straal 30 km)'
-    ],
-    offer: [
-      'Afwisselende werkomgeving',
-      'Focus op hospitality en veiligheid',
-      'Professioneel team',
-      'Marktconforme arbeidsvoorwaarden'
-    ]
-  }
-];
+// Haal vacatures live op uit Supabase
+const { data: vacancies = [] } = await supabase
+  .from('vacancies')
+  .select('*')
+  .order('created_at', { ascending: false });
 ---
 
 <BaseLayout title="Werken bij">
