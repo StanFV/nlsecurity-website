@@ -1,0 +1,176 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { requireAdminAuth } from "../../lib/admin-auth";
+
+// Gebruiker moet ingelogd zijn maar nog geen AAL2 hebben
+const accessToken = Astro.cookies.get("sb-access-token")?.value;
+const refreshToken = Astro.cookies.get("sb-refresh-token")?.value;
+if (!accessToken || !refreshToken) return Astro.redirect("/admin");
+
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
+
+// Als MFA al voltooid is, doorsturen
+if (auth.aal === "aal2") return Astro.redirect("/admin");
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<BaseLayout title="MFA Verificatie">
+	<Navigation />
+
+	<main class="mfa-page">
+		<section class="mfa-hero">
+			<div class="container">
+				<div class="mfa-container reveal">
+					<div class="mfa-icon">🔐</div>
+					<span class="mfa-badge">Twee-factor verificatie</span>
+					<h1>MFA <span class="orange-text">Verificatie</span></h1>
+					<p>Voer de 6-cijferige code in van je authenticator-app om door te gaan.</p>
+
+					<div class="code-inputs">
+						<input type="text" id="mfa-code" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" />
+					</div>
+
+					<button id="verify-btn" class="btn-glow">Verifiëren</button>
+					<p id="mfa-error" class="error-text" style="display:none;"></p>
+
+					<p class="help-text">
+						Geen toegang tot je authenticator? Neem contact op met een Super Admin.
+					</p>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
+const initMFA = async () => {
+	const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+	const supabase = createClient(supabaseUrl, supabaseKey);
+
+	// Herstel sessie uit cookies
+	const getCookie = (name) => {
+		const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+		return match ? match[2] : null;
+	};
+	const accessToken = getCookie("sb-access-token");
+	const refreshToken = getCookie("sb-refresh-token");
+
+	if (!accessToken || !refreshToken) {
+		window.location.href = "/admin";
+		return;
+	}
+
+	await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+
+	const input = document.getElementById("mfa-code");
+	const btn = document.getElementById("verify-btn");
+	const errEl = document.getElementById("mfa-error");
+
+	// Automatisch indienen bij 6 cijfers
+	input.addEventListener("input", () => {
+		if (input.value.length === 6) btn.click();
+	});
+
+	btn.onclick = async () => {
+		const code = input.value.trim();
+		if (code.length !== 6) {
+			errEl.textContent = "Voer een 6-cijferige code in.";
+			errEl.style.display = "block";
+			return;
+		}
+
+		btn.disabled = true;
+		btn.textContent = "Verifiëren...";
+		errEl.style.display = "none";
+
+		// Haal de enrolled factors op
+		const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+		if (factorsError || !factorsData?.totp?.length) {
+			errEl.textContent = "Geen MFA-factor gevonden. Neem contact op met een beheerder.";
+			errEl.style.display = "block";
+			btn.disabled = false;
+			btn.textContent = "Verifiëren";
+			return;
+		}
+
+		const factorId = factorsData.totp[0].id;
+
+		const { data, error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
+		if (error) {
+			errEl.textContent = "Ongeldige code. Probeer het opnieuw.";
+			errEl.style.display = "block";
+			btn.disabled = false;
+			btn.textContent = "Verifiëren";
+			input.value = "";
+			input.focus();
+			return;
+		}
+
+		// Bijwerken cookies met nieuwe sessie (AAL2)
+		const expirationDate = new Date();
+		expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+		const isSecure = location.protocol === "https:" ? "; Secure" : "";
+		document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
+		document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
+
+		window.location.href = "/admin";
+	};
+
+	input.focus();
+};
+
+initMFA();
+</script>
+
+<style>
+.mfa-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.mfa-hero { padding: 8rem 0; display: flex; align-items: center; }
+.mfa-container {
+	max-width: 420px;
+	margin: 0 auto;
+	text-align: center;
+	background: white;
+	border-radius: 28px;
+	padding: 3rem 2.5rem;
+	box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+}
+.mfa-icon { font-size: 3rem; margin-bottom: 1rem; }
+.mfa-badge {
+	display: inline-block;
+	background: rgba(0,46,93,0.08);
+	color: var(--brand-blue);
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.75rem;
+}
+h1 { font-size: 2rem; margin: 0.5rem 0 1rem; }
+p { color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem; }
+.code-inputs { margin-bottom: 1.5rem; }
+#mfa-code {
+	width: 100%;
+	padding: 1rem;
+	text-align: center;
+	font-size: 2rem;
+	letter-spacing: 0.4em;
+	border-radius: 14px;
+	border: 2px solid rgba(0,0,0,0.1);
+	background: #f8fafc;
+	font-family: monospace;
+	transition: border-color 0.2s;
+}
+#mfa-code:focus { outline: none; border-color: var(--brand-orange); background: white; }
+.btn-glow { width: 100%; }
+.error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
+.help-text { font-size: 0.8rem; color: #94a3b8; margin-top: 1.5rem; margin-bottom: 0; }
+</style>

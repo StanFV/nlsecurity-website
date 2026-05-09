@@ -1,0 +1,269 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { requireAdminAuth } from "../../lib/admin-auth";
+import { supabaseAdmin } from "../../lib/supabase-admin";
+
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
+
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+}
+
+const { data: members } = await supabaseAdmin
+	.from("team_members")
+	.select("*")
+	.order("volgorde", { ascending: true });
+
+const totaal = (members ?? []).length;
+const zichtbaar = (members ?? []).filter((m: any) => m.toon_contact || m.toon_over_ons).length;
+---
+
+<BaseLayout title="Team Beheer">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero">
+			<div class="container">
+
+				<div class="page-header reveal">
+					<div>
+						<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+						<span class="page-badge">Website</span>
+						<h1>Team <span class="orange-text">Beheer</span></h1>
+						<p>{totaal} medewerker{totaal !== 1 ? "s" : ""} · {zichtbaar} zichtbaar op website</p>
+					</div>
+					<a href="/admin/team/new" class="btn-glow">+ Medewerker Toevoegen</a>
+				</div>
+
+				<div class="team-grid reveal">
+					{!members || members.length === 0 ? (
+						<div class="empty-card">
+							<div class="empty-icon">👤</div>
+							<p>Nog geen teamleden toegevoegd.</p>
+							<a href="/admin/team/new" class="btn-glow" style="margin-top:1rem;">+ Eerste Medewerker Toevoegen</a>
+						</div>
+					) : (members as any[]).map((m) => (
+						<div class="member-card" data-id={m.id}>
+							<div class="member-photo">
+								{m.foto_url
+									? <img src={m.foto_url} alt={m.naam} />
+									: <span class="initials">{m.naam.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}</span>
+								}
+							</div>
+							<div class="member-info">
+								<h3>{m.naam}</h3>
+								<p class="member-functie">{m.functie}</p>
+								{m.email && <p class="member-contact">✉ {m.email}</p>}
+								{m.phone && <p class="member-contact">📞 {m.phone}</p>}
+								<div class="page-badges">
+									<button
+										class={`page-badge-btn ${m.toon_contact ? "active" : ""}`}
+										data-id={m.id}
+										data-field="toon_contact"
+										data-value={m.toon_contact ? "true" : "false"}
+										title="Zichtbaarheid op Contactpagina wisselen"
+									>Contact</button>
+									<button
+										class={`page-badge-btn ${m.toon_over_ons ? "active" : ""}`}
+										data-id={m.id}
+										data-field="toon_over_ons"
+										data-value={m.toon_over_ons ? "true" : "false"}
+										title="Zichtbaarheid op Over Ons pagina wisselen"
+									>Over ons</button>
+								</div>
+								<p class="member-volgorde">Volgorde: {m.volgorde}</p>
+							</div>
+							<div class="member-actions">
+								<a href={`/admin/team/edit/${m.id}`} class="btn-action btn-edit">Bewerken</a>
+								<button class="btn-action btn-del" data-id={m.id} data-naam={m.naam}>Verwijderen</button>
+							</div>
+						</div>
+					))}
+				</div>
+
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline>
+document.querySelectorAll(".page-badge-btn").forEach((btn) => {
+	btn.onclick = async () => {
+		const id = btn.dataset.id;
+		const field = btn.dataset.field;
+		const huidig = btn.dataset.value === "true";
+		const res = await fetch(`/api/admin/team/${id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ [field]: !huidig }),
+		});
+		if (res.ok) {
+			btn.dataset.value = (!huidig).toString();
+			btn.classList.toggle("active", !huidig);
+		} else {
+			alert("Bijwerken mislukt.");
+		}
+	};
+});
+
+document.querySelectorAll(".btn-del").forEach((btn) => {
+	btn.onclick = async () => {
+		if (!confirm(`Weet je zeker dat je ${btn.dataset.naam} wilt verwijderen?`)) return;
+		const res = await fetch(`/api/admin/team/${btn.dataset.id}`, { method: "DELETE" });
+		if (res.ok) btn.closest(".member-card").remove();
+		else alert("Verwijderen mislukt.");
+	};
+});
+</script>
+
+<style>
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 7rem; }
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: 2.5rem;
+}
+.back-link {
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	color: rgba(255,255,255,0.6);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.page-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0; }
+.page-header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin: 0; }
+
+.empty-card {
+	background: white;
+	border-radius: 24px;
+	padding: 4rem;
+	text-align: center;
+	color: var(--text-secondary);
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+	grid-column: 1 / -1;
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+.team-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1.5rem;
+}
+
+.member-card {
+	background: white;
+	border-radius: 20px;
+	padding: 1.75rem;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.member-photo {
+	position: relative;
+	width: 80px;
+	height: 80px;
+}
+.member-photo img {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 3px solid #f1f5f9;
+}
+.initials {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	background: var(--brand-blue);
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.5rem;
+	font-weight: 800;
+}
+.page-badges {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+	margin: 0.4rem 0 0.25rem;
+}
+.page-badge-btn {
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.68rem;
+	font-weight: 700;
+	border: 1.5px solid #cbd5e1;
+	background: #f1f5f9;
+	color: #94a3b8;
+	cursor: pointer;
+	transition: 0.2s;
+	letter-spacing: 0.02em;
+}
+.page-badge-btn.active {
+	background: rgba(255,102,0,0.1);
+	border-color: var(--brand-orange);
+	color: var(--brand-orange);
+}
+.page-badge-btn:hover {
+	border-color: var(--brand-orange);
+	color: var(--brand-orange);
+}
+
+.member-info { flex: 1; }
+.member-info h3 { font-size: 1.05rem; color: var(--brand-blue); margin: 0 0 0.25rem; }
+.member-functie { font-size: 0.82rem; color: var(--brand-orange); font-weight: 700; margin: 0 0 0.5rem; }
+.member-contact { font-size: 0.78rem; color: var(--text-secondary); margin: 0.15rem 0; }
+.member-volgorde { font-size: 0.72rem; color: #cbd5e1; margin-top: 0.5rem; }
+
+.member-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn-action {
+	padding: 0.35rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.76rem;
+	font-weight: 700;
+	cursor: pointer;
+	border: none;
+	transition: 0.2s;
+	text-decoration: none;
+	display: inline-block;
+}
+.btn-edit { background: rgba(0,46,93,0.08); color: var(--brand-blue); }
+.btn-edit:hover { background: var(--brand-blue); color: white; }
+.btn-toggle-actief { background: #f1f5f9; color: #64748b; }
+.btn-toggle-actief:hover { background: #64748b; color: white; }
+.btn-del { background: #fee2e2; color: #dc2626; }
+.btn-del:hover { background: #dc2626; color: white; }
+
+@media (max-width: 900px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) {
+	.team-grid { grid-template-columns: 1fr; }
+	.page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+</style>

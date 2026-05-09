@@ -1,0 +1,393 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { requireAdminAuth } from "../../lib/admin-auth";
+import { supabaseAdmin } from "../../lib/supabase-admin";
+
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
+
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+}
+
+const { data: submissions } = await supabaseAdmin
+	.from("contact_submissions")
+	.select("*")
+	.order("created_at", { ascending: false });
+
+const unreadCount = (submissions ?? []).filter((s: any) => !s.gelezen).length;
+---
+
+<BaseLayout title="Contactformulieren">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero">
+			<div class="container">
+
+				<div class="page-header reveal">
+					<div>
+						<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+						<span class="page-badge">Berichten</span>
+						<h1>Contact <span class="orange-text">Inzendingen</span></h1>
+						<p>
+							{(submissions ?? []).length} bericht{(submissions ?? []).length !== 1 ? "en" : ""}
+							{unreadCount > 0 && <span class="unread-pill">{unreadCount} ongelezen</span>}
+						</p>
+					</div>
+					<button id="mark-all-read" class="btn-outline-white">Alles als gelezen markeren</button>
+				</div>
+
+				{!submissions || submissions.length === 0 ? (
+					<div class="empty-card reveal">
+						<div class="empty-icon">✉️</div>
+						<p>Er zijn nog geen contactformulier inzendingen.</p>
+					</div>
+				) : (
+					<div class="submissions-list reveal">
+						{(submissions as any[]).map((s) => (
+							<div
+								class={`submission-card ${!s.gelezen ? "unread" : ""}`}
+								data-id={s.id}
+							>
+								<div class="card-header">
+									<div class="sender-info">
+										<div class="sender-avatar">
+											{s.voornaam.charAt(0).toUpperCase()}
+										</div>
+										<div>
+											<p class="sender-name">
+												{s.voornaam}{s.tussenvoegsel ? ` ${s.tussenvoegsel}` : ""} {s.achternaam}
+												{!s.gelezen && <span class="new-dot"></span>}
+											</p>
+											{s.bedrijfsnaam && <p class="sender-company">{s.bedrijfsnaam}</p>}
+										</div>
+									</div>
+
+									<div class="card-meta">
+										<span class={`pref-badge ${s.contact_voorkeur}`}>
+											{s.contact_voorkeur === "email" ? "✉ E-mail" : "📞 Telefoon"}
+										</span>
+										<span class="date">
+											{new Date(s.created_at).toLocaleDateString("nl-NL", {
+												day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+											})}
+										</span>
+									</div>
+								</div>
+
+								<div class="card-contacts">
+									{s.email && (
+										<a href={`mailto:${s.email}`} class="contact-link">
+											<span>✉</span> {s.email}
+										</a>
+									)}
+									{s.phone && (
+										<a href={`tel:${s.phone}`} class="contact-link">
+											<span>📞</span> {s.phone}
+										</a>
+									)}
+								</div>
+
+								<div class="card-message">
+									<p>{s.bericht}</p>
+								</div>
+
+								<div class="card-footer">
+									<button
+										class={`btn-read-toggle ${s.gelezen ? "is-read" : ""}`}
+										data-id={s.id}
+										data-gelezen={s.gelezen ? "true" : "false"}
+									>
+										{s.gelezen ? "Markeer als ongelezen" : "Markeer als gelezen"}
+									</button>
+									<button class="btn-delete-sub" data-id={s.id}>Verwijderen</button>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
+
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline>
+async function toggleGelezen(id, huidig) {
+	const nieuweWaarde = !huidig;
+	await fetch(`/api/admin/contact/${id}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ gelezen: nieuweWaarde }),
+	});
+
+	const card = document.querySelector(`.submission-card[data-id="${id}"]`);
+	const btn = card.querySelector(".btn-read-toggle");
+	const dot = card.querySelector(".new-dot");
+
+	if (nieuweWaarde) {
+		card.classList.remove("unread");
+		btn.textContent = "Markeer als ongelezen";
+		btn.classList.add("is-read");
+		btn.dataset.gelezen = "true";
+		if (dot) dot.remove();
+	} else {
+		card.classList.add("unread");
+		btn.textContent = "Markeer als gelezen";
+		btn.classList.remove("is-read");
+		btn.dataset.gelezen = "false";
+		const nameEl = card.querySelector(".sender-name");
+		if (nameEl && !nameEl.querySelector(".new-dot")) {
+			const newDot = document.createElement("span");
+			newDot.className = "new-dot";
+			nameEl.appendChild(newDot);
+		}
+	}
+	updateUnreadCount();
+}
+
+function updateUnreadCount() {
+	const unread = document.querySelectorAll(".submission-card.unread").length;
+	const pill = document.querySelector(".unread-pill");
+	if (pill) {
+		if (unread > 0) { pill.textContent = `${unread} ongelezen`; pill.style.display = ""; }
+		else pill.style.display = "none";
+	}
+}
+
+document.querySelectorAll(".btn-read-toggle").forEach((btn) => {
+	btn.onclick = () => toggleGelezen(btn.dataset.id, btn.dataset.gelezen === "true");
+});
+
+document.querySelectorAll(".btn-delete-sub").forEach((btn) => {
+	btn.onclick = async () => {
+		if (!confirm("Weet je zeker dat je dit bericht wilt verwijderen?")) return;
+		const res = await fetch(`/api/admin/contact/${btn.dataset.id}`, { method: "DELETE" });
+		if (res.ok) {
+			btn.closest(".submission-card").remove();
+			updateUnreadCount();
+		} else alert("Verwijderen mislukt.");
+	};
+});
+
+document.getElementById("mark-all-read").onclick = async () => {
+	const unreadCards = document.querySelectorAll(".submission-card.unread");
+	for (const card of unreadCards) {
+		const id = card.dataset.id;
+		await fetch(`/api/admin/contact/${id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ gelezen: true }),
+		});
+		card.classList.remove("unread");
+		const btn = card.querySelector(".btn-read-toggle");
+		if (btn) { btn.textContent = "Markeer als ongelezen"; btn.classList.add("is-read"); btn.dataset.gelezen = "true"; }
+		const dot = card.querySelector(".new-dot");
+		if (dot) dot.remove();
+	}
+	updateUnreadCount();
+};
+</script>
+
+<style>
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 7rem; }
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: 2.5rem;
+}
+.back-link {
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	color: rgba(255,255,255,0.6);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.page-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0; }
+.page-header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin: 0; display: flex; align-items: center; gap: 0.6rem; }
+.unread-pill {
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.15rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+}
+.btn-outline-white {
+	padding: 0.7rem 1.8rem;
+	border: 2px solid rgba(255,255,255,0.4);
+	border-radius: 50px;
+	color: white;
+	background: transparent;
+	font-weight: 700;
+	font-size: 0.82rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	cursor: pointer;
+	transition: 0.2s;
+	white-space: nowrap;
+}
+.btn-outline-white:hover { background: white; color: var(--brand-blue); border-color: white; }
+
+/* Leeg scherm */
+.empty-card {
+	background: white;
+	border-radius: 24px;
+	padding: 4rem;
+	text-align: center;
+	color: var(--text-secondary);
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+/* Kaarten */
+.submissions-list { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.submission-card {
+	background: white;
+	border-radius: 20px;
+	padding: 1.75rem;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+	border-left: 4px solid transparent;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+.submission-card.unread {
+	border-left-color: var(--brand-orange);
+	box-shadow: 0 4px 24px rgba(255,102,0,0.12);
+}
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 1rem;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+.sender-info { display: flex; align-items: center; gap: 0.75rem; }
+.sender-avatar {
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	background: var(--brand-blue);
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 1rem;
+	flex-shrink: 0;
+}
+.sender-name {
+	font-weight: 700;
+	font-size: 1rem;
+	color: var(--brand-blue);
+	margin: 0 0 0.1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.sender-company { font-size: 0.82rem; color: var(--text-secondary); margin: 0; }
+.new-dot {
+	width: 8px;
+	height: 8px;
+	background: var(--brand-orange);
+	border-radius: 50%;
+	display: inline-block;
+	flex-shrink: 0;
+}
+.card-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.pref-badge {
+	font-size: 0.72rem;
+	font-weight: 700;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+}
+.pref-badge.email { background: #dbeafe; color: #1d4ed8; }
+.pref-badge.phone { background: #dcfce7; color: #16a34a; }
+.date { font-size: 0.78rem; color: var(--text-secondary); }
+
+.card-contacts { display: flex; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.contact-link {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.875rem;
+	color: var(--brand-blue);
+	text-decoration: none;
+	font-weight: 600;
+	transition: color 0.2s;
+}
+.contact-link:hover { color: var(--brand-orange); }
+
+.card-message {
+	background: #f8fafc;
+	border-radius: 12px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1rem;
+}
+.card-message p { font-size: 0.9rem; color: var(--text-primary); line-height: 1.6; margin: 0; white-space: pre-wrap; }
+
+.card-footer {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.btn-read-toggle {
+	padding: 0.35rem 0.9rem;
+	border-radius: 8px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	cursor: pointer;
+	border: none;
+	background: rgba(0,46,93,0.08);
+	color: var(--brand-blue);
+	transition: 0.2s;
+}
+.btn-read-toggle:hover { background: var(--brand-blue); color: white; }
+.btn-read-toggle.is-read { background: #f1f5f9; color: #94a3b8; }
+.btn-read-toggle.is-read:hover { background: #94a3b8; color: white; }
+.btn-delete-sub {
+	padding: 0.35rem 0.9rem;
+	border-radius: 8px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	cursor: pointer;
+	border: none;
+	background: #fee2e2;
+	color: #dc2626;
+	transition: 0.2s;
+}
+.btn-delete-sub:hover { background: #dc2626; color: white; }
+
+@media (max-width: 640px) {
+	.page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+	.card-header { flex-direction: column; }
+}
+</style>

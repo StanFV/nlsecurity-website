@@ -2,6 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { supabaseAdmin } from '../lib/supabase-admin';
+
+const { data: teamleden } = await supabaseAdmin
+  .from('team_members')
+  .select('*')
+  .eq('toon_contact', true)
+  .order('volgorde', { ascending: true });
 ---
 
 <BaseLayout title="Contact">
@@ -14,6 +21,10 @@ import Footer from '../components/Footer.astro';
         <span class="badge-blue">Neem Contact Op</span>
         <h1>Zorg nu voor optimale <br/><span class="gradient-text">Beveiliging</span></h1>
         <p class="lead max-700 mx-auto">Heeft u vragen over onze diensten of wilt u een directe offerte? Onze experts staan voor u klaar om uw veiligheid naar een hoger niveau te tillen.</p>
+        <div class="hero-scroll-btns">
+          <a href="#ons-team" class="scroll-btn">👥 Ons team</a>
+          <a href="#locaties" class="scroll-btn scroll-btn-outline">📍 Onze locaties</a>
+        </div>
       </div>
     </section>
 
@@ -57,6 +68,14 @@ import Footer from '../components/Footer.astro';
               </div>
 
               <textarea name="message" placeholder="Waarmee kunnen wij u helpen?" rows="5" required></textarea>
+
+              <label class="privacy-label">
+                <input type="checkbox" id="privacy-check" required />
+                <span>
+                  Ik geef toestemming aan NL Security om mijn gegevens op te slaan en te gebruiken voor het beantwoorden van mijn aanvraag. Uw gegevens worden niet gedeeld met derden.
+                </span>
+              </label>
+
               <button type="submit" id="submit-btn" class="form-submit-btn">Bericht Verzenden</button>
             </form>
           </div>
@@ -132,7 +151,6 @@ import Footer from '../components/Footer.astro';
             e.preventDefault();
             let valid = true;
 
-            // Validate required contact field
             if (preferredMethod === 'email') {
               if (!emailInput.value || !validateEmail(emailInput.value)) {
                 setError(emailInput, 'error-email', 'Voer een geldig e-mailadres in.');
@@ -145,7 +163,6 @@ import Footer from '../components/Footer.astro';
               } else clearError(phoneInput, 'error-phone');
             }
 
-            // Validate optional field if filled in
             if (preferredMethod !== 'email' && emailInput.value && !validateEmail(emailInput.value)) {
               setError(emailInput, 'error-email', 'Voer een geldig e-mailadres in.');
               valid = false;
@@ -161,9 +178,31 @@ import Footer from '../components/Footer.astro';
             submitBtn.innerText = 'Verzenden...';
             errorMessage.style.display = 'none';
 
+            const formData = new FormData(form);
+
+            // Sla op in Supabase
+            try {
+              await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  voornaam: formData.get('voornaam'),
+                  tussenvoegsel: formData.get('tussenvoegsel'),
+                  achternaam: formData.get('achternaam'),
+                  bedrijfsnaam: formData.get('bedrijfsnaam'),
+                  email: emailInput.value || null,
+                  phone: phoneInput.value || null,
+                  contact_voorkeur: preferredMethod,
+                  bericht: formData.get('message'),
+                  privacy_akkoord: true,
+                }),
+              });
+            } catch (_) { /* Stille fout — formulier gaat gewoon door */ }
+
+            // Stuur ook via Formspree voor e-mailnotificatie
             try {
               const response = await fetch(form.action, {
-                method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' }
+                method: 'POST', body: formData, headers: { 'Accept': 'application/json' }
               });
               if (response.ok) {
                 formContainer.style.display = 'none';
@@ -225,8 +264,55 @@ import Footer from '../components/Footer.astro';
       </div>
     </section>
 
+    <!-- Team sectie -->
+    {teamleden && teamleden.length > 0 && (
+      <section class="team-section" id="ons-team">
+        <div class="container">
+          <div class="section-header text-center reveal">
+            <span class="badge-orange">Ons Team</span>
+            <h2>Persoonlijk <span class="orange-text">Contact</span></h2>
+            <p class="section-sub">Onze medewerkers staan klaar om u te helpen.</p>
+          </div>
+          <div class="team-grid reveal">
+            {(teamleden as any[]).map((lid) => (
+              <div class="team-member-card">
+                <div class="member-foto">
+                  {lid.foto_url
+                    ? <img src={lid.foto_url} alt={lid.naam} />
+                    : <span class="member-initials">{lid.naam.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}</span>
+                  }
+                </div>
+                <div class="member-details">
+                  <h3>{lid.naam}</h3>
+                  <p class="member-func">{lid.functie}</p>
+                  {lid.beschrijving && <p class="member-bio">{lid.beschrijving}</p>}
+                  <div class="member-contact-links">
+                    {lid.email && (
+                      <a href={`mailto:${lid.email}`} class="member-link">
+                        <span class="link-icon">✉</span>{lid.email}
+                      </a>
+                    )}
+                    {lid.phone && (
+                      <a href={`tel:${lid.phone.replace(/\s/g,'')}`} class="member-link">
+                        <span class="link-icon">📞</span>{lid.phone}
+                      </a>
+                    )}
+                    {lid.linkedin && (
+                      <a href={lid.linkedin} target="_blank" rel="noopener" class="member-link">
+                        <span class="link-icon">💼</span>LinkedIn
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
     <!-- Map Section -->
-    <section class="map-section bg-light">
+    <section class="map-section bg-light" id="locaties">
       <div class="container">
         <div class="section-header text-center reveal">
           <h2>Onze <span class="orange-text">Locaties</span></h2>
@@ -242,6 +328,17 @@ import Footer from '../components/Footer.astro';
 
   <Footer />
 </BaseLayout>
+
+<script is:inline>
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -287,6 +384,152 @@ import Footer from '../components/Footer.astro';
 </script>
 
 <style>
+  /* Scroll buttons in hero */
+  .hero-scroll-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+  .scroll-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background: var(--brand-blue);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+    box-shadow: 0 4px 16px rgba(0,46,93,0.25);
+  }
+  .scroll-btn:hover {
+    background: var(--brand-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,102,0,0.3);
+  }
+  .scroll-btn-outline {
+    background: transparent;
+    border: 2px solid var(--brand-blue);
+    color: var(--brand-blue);
+    box-shadow: none;
+  }
+  .scroll-btn-outline:hover {
+    background: var(--brand-orange);
+    border-color: var(--brand-orange);
+    color: white;
+  }
+
+  #ons-team,
+  #locaties {
+    scroll-margin-top: 80px;
+  }
+
+  /* Team sectie */
+  .team-section {
+    padding: 6rem 1rem;
+    background: white;
+  }
+  .badge-orange {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(255,102,0,0.1);
+    color: var(--brand-orange);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+  .section-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+  .team-member-card {
+    background: #f8fafc;
+    border-radius: 24px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .team-member-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+  .member-foto {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+  }
+  .member-foto img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .member-initials {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--brand-blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    border: 4px solid white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .member-details { width: 100%; }
+  .member-details h3 { font-size: 1.1rem; color: var(--brand-blue); margin: 0 0 0.3rem; }
+  .member-func { font-size: 0.82rem; font-weight: 700; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.75rem; }
+  .member-bio { font-size: 0.83rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 1rem; }
+  .member-contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .member-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--brand-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .member-link:hover { color: var(--brand-orange); }
+  .link-icon { font-size: 0.85rem; }
+
+  @media (max-width: 900px) {
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 580px) {
+    .team-grid { grid-template-columns: 1fr; }
+    .team-section { padding: 4rem 1rem; }
+  }
+
   .text-center { text-align: center; }
   .grid { display: grid; gap: 4rem; }
   .grid-2 { grid-template-columns: 1.2fr 0.8fr; }
@@ -506,6 +749,29 @@ import Footer from '../components/Footer.astro';
     opacity: 0.6;
     cursor: default;
     transform: none;
+  }
+
+  /* Privacy vinkje */
+  .privacy-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+  }
+  .privacy-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 0.15rem;
+    accent-color: var(--brand-orange);
+    cursor: pointer;
+    background: rgba(255,255,255,0.92);
+    border-radius: 4px;
+  }
+  .privacy-label span {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
   }
 
   .contact-details-elite {

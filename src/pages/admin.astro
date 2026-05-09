@@ -3,96 +3,194 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Navigation from "../components/Navigation.astro";
 import Footer from "../components/Footer.astro";
 import { supabase } from "../lib/supabase";
+import { requireAdminAuth } from "../lib/admin-auth";
+import { supabaseAdmin } from "../lib/supabase-admin";
 
-// Check of we een actieve sessie hebben via cookies
 const accessToken = Astro.cookies.get("sb-access-token")?.value;
 const refreshToken = Astro.cookies.get("sb-refresh-token")?.value;
 
 let user = null;
+let userRole = null;
+let mfaRequired = false;
+
+// Stats
+let vacancyCount = 0;
+let employeeCount = 0;
+let unreadMessages = 0;
+let teamCount = 0;
 
 if (accessToken && refreshToken) {
 	try {
-		const { data, error } = await supabase.auth.setSession({
-			access_token: accessToken,
-			refresh_token: refreshToken,
-		});
-		if (!error && data.user) {
-			user = data.user;
+		const auth = await requireAdminAuth(Astro.cookies);
+		if (auth) {
+			user = auth.user;
+			userRole = auth.role;
+			mfaRequired = auth.mfa_required;
+
+			if (mfaRequired && auth.aal !== "aal2") {
+				const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+				const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+				return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+			}
+
+			const { count } = await supabase
+				.from("vacancies")
+				.select("*", { count: "exact", head: true });
+			vacancyCount = count ?? 0;
+
+			if (userRole === "super_admin") {
+				const { data: users } = await supabaseAdmin.auth.admin.listUsers();
+				employeeCount = users?.users?.length ?? 0;
+			}
+
+		const { count: msgCount } = await supabaseAdmin
+				.from("contact_submissions")
+				.select("*", { count: "exact", head: true })
+				.eq("gelezen", false);
+		unreadMessages = msgCount ?? 0;
+
+			const { count: tCount } = await supabaseAdmin
+				.from("team_members")
+				.select("*", { count: "exact", head: true })
+				.or("toon_contact.eq.true,toon_over_ons.eq.true");
+		teamCount = tCount ?? 0;
 		}
 	} catch (e) {
 		console.error("Auth session error:", e);
 	}
 }
 
-// Haal vacatures op als ingelogd
-let vacancies = [];
-if (user) {
-	const { data } = await supabase.from('vacancies').select('*').order('created_at', { ascending: false });
-	vacancies = data || [];
-}
-
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+
+const now = new Date();
+const greeting = now.getHours() < 12 ? "Goedemorgen" : now.getHours() < 18 ? "Goedemiddag" : "Goedenavond";
 ---
 
-<BaseLayout title="Admin Panel">
+<BaseLayout title="Admin Dashboard">
 	<Navigation />
 
 	<main class="admin-page">
-		<section class="admin-hero bg-light">
+		<section class="admin-hero">
 			<div class="container">
+
 				{!user ? (
-					<div class="login-container reveal">
-						<span class="badge-blue">Beheerderstoegang</span>
-						<h1>Admin <span class="orange-text">Login</span></h1>
-						<p>Log in met je e-mailadres en wachtwoord om vacatures te beheren.</p>
-						
-						<form id="login-form" class="elite-form admin-form" onsubmit="return false;">
-							<input type="email" id="email" placeholder="E-mailadres (@bc-capital.nl)" required />
-							<input type="password" id="password" placeholder="Wachtwoord" required />
-							<button type="button" id="login-submit-btn" class="btn-glow">Inloggen</button>
-							<p id="error-msg" class="error-text" style="display:none;"></p>
-						</form>
+					<!-- Login -->
+					<div class="login-wrapper reveal">
+						<div class="login-card">
+							<div class="login-logo">
+								<img src="/assets/images/logo zonder tekst.png" alt="NL Security" style="height:48px;" onerror="this.style.display='none'" />
+							</div>
+							<span class="admin-badge">Beheerderstoegang</span>
+							<h1>Admin <span class="orange-text">Login</span></h1>
+							<p>Log in met je e-mailadres en wachtwoord om door te gaan.</p>
+							<form id="login-form" class="admin-form" onsubmit="return false;">
+								<input type="email" id="email" placeholder="naam@domein.nl" required />
+								<input type="password" id="password" placeholder="Wachtwoord" required />
+								<button type="button" id="login-submit-btn" class="btn-glow">Inloggen</button>
+								<p id="error-msg" class="error-text" style="display:none;"></p>
+							</form>
+						</div>
 					</div>
 				) : (
-					<div class="admin-dashboard reveal">
-						<div class="dashboard-header">
+					<!-- Dashboard -->
+					<div class="dashboard">
+
+						<!-- Header -->
+						<div class="dash-header reveal">
 							<div>
-								<span class="badge-orange">Admin Dashboard</span>
-								<h1>Welkom, <span class="gradient-text">{user.email}</span></h1>
-								<p>Beheer hier de vacatures van NL Security.</p>
+								<span class="page-badge">Admin Dashboard</span>
+								<h1>{greeting}</h1>
+								<p class="dash-sub">
+									Ingelogd als <strong>{user.email}</strong> &nbsp;·&nbsp;
+									<span class="role-pill">{userRole === "super_admin" ? "Super Admin" : "Admin"}</span>
+									{mfaRequired && <span class="mfa-pill">MFA actief</span>}
+								</p>
 							</div>
-							<button id="logout" class="btn-outline">Uitloggen</button>
+							<button id="logout" class="btn-outline-white">Uitloggen</button>
 						</div>
 
-						<div class="admin-actions">
-							<a href={`${import.meta.env.BASE_URL}admin/new-vacancy`} class="btn-glow">+ Nieuwe Vacature</a>
+						<!-- Statistieken -->
+						<div class="stats-row reveal">
+							<div class="stat-card">
+								<span class="stat-icon">📋</span>
+								<div>
+									<p class="stat-value">{vacancyCount}</p>
+									<p class="stat-label">Vacatures</p>
+								</div>
+							</div>
+							{userRole === "super_admin" && (
+								<div class="stat-card">
+									<span class="stat-icon">👥</span>
+									<div>
+										<p class="stat-value">{employeeCount}</p>
+										<p class="stat-label">Admin-medewerkers</p>
+									</div>
+								</div>
+							)}
+							<div class="stat-card">
+								<span class="stat-icon">✉️</span>
+								<div>
+									<p class="stat-value">{unreadMessages}</p>
+									<p class="stat-label">Ongelezen berichten</p>
+								</div>
+							</div>
 						</div>
 
-						<div class="vacancies-management glass">
-							<h2>Huidige Vacatures</h2>
-							<div class="admin-vacancies-grid">
-								{vacancies.length === 0 ? (
-									<p>Er zijn nog geen vacatures. Voeg er een toe om te beginnen.</p>
-								) : (
-									vacancies.map((job) => (
-										<div class="admin-vacancy-item">
-											<div class="job-info">
-												<span class="job-type">{job.type}</span>
-												<h3>{job.title}</h3>
-												<p>{job.location}</p>
-											</div>
-											<div class="job-actions">
-												<a href={`${import.meta.env.BASE_URL}admin/edit/${job.id}`} class="btn-sm btn-outline">Bewerken</a>
-												<button class="btn-sm btn-delete" data-id={job.id}>Verwijderen</button>
-											</div>
-										</div>
-									))
-								)}
-							</div>
+						<!-- Navigatiekaarten -->
+						<p class="section-label reveal">Beheer</p>
+						<div class="nav-grid reveal">
+
+							<a href="/admin/vacatures" class="nav-card">
+								<div class="nav-card-icon">📋</div>
+								<div class="nav-card-body">
+									<h3>Vacatures</h3>
+									<p>Vacatures aanmaken, bewerken en publiceren op de website.</p>
+									<span class="nav-card-count">{vacancyCount} actief</span>
+								</div>
+								<span class="nav-card-arrow">→</span>
+							</a>
+
+							{userRole === "super_admin" && (
+								<a href="/admin/medewerkers" class="nav-card">
+									<div class="nav-card-icon">👥</div>
+									<div class="nav-card-body">
+										<h3>Admin-medewerkers</h3>
+										<p>Toegang, rollen en MFA beheren voor admin-gebruikers.</p>
+										<span class="nav-card-count">{employeeCount} gebruikers</span>
+									</div>
+									<span class="nav-card-arrow">→</span>
+								</a>
+							)}
+
+							<a href="/admin/contact" class="nav-card">
+								<div class="nav-card-icon">✉️</div>
+								<div class="nav-card-body">
+									<h3>Contactformulieren</h3>
+									<p>Inzendingen van het contactformulier bekijken en beheren.</p>
+									{unreadMessages > 0
+										? <span class="nav-card-count">{unreadMessages} ongelezen</span>
+										: <span class="nav-card-count">Alles gelezen</span>
+									}
+								</div>
+								<span class="nav-card-arrow">→</span>
+							</a>
+
+							<a href="/admin/team" class="nav-card">
+								<div class="nav-card-icon">👤</div>
+								<div class="nav-card-body">
+									<h3>Team Website</h3>
+									<p>Medewerkers op de contactpagina beheren (foto, functie, contactgegevens).</p>
+									<span class="nav-card-count">{teamCount} zichtbaar</span>
+								</div>
+								<span class="nav-card-arrow">→</span>
+							</a>
+
+
 						</div>
 					</div>
 				)}
+
 			</div>
 		</section>
 	</main>
@@ -101,185 +199,249 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 </BaseLayout>
 
 <script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
-	// Met define:vars geeft Astro de variabelen veilig door aan het inline script
-	
-	const initAdmin = () => {
-		const loginBtn = document.getElementById("login-submit-btn");
-		const errorMsg = document.getElementById("error-msg");
-		const logoutBtn = document.getElementById("logout");
+const initAdmin = () => {
+	const loginBtn = document.getElementById("login-submit-btn");
+	const errorMsg = document.getElementById("error-msg");
+	const logoutBtn = document.getElementById("logout");
 
-		if (loginBtn) {
-			loginBtn.onclick = async () => {
-				const email = document.getElementById("email").value;
-				const password = document.getElementById("password").value;
+	if (loginBtn) {
+		loginBtn.onclick = async () => {
+			const email = document.getElementById("email").value;
+			const password = document.getElementById("password").value;
+			loginBtn.disabled = true;
+			loginBtn.textContent = "Bezig...";
+			if (errorMsg) errorMsg.style.display = "none";
 
-				if (!email.endsWith("@bc-capital.nl")) {
-					if (errorMsg) {
-						errorMsg.textContent = "Alleen @bc-capital.nl e-mailadressen zijn toegestaan.";
-						errorMsg.style.display = "block";
-					}
-					return;
+			const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+			const supabase = createClient(supabaseUrl, supabaseKey);
+			const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+			if (error) {
+				if (errorMsg) {
+					errorMsg.textContent = "Inloggen mislukt: " + error.message;
+					errorMsg.style.display = "block";
 				}
-
-				// Importeer Supabase direct
-				const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-				const supabase = createClient(supabaseUrl, supabaseKey);
-
-				const { data, error } = await supabase.auth.signInWithPassword({
-					email,
-					password,
-				});
-
-				if (error) {
-					if (errorMsg) {
-						errorMsg.textContent = "Inloggen mislukt: " + error.message;
-						errorMsg.style.display = "block";
-					}
-				} else {
-					const expirationDate = new Date();
-					expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-					
-					const isSecure = location.protocol === 'https:' ? '; Secure' : '';
-					document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-					document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-					
-					window.location.reload();
-				}
-			};
-		}
-
-		if (logoutBtn) {
-			logoutBtn.onclick = async () => {
-				document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-				document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+				loginBtn.disabled = false;
+				loginBtn.textContent = "Inloggen";
+			} else {
+				const exp = new Date();
+				exp.setFullYear(exp.getFullYear() + 1);
+				const secure = location.protocol === "https:" ? "; Secure" : "";
+				document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+				document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
 				window.location.reload();
-			};
-		}
+			}
+		};
+	}
 
-		// Verwijderen logica
-		const deleteBtns = document.querySelectorAll(".btn-delete");
-		deleteBtns.forEach(btn => {
-			btn.onclick = async () => {
-				const id = btn.dataset.id;
-				if (confirm("Weet je zeker dat je deze vacature wilt verwijderen?")) {
-					const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-					const supabase = createClient(supabaseUrl, supabaseKey);
-					const { error } = await supabase.from('vacancies').delete().eq('id', id);
-					if (error) alert("Fout bij verwijderen: " + error.message);
-					else window.location.reload();
-				}
-			};
-		});
-	};
+	if (logoutBtn) {
+		logoutBtn.onclick = () => {
+			document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+			document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+			window.location.reload();
+		};
+	}
+};
 
-	initAdmin();
+initAdmin();
 </script>
 
 <style>
-	.admin-page {
-		padding-top: 80px;
-		min-height: 80vh;
-	}
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 8rem; }
 
-	.admin-hero {
-		padding: 8rem 0;
-	}
+/* --- Login --- */
+.login-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 60vh;
+}
+.login-card {
+	background: white;
+	border-radius: 28px;
+	padding: 3rem 2.5rem;
+	width: 100%;
+	max-width: 420px;
+	text-align: center;
+	box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+}
+.login-logo { margin-bottom: 1.5rem; }
+.admin-badge {
+	display: inline-block;
+	background: rgba(0,46,93,0.08);
+	color: var(--brand-blue);
+	padding: 0.35rem 1rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.75rem;
+}
+.login-card h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.login-card p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; }
+.admin-form { display: flex; flex-direction: column; gap: 0.85rem; }
+.admin-form input {
+	width: 100%;
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	border: 1.5px solid rgba(0,0,0,0.1);
+	font-family: inherit;
+	font-size: 0.95rem;
+	background: #f8fafc;
+	transition: border-color 0.2s;
+}
+.admin-form input:focus { outline: none; border-color: var(--brand-orange); background: white; }
+.error-text { color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem; }
 
-	.login-container {
-		text-align: center;
-		max-width: 400px;
-		margin: 0 auto;
-	}
+/* --- Dashboard header --- */
+.dash-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 2.5rem;
+}
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.dash-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0 0.5rem; }
+.dash-sub { color: rgba(255,255,255,0.65); font-size: 0.88rem; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.dash-sub strong { color: rgba(255,255,255,0.9); }
+.role-pill {
+	background: rgba(255,255,255,0.15);
+	color: white;
+	padding: 0.15rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+.mfa-pill {
+	background: rgba(22,163,74,0.25);
+	color: #86efac;
+	padding: 0.15rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+.btn-outline-white {
+	padding: 0.7rem 1.8rem;
+	border: 2px solid rgba(255,255,255,0.4);
+	border-radius: 50px;
+	color: white;
+	background: transparent;
+	font-weight: 700;
+	font-size: 0.82rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	cursor: pointer;
+	transition: 0.2s;
+	white-space: nowrap;
+}
+.btn-outline-white:hover { background: white; color: var(--brand-blue); border-color: white; }
 
-	.admin-form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		margin-top: 2rem;
-	}
+/* --- Stats --- */
+.stats-row {
+	display: flex;
+	gap: 1.25rem;
+	margin-bottom: 3rem;
+	flex-wrap: wrap;
+}
+.stat-card {
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(255,255,255,0.15);
+	border-radius: 18px;
+	padding: 1.25rem 1.75rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	min-width: 160px;
+}
+.stat-icon { font-size: 1.75rem; }
+.stat-value { font-size: 1.75rem; font-weight: 800; color: white; line-height: 1; margin: 0 0 0.2rem; }
+.stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 
-	.admin-form input {
-		width: 100%;
-		padding: 1rem;
-		border-radius: 12px;
-		border: 1px solid rgba(0,0,0,0.1);
-	}
+/* --- Sectielabel --- */
+.section-label {
+	color: rgba(255,255,255,0.5);
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin-bottom: 1rem;
+}
 
-	.error-text {
-		color: #dc3545;
-		font-size: 0.9rem;
-		margin-top: 0.5rem;
-	}
+/* --- Navigatiekaarten --- */
+.nav-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1.25rem;
+}
+.nav-card {
+	background: white;
+	border-radius: 20px;
+	padding: 1.75rem;
+	text-decoration: none;
+	color: inherit;
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	transition: transform 0.2s, box-shadow 0.2s;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+	position: relative;
+	overflow: hidden;
+}
+.nav-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+}
+.nav-card-icon {
+	font-size: 2rem;
+	flex-shrink: 0;
+	width: 52px;
+	height: 52px;
+	background: rgba(0,46,93,0.06);
+	border-radius: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.nav-card-body { flex: 1; }
+.nav-card-body h3 { font-size: 1rem; color: var(--brand-blue); margin: 0 0 0.4rem; }
+.nav-card-body p { font-size: 0.82rem; color: var(--text-secondary); margin: 0 0 0.6rem; line-height: 1.5; }
+.nav-card-count {
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--brand-orange);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.nav-card-arrow {
+	color: var(--brand-orange);
+	font-size: 1.1rem;
+	font-weight: 700;
+	flex-shrink: 0;
+	margin-top: 0.15rem;
+	transition: transform 0.2s;
+}
+.nav-card:hover .nav-card-arrow { transform: translateX(4px); }
 
-	.dashboard-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 3rem;
-	}
-
-	.admin-vacancies-grid {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	.admin-vacancy-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1.5rem;
-		background: #f8fafc;
-		border-radius: 16px;
-		border: 1px solid rgba(0,0,0,0.05);
-	}
-
-	.job-info h3 {
-		font-size: 1.25rem;
-		margin: 0.25rem 0;
-	}
-
-	.job-actions {
-		display: flex;
-		gap: 1rem;
-	}
-
-	.btn-sm {
-		padding: 0.5rem 1rem !important;
-		font-size: 0.8rem !important;
-		height: auto !important;
-	}
-
-	.btn-delete {
-		background: #fee2e2;
-		color: #dc2626;
-		border: 1px solid #fecaca;
-		border-radius: 50px;
-		font-weight: 700;
-		cursor: pointer;
-		transition: 0.2s;
-	}
-
-	.btn-delete:hover {
-		background: #dc2626;
-		color: white;
-	}
-
-	.vacancies-management {
-		padding: 3rem;
-		border-radius: 32px;
-		background: white;
-	}
-
-	@media (max-width: 768px) {
-		.dashboard-header {
-			flex-direction: column;
-			gap: 1.5rem;
-		}
-		.admin-vacancy-item {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 1.5rem;
-		}
-	}
+@media (max-width: 900px) {
+	.nav-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+	.nav-grid { grid-template-columns: 1fr; }
+	.dash-header { flex-direction: column; gap: 1.25rem; }
+	.stats-row { gap: 0.75rem; }
+	.stat-card { min-width: 130px; padding: 1rem 1.25rem; }
+}
 </style>

@@ -1,0 +1,335 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Navigation from "../../../components/Navigation.astro";
+import Footer from "../../../components/Footer.astro";
+import { requireAdminAuth } from "../../../lib/admin-auth";
+import { supabaseAdmin } from "../../../lib/supabase-admin";
+
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
+
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+}
+---
+
+<BaseLayout title="Medewerker Toevoegen">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero">
+			<div class="container">
+
+				<div class="page-header reveal">
+					<div>
+						<a href="/admin/team" class="back-link">← Terug naar Team Beheer</a>
+						<span class="page-badge">Website</span>
+						<h1>Medewerker <span class="orange-text">Toevoegen</span></h1>
+						<p>Vul de gegevens in en klik op opslaan.</p>
+					</div>
+				</div>
+
+				<div class="form-card reveal">
+					<form id="new-member-form" enctype="multipart/form-data">
+
+						<div class="form-section">
+							<h3 class="form-section-title">Profielfoto</h3>
+							<div class="foto-upload-area" id="foto-drop">
+								<div class="foto-preview" id="foto-preview">
+									<span class="upload-icon">📷</span>
+									<p>Klik of sleep een foto hierheen</p>
+									<p class="hint">JPG, PNG of WEBP · max 5 MB</p>
+								</div>
+								<input type="file" id="foto-input" name="foto" accept="image/*" style="display:none;" />
+							</div>
+						</div>
+
+						<div class="form-section">
+							<h3 class="form-section-title">Persoonsgegevens</h3>
+							<div class="form-row-2">
+								<div class="form-group">
+									<label>Naam <span class="req">*</span></label>
+									<input type="text" name="naam" id="naam" required placeholder="Voor- en achternaam" />
+								</div>
+								<div class="form-group">
+									<label>Functie <span class="req">*</span></label>
+									<input type="text" name="functie" id="functie" required placeholder="Bijv. Beveiligingsadviseur" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label>Beschrijving</label>
+								<textarea name="beschrijving" id="beschrijving" rows="4" placeholder="Korte bio of omschrijving van de medewerker..."></textarea>
+							</div>
+						</div>
+
+						<div class="form-section">
+							<h3 class="form-section-title">Contactgegevens</h3>
+							<div class="form-row-2">
+								<div class="form-group">
+									<label>E-mailadres</label>
+									<input type="email" name="email" id="email" placeholder="naam@nlsecurity.nl" />
+								</div>
+								<div class="form-group">
+									<label>Telefoonnummer</label>
+									<input type="tel" name="phone" id="phone" placeholder="088 - 02 02 800" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label>LinkedIn URL</label>
+								<input type="url" name="linkedin" id="linkedin" placeholder="https://linkedin.com/in/naam" />
+							</div>
+						</div>
+
+						<div class="form-section">
+							<h3 class="form-section-title">Weergave</h3>
+							<div class="form-row-2">
+								<div class="form-group">
+									<label>Volgorde</label>
+									<input type="number" name="volgorde" id="volgorde" value="0" min="0" placeholder="0" />
+									<p class="field-hint">Lagere waarden worden eerst getoond.</p>
+								</div>
+								<div class="form-group">
+									<label>Zichtbaar op pagina's</label>
+									<div class="page-checks">
+										<label class="check-option">
+											<input type="checkbox" name="toon_contact" id="toon_contact" checked />
+											<span class="check-label">Contactpagina</span>
+										</label>
+										<label class="check-option">
+											<input type="checkbox" name="toon_over_ons" id="toon_over_ons" checked />
+											<span class="check-label">Over Ons pagina</span>
+										</label>
+									</div>
+									<p class="field-hint">Schakel uit om te verbergen op die pagina.</p>
+								</div>
+							</div>
+						</div>
+
+						<div id="form-error" class="form-error" style="display:none;"></div>
+
+						<div class="form-actions">
+							<a href="/admin/team" class="btn-cancel">Annuleren</a>
+							<button type="submit" id="submit-btn" class="btn-glow">Medewerker Opslaan</button>
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline>
+// Foto preview
+const fotoInput = document.getElementById('foto-input');
+const fotoDrop = document.getElementById('foto-drop');
+const fotoPreview = document.getElementById('foto-preview');
+
+fotoDrop.addEventListener('click', () => fotoInput.click());
+fotoDrop.addEventListener('dragover', (e) => { e.preventDefault(); fotoDrop.classList.add('drag-over'); });
+fotoDrop.addEventListener('dragleave', () => fotoDrop.classList.remove('drag-over'));
+fotoDrop.addEventListener('drop', (e) => {
+	e.preventDefault();
+	fotoDrop.classList.remove('drag-over');
+	const file = e.dataTransfer.files[0];
+	if (file && file.type.startsWith('image/')) {
+		setFotoPreview(file);
+		const dt = new DataTransfer();
+		dt.items.add(file);
+		fotoInput.files = dt.files;
+	}
+});
+fotoInput.addEventListener('change', () => {
+	if (fotoInput.files[0]) setFotoPreview(fotoInput.files[0]);
+});
+
+function setFotoPreview(file) {
+	const reader = new FileReader();
+	reader.onload = (e) => {
+		fotoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--brand-orange);" />`;
+	};
+	reader.readAsDataURL(file);
+}
+
+// Submit
+document.getElementById('new-member-form').addEventListener('submit', async (e) => {
+	e.preventDefault();
+	const btn = document.getElementById('submit-btn');
+	const errEl = document.getElementById('form-error');
+	btn.disabled = true;
+	btn.textContent = 'Opslaan...';
+	errEl.style.display = 'none';
+
+	const formData = new FormData(e.target);
+	formData.set('toon_contact', document.getElementById('toon_contact').checked ? 'true' : 'false');
+	formData.set('toon_over_ons', document.getElementById('toon_over_ons').checked ? 'true' : 'false');
+
+	try {
+		const res = await fetch('/api/admin/team', { method: 'POST', body: formData });
+		const data = await res.json();
+		if (res.ok) {
+			window.location.href = '/admin/team';
+		} else {
+			errEl.textContent = data.error || 'Er is iets misgegaan.';
+			errEl.style.display = 'block';
+			btn.disabled = false;
+			btn.textContent = 'Medewerker Opslaan';
+		}
+	} catch {
+		errEl.textContent = 'Verbindingsfout. Probeer opnieuw.';
+		errEl.style.display = 'block';
+		btn.disabled = false;
+		btn.textContent = 'Medewerker Opslaan';
+	}
+});
+</script>
+
+<style>
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 7rem; }
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: 2.5rem;
+}
+.back-link {
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	color: rgba(255,255,255,0.6);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.page-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0; }
+.page-header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin: 0; }
+
+.form-card {
+	background: white;
+	border-radius: 24px;
+	padding: 2.5rem;
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+	max-width: 820px;
+}
+
+.form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; }
+.form-section:last-of-type { border-bottom: none; }
+.form-section-title { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand-orange); margin: 0 0 1.25rem; }
+
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+.form-group label { font-size: 0.83rem; font-weight: 700; color: var(--brand-blue); }
+.req { color: var(--brand-orange); }
+.form-group input,
+.form-group textarea {
+	padding: 0.8rem 1rem;
+	border: 1.5px solid #e2e8f0;
+	border-radius: 10px;
+	font-family: inherit;
+	font-size: 0.93rem;
+	color: var(--brand-blue);
+	transition: border-color 0.2s, box-shadow 0.2s;
+	background: #f8fafc;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+	outline: none;
+	border-color: var(--brand-orange);
+	box-shadow: 0 0 0 3px rgba(255,102,0,0.12);
+	background: white;
+}
+.field-hint { font-size: 0.72rem; color: #94a3b8; margin: 0.2rem 0 0; }
+
+/* Foto upload */
+.foto-upload-area {
+	border: 2px dashed #cbd5e1;
+	border-radius: 16px;
+	padding: 2rem;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.2s, background 0.2s;
+}
+.foto-upload-area:hover { border-color: var(--brand-orange); background: rgba(255,102,0,0.03); }
+.foto-upload-area.drag-over { border-color: var(--brand-orange); background: rgba(255,102,0,0.06); }
+.upload-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+.foto-preview p { color: #64748b; font-size: 0.88rem; margin: 0.2rem 0; }
+.foto-preview .hint { font-size: 0.75rem; color: #94a3b8; }
+
+/* Page checkboxes */
+.page-checks {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	padding-top: 0.3rem;
+}
+.check-option {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+}
+.check-option input[type="checkbox"] {
+	width: 17px;
+	height: 17px;
+	min-width: 17px;
+	accent-color: var(--brand-orange);
+	cursor: pointer;
+}
+.check-label {
+	font-size: 0.85rem;
+	color: #475569;
+	font-weight: 600;
+}
+
+/* Error */
+.form-error {
+	background: #fee2e2;
+	color: #dc2626;
+	border-radius: 10px;
+	padding: 0.75rem 1rem;
+	font-size: 0.88rem;
+	margin-bottom: 1.5rem;
+}
+
+/* Actions */
+.form-actions { display: flex; gap: 1rem; justify-content: flex-end; padding-top: 0.5rem; }
+.btn-cancel {
+	padding: 0.75rem 1.75rem;
+	border-radius: 50px;
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: #64748b;
+	background: #f1f5f9;
+	text-decoration: none;
+	border: none;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+.btn-cancel:hover { background: #e2e8f0; }
+
+@media (max-width: 640px) {
+	.form-row-2 { grid-template-columns: 1fr; }
+	.form-card { padding: 1.5rem; }
+	.page-header h1 { font-size: 1.7rem; }
+}
+</style>

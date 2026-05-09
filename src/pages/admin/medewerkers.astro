@@ -1,0 +1,647 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { requireAdminAuth } from "../../lib/admin-auth";
+import { supabaseAdmin } from "../../lib/supabase-admin";
+
+const auth = await requireAdminAuth(Astro.cookies, true);
+if (!auth) return Astro.redirect("/admin");
+
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+}
+
+const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
+
+const users = (authUsers?.users ?? []).map((u) => ({
+	id: u.id,
+	email: u.email ?? "",
+	created_at: u.created_at,
+	last_sign_in_at: u.last_sign_in_at,
+	role: u.app_metadata?.role ?? "admin",
+	mfa_required: u.app_metadata?.mfa_required ?? false,
+	mfa_enrolled: ((u as any).factors ?? []).length > 0,
+	is_self: u.id === auth.user.id,
+}));
+---
+
+<BaseLayout title="Medewerkers Beheer">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero">
+			<div class="container">
+
+				<!-- Paginakop -->
+				<div class="page-header reveal">
+					<div>
+						<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+						<span class="page-badge">Gebruikersbeheer</span>
+						<h1>Medewerkers <span class="orange-text">Beheer</span></h1>
+						<p>Sla wijzigingen op voordat je de pagina verlaat.</p>
+					</div>
+					<button id="invite-btn" class="btn-glow">+ Medewerker Uitnodigen</button>
+				</div>
+
+				<!-- Uitnodigingsmodal -->
+				<div id="invite-modal" class="modal-overlay" style="display:none;">
+					<div class="modal-card">
+						<h2>Medewerker <span class="orange-text">Uitnodigen</span></h2>
+						<p>De medewerker ontvangt een uitnodigingsmail om een wachtwoord in te stellen.</p>
+						<div class="form-group">
+							<label>E-mailadres</label>
+							<input type="email" id="invite-email" placeholder="naam@domein.nl" />
+						</div>
+						<div class="form-group">
+							<label>Rol</label>
+							<select id="invite-role">
+								<option value="admin">Admin — toegang tot vacatures beheer</option>
+								<option value="super_admin">Super Admin — volledige toegang incl. gebruikersbeheer</option>
+							</select>
+						</div>
+						<p id="invite-error" class="error-text" style="display:none;"></p>
+						<div class="modal-actions">
+							<button id="invite-cancel" class="btn-outline">Annuleren</button>
+							<button id="invite-submit" class="btn-glow">Uitnodiging Versturen</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Gebruikerstabel -->
+				<div class="users-card reveal">
+					<div class="table-header">
+						<span>Medewerker</span>
+						<span>Rol</span>
+						<span>MFA verplicht</span>
+						<span>Laatste login</span>
+						<span>Acties</span>
+					</div>
+
+					{users.map((user) => (
+						<div
+							class="user-row"
+							data-id={user.id}
+							data-orig-role={user.role}
+							data-orig-mfa={user.mfa_required ? "true" : "false"}
+							data-self={user.is_self ? "true" : "false"}
+						>
+							<div class="user-info">
+								<div class="user-avatar">{user.email.charAt(0).toUpperCase()}</div>
+								<div>
+									<p class="user-email">{user.email}</p>
+									{user.is_self && <span class="self-badge">Jij</span>}
+								</div>
+							</div>
+
+							<div class="role-cell">
+								<select class="role-select" data-id={user.id} disabled={user.is_self}>
+									<option value="admin" selected={user.role === "admin"}>Admin</option>
+									<option value="super_admin" selected={user.role === "super_admin"}>Super Admin</option>
+								</select>
+							</div>
+
+							<div class="mfa-cell">
+								<label class="toggle-label">
+									<input
+										type="checkbox"
+										class="mfa-toggle"
+										data-id={user.id}
+										checked={user.mfa_required}
+									/>
+									<span class="toggle-track"></span>
+								</label>
+								{user.mfa_enrolled
+									? <span class="mfa-status enrolled">Ingeschreven</span>
+									: <span class="mfa-status not-enrolled">Niet ingeschreven</span>}
+							</div>
+
+							<div class="last-login">
+								{user.last_sign_in_at
+									? new Date(user.last_sign_in_at).toLocaleDateString("nl-NL")
+									: "Nog nooit"}
+							</div>
+
+							<div class="user-actions">
+								<button class="btn-action btn-reset" data-id={user.id} data-email={user.email} title="Wachtwoord reset sturen">
+									Reset
+								</button>
+								{!user.is_self && (
+									<button class="btn-action btn-del" data-id={user.id} data-email={user.email} title="Verwijder medewerker">
+										Verwijder
+									</button>
+								)}
+							</div>
+						</div>
+					))}
+				</div>
+
+				<!-- Rol uitleg -->
+				<div class="roles-card reveal">
+					<h3>Rol omschrijvingen</h3>
+					<div class="roles-grid">
+						<div class="role-info-card">
+							<span class="role-badge admin-badge-tag">Admin</span>
+							<ul>
+								<li>✓ Inloggen op de admin omgeving</li>
+								<li>✓ Vacatures aanmaken, bewerken en verwijderen</li>
+								<li>✗ Gebruikersbeheer</li>
+								<li>✗ Rollen aanpassen</li>
+							</ul>
+						</div>
+						<div class="role-info-card">
+							<span class="role-badge super-badge-tag">Super Admin</span>
+							<ul>
+								<li>✓ Alles wat Admin kan</li>
+								<li>✓ Medewerkers uitnodigen en verwijderen</li>
+								<li>✓ Rollen en MFA beheren</li>
+								<li>✓ Wachtwoord resets versturen</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</section>
+	</main>
+
+	<!-- Vaste opslaan-balk (verschijnt bij wijzigingen) -->
+	<div id="save-bar" class="save-bar" style="display:none;">
+		<div class="save-bar-inner">
+			<p id="save-bar-msg">Je hebt <strong id="change-count">0</strong> onopgeslagen wijziging(en).</p>
+			<div class="save-bar-actions">
+				<button id="cancel-btn" class="btn-outline-white">Annuleren</button>
+				<button id="save-btn" class="btn-glow">Wijzigingen Opslaan</button>
+			</div>
+		</div>
+	</div>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline>
+const BASE = "/api/admin/users";
+
+// Bijhouden van wijzigingen: { userId: { role?, mfa_required? } }
+const pending = {};
+
+function countChanges() {
+	return Object.values(pending).filter(v => Object.keys(v).length > 0).length;
+}
+
+function updateSaveBar() {
+	const bar = document.getElementById("save-bar");
+	const count = countChanges();
+	if (count > 0) {
+		bar.style.display = "flex";
+		document.getElementById("change-count").textContent = count;
+	} else {
+		bar.style.display = "none";
+	}
+}
+
+function markRowPending(id) {
+	const row = document.querySelector(`.user-row[data-id="${id}"]`);
+	if (row) row.classList.add("pending");
+}
+
+function unmarkRowPending(id) {
+	const row = document.querySelector(`.user-row[data-id="${id}"]`);
+	if (row) row.classList.remove("pending");
+}
+
+// --- Rol wijzigen (alleen markeren, nog niet opslaan) ---
+document.querySelectorAll(".role-select").forEach((select) => {
+	select.addEventListener("change", (e) => {
+		const id = e.target.dataset.id;
+		const origRole = document.querySelector(`.user-row[data-id="${id}"]`).dataset.origRole;
+		if (!pending[id]) pending[id] = {};
+		if (e.target.value !== origRole) {
+			pending[id].role = e.target.value;
+			markRowPending(id);
+		} else {
+			delete pending[id].role;
+			if (Object.keys(pending[id]).length === 0) unmarkRowPending(id);
+		}
+		updateSaveBar();
+	});
+});
+
+// --- MFA toggle (alleen markeren, nog niet opslaan) ---
+document.querySelectorAll(".mfa-toggle").forEach((checkbox) => {
+	checkbox.addEventListener("change", (e) => {
+		const id = e.target.dataset.id;
+		const origMfa = document.querySelector(`.user-row[data-id="${id}"]`).dataset.origMfa === "true";
+		if (!pending[id]) pending[id] = {};
+		if (e.target.checked !== origMfa) {
+			pending[id].mfa_required = e.target.checked;
+			markRowPending(id);
+		} else {
+			delete pending[id].mfa_required;
+			if (Object.keys(pending[id]).length === 0) unmarkRowPending(id);
+		}
+		updateSaveBar();
+	});
+});
+
+// --- Annuleren: zet alles terug naar origineel ---
+document.getElementById("cancel-btn").onclick = () => {
+	document.querySelectorAll(".user-row").forEach((row) => {
+		const id = row.dataset.id;
+		const origRole = row.dataset.origRole;
+		const origMfa = row.dataset.origMfa === "true";
+
+		const roleSelect = row.querySelector(".role-select");
+		if (roleSelect) roleSelect.value = origRole;
+
+		const mfaToggle = row.querySelector(".mfa-toggle");
+		if (mfaToggle) mfaToggle.checked = origMfa;
+
+		row.classList.remove("pending");
+		delete pending[id];
+	});
+	updateSaveBar();
+};
+
+// --- Opslaan: verwerk alle pending wijzigingen ---
+document.getElementById("save-btn").onclick = async () => {
+	const btn = document.getElementById("save-btn");
+	btn.disabled = true;
+	btn.textContent = "Bezig met opslaan...";
+
+	const ids = Object.keys(pending).filter(id => Object.keys(pending[id]).length > 0);
+	let failed = 0;
+
+	for (const id of ids) {
+		const res = await fetch(`${BASE}/${id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(pending[id]),
+		});
+		if (res.ok) {
+			// Bijwerken originals in DOM
+			const row = document.querySelector(`.user-row[data-id="${id}"]`);
+			if (pending[id].role !== undefined) row.dataset.origRole = pending[id].role;
+			if (pending[id].mfa_required !== undefined) row.dataset.origMfa = pending[id].mfa_required ? "true" : "false";
+			delete pending[id];
+			unmarkRowPending(id);
+		} else {
+			failed++;
+		}
+	}
+
+	btn.disabled = false;
+	btn.textContent = "Wijzigingen Opslaan";
+	updateSaveBar();
+
+	if (failed > 0) {
+		alert(`${failed} wijziging(en) konden niet worden opgeslagen. Probeer het opnieuw.`);
+	}
+};
+
+// --- Uitnodigingsmodal ---
+document.getElementById("invite-btn").onclick = () => {
+	document.getElementById("invite-modal").style.display = "flex";
+};
+document.getElementById("invite-cancel").onclick = () => {
+	document.getElementById("invite-modal").style.display = "none";
+};
+document.getElementById("invite-submit").onclick = async () => {
+	const email = document.getElementById("invite-email").value.trim();
+	const role = document.getElementById("invite-role").value;
+	const errEl = document.getElementById("invite-error");
+	errEl.style.display = "none";
+
+	const res = await fetch(BASE, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ email, role }),
+	});
+	const data = await res.json();
+	if (!res.ok) {
+		errEl.textContent = data.error;
+		errEl.style.display = "block";
+		return;
+	}
+	document.getElementById("invite-modal").style.display = "none";
+	alert(`Uitnodiging verstuurd naar ${email}`);
+	window.location.reload();
+};
+
+// --- Wachtwoord reset ---
+document.querySelectorAll(".btn-reset").forEach((btn) => {
+	btn.onclick = async () => {
+		const { id, email } = btn.dataset;
+		if (!confirm(`Wachtwoord reset sturen naar ${email}?`)) return;
+		btn.disabled = true;
+		const res = await fetch(`${BASE}/${id}/reset-password`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: "{}",
+		});
+		btn.disabled = false;
+		const data = await res.json();
+		if (!res.ok) alert("Fout: " + data.error);
+		else alert(`Reset-mail verstuurd naar ${email}`);
+	};
+});
+
+// --- Verwijderen ---
+document.querySelectorAll(".btn-del").forEach((btn) => {
+	btn.onclick = async () => {
+		const { id, email } = btn.dataset;
+		if (!confirm(`Weet je zeker dat je ${email} wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+		const res = await fetch(`${BASE}/${id}`, { method: "DELETE" });
+		const data = await res.json();
+		if (!res.ok) alert("Fout: " + data.error);
+		else {
+			btn.closest(".user-row").remove();
+			delete pending[id];
+			updateSaveBar();
+		}
+	};
+});
+
+// Waarschuw bij pagina verlaten met onopgeslagen wijzigingen
+window.addEventListener("beforeunload", (e) => {
+	if (countChanges() > 0) {
+		e.preventDefault();
+		e.returnValue = "";
+	}
+});
+</script>
+
+<style>
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 9rem; }
+
+/* Paginakop */
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: 2.5rem;
+}
+.back-link {
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	color: rgba(255,255,255,0.6);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.page-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0; }
+.page-header p { color: rgba(255,255,255,0.55); font-size: 0.85rem; margin: 0; }
+
+/* Modal */
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.6);
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.modal-card {
+	background: white;
+	border-radius: 24px;
+	padding: 2.5rem;
+	width: 100%;
+	max-width: 480px;
+	box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+}
+.modal-card h2 { margin-bottom: 0.5rem; }
+.modal-card > p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.4rem;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--brand-blue);
+}
+.form-group input, .form-group select {
+	width: 100%;
+	padding: 0.85rem 1rem;
+	border-radius: 10px;
+	border: 1.5px solid rgba(0,0,0,0.12);
+	font-family: inherit;
+	font-size: 0.95rem;
+	background: #f8fafc;
+}
+.modal-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
+.error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; }
+
+/* Gebruikerstabel */
+.users-card {
+	background: white;
+	border-radius: 24px;
+	padding: 1.5rem 2rem;
+	margin-bottom: 2rem;
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+	overflow-x: auto;
+}
+.table-header {
+	display: grid;
+	grid-template-columns: 2fr 1.4fr 1.5fr 1fr 1.2fr;
+	gap: 1rem;
+	padding: 0.6rem 1rem;
+	background: #f1f5f9;
+	border-radius: 10px;
+	font-weight: 700;
+	font-size: 0.75rem;
+	color: var(--brand-blue);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin-bottom: 0.5rem;
+}
+.user-row {
+	display: grid;
+	grid-template-columns: 2fr 1.4fr 1.5fr 1fr 1.2fr;
+	gap: 1rem;
+	align-items: center;
+	padding: 1rem;
+	border-bottom: 1px solid rgba(0,0,0,0.05);
+	border-radius: 10px;
+	transition: background 0.2s, border 0.2s;
+	border: 2px solid transparent;
+}
+.user-row:last-child { border-bottom: 1px solid transparent; }
+.user-row.pending {
+	background: #fffbeb;
+	border: 2px solid #fbbf24;
+}
+.user-info { display: flex; align-items: center; gap: 0.75rem; }
+.user-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: var(--brand-blue);
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 0.9rem;
+	flex-shrink: 0;
+}
+.user-email { font-weight: 600; font-size: 0.875rem; margin: 0; }
+.self-badge {
+	font-size: 0.68rem;
+	background: #dbeafe;
+	color: #1d4ed8;
+	padding: 0.1rem 0.45rem;
+	border-radius: 999px;
+	font-weight: 700;
+}
+.role-select {
+	padding: 0.35rem 0.7rem;
+	border-radius: 8px;
+	border: 1.5px solid rgba(0,0,0,0.1);
+	background: #f8fafc;
+	font-size: 0.85rem;
+	cursor: pointer;
+	font-family: inherit;
+}
+.role-select:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Toggle */
+.mfa-cell { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.toggle-label { display: flex; align-items: center; cursor: pointer; }
+.toggle-label input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-track {
+	width: 40px;
+	height: 22px;
+	background: #cbd5e1;
+	border-radius: 999px;
+	position: relative;
+	transition: background 0.2s;
+}
+.toggle-track::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: white;
+	transition: transform 0.2s;
+}
+input:checked + .toggle-track { background: var(--brand-orange); }
+input:checked + .toggle-track::after { transform: translateX(18px); }
+.mfa-status { font-size: 0.75rem; font-weight: 600; }
+.mfa-status.enrolled { color: #16a34a; }
+.mfa-status.not-enrolled { color: #94a3b8; }
+
+.last-login { font-size: 0.82rem; color: var(--text-secondary); }
+.user-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn-action {
+	padding: 0.32rem 0.7rem;
+	border-radius: 8px;
+	font-size: 0.76rem;
+	font-weight: 700;
+	cursor: pointer;
+	border: none;
+	transition: 0.2s;
+}
+.btn-reset { background: #dbeafe; color: #1d4ed8; }
+.btn-reset:hover { background: #1d4ed8; color: white; }
+.btn-del { background: #fee2e2; color: #dc2626; }
+.btn-del:hover { background: #dc2626; color: white; }
+.btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Rol uitleg */
+.roles-card {
+	background: white;
+	border-radius: 24px;
+	padding: 2rem;
+	margin-bottom: 2rem;
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+.roles-card h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--brand-blue); }
+.roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.role-info-card {
+	padding: 1.5rem;
+	background: #f8fafc;
+	border-radius: 16px;
+}
+.role-info-card ul { list-style: none; padding: 0; margin: 1rem 0 0; }
+.role-info-card li { font-size: 0.875rem; padding: 0.2rem 0; }
+.role-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.78rem;
+	font-weight: 700;
+}
+.admin-badge-tag { background: #dbeafe; color: #1d4ed8; }
+.super-badge-tag { background: #fef3c7; color: #d97706; }
+
+/* Opslaan-balk */
+.save-bar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: var(--brand-blue);
+	border-top: 2px solid var(--brand-orange);
+	z-index: 500;
+	display: flex;
+	justify-content: center;
+	padding: 1rem 2rem;
+	box-shadow: 0 -8px 30px rgba(0,0,0,0.3);
+}
+.save-bar-inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	max-width: 1200px;
+	gap: 2rem;
+}
+.save-bar-inner p { color: rgba(255,255,255,0.85); font-size: 0.9rem; margin: 0; }
+.save-bar-inner strong { color: var(--brand-orange); }
+.save-bar-actions { display: flex; gap: 1rem; align-items: center; }
+.btn-outline-white {
+	padding: 0.7rem 1.8rem;
+	border: 2px solid rgba(255,255,255,0.5);
+	border-radius: 50px;
+	color: white;
+	background: transparent;
+	font-weight: 700;
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	cursor: pointer;
+	transition: 0.2s;
+}
+.btn-outline-white:hover { background: white; color: var(--brand-blue); border-color: white; }
+
+@media (max-width: 900px) {
+	.table-header { display: none; }
+	.user-row { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.25rem 1rem; }
+	.roles-grid { grid-template-columns: 1fr; }
+	.page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+	.save-bar-inner { flex-direction: column; gap: 1rem; align-items: flex-start; }
+}
+</style>

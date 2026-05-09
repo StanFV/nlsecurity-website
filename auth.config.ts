@@ -11,11 +11,7 @@ export default defineConfig({
 	],
 	callbacks: {
 		async signIn({ user }) {
-			// Alleen inloggen toestaan voor bc-capital.nl domein
-			if (user.email?.endsWith("@bc-capital.nl")) {
-				return true;
-			}
-			return false;
+			return !!user.email;
 		},
 	},
 });
