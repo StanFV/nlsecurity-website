@@ -5,18 +5,18 @@ import Footer from "../components/Footer.astro";
 import { supabase } from "../lib/supabase";
 
 // Check of we een actieve sessie hebben via cookies
-const accessToken = Astro.cookies.get("sb-access-token");
-const refreshToken = Astro.cookies.get("sb-refresh-token");
+const accessToken = Astro.cookies.get("sb-access-token")?.value;
+const refreshToken = Astro.cookies.get("sb-refresh-token")?.value;
 
 let user = null;
 
 if (accessToken && refreshToken) {
 	try {
 		const { data, error } = await supabase.auth.setSession({
-			access_token: accessToken.value,
-			refresh_token: refreshToken.value,
+			access_token: accessToken,
+			refresh_token: refreshToken,
 		});
-		if (!error) {
+		if (!error && data.user) {
 			user = data.user;
 		}
 	} catch (e) {
