@@ -19,9 +19,9 @@ const solutions = [
   <Navigation />
   
   <main class="page-solutions">
-    <section class="solutions-hero">
+    <section class="solutions-hero" style={`--hero-bg: url('${import.meta.env.BASE_URL}/assets/images/Foto_Zuidas_Pak_1.png')`}>
       <div class="container text-center reveal">
-        <span class="badge-blue">Onze Diensten</span>
+        <span class="badge">Onze Diensten</span>
         <h1>Beveiliging <span class="gradient-text">op Maat</span></h1>
         <p class="lead max-700 mx-auto">De beveiligingsaanpak van NL Security richt zich vooral op preventief beveiligen. Voorkomen is immers beter dan genezen.</p>
       </div>
@@ -45,7 +45,7 @@ const solutions = [
     <section class="specialist-highlight">
       <div class="container grid grid-2 items-center">
         <div class="visual reveal">
-          <img src={`${import.meta.env.BASE_URL}/assets/images/control-center.jpg`} alt="Specialist" class="rounded-image shadow-lg" />
+          <img src={`${import.meta.env.BASE_URL}/assets/images/Foto_zuidas_pak_5.png`} alt="Specialist" class="rounded-image shadow-lg" />
         </div>
         <div class="text reveal" style="transition-delay: 0.2s">
           <span class="badge">Heldere Analyse</span>
@@ -72,6 +72,13 @@ const solutions = [
 
   .solutions-hero {
     padding: 12rem 1rem 6rem;
+    position: relative;
+    background:
+      linear-gradient(to bottom,
+        rgba(255,255,255,0.62) 0%,
+        rgba(255,255,255,0.72) 60%,
+        rgba(255,255,255,0.88) 100%),
+      var(--hero-bg) center 20% / cover no-repeat;
   }
 
   .solutions-hero h1 {

@@ -8,7 +8,7 @@ import Footer from '../components/Footer.astro';
   <Navigation />
   
   <main class="portal-page">
-    <section class="portal-hero">
+    <section class="portal-hero" style={`--hero-bg: url('${import.meta.env.BASE_URL}/assets/images/Foto_Zuidas_Pak_dashboard.png')`}>
       <div class="container">
         <div class="hero-content reveal-left">
           <span class="badge-orange">Binnenkort Beschikbaar</span>
@@ -167,11 +167,16 @@ import Footer from '../components/Footer.astro';
     </section>
 
     <section class="portal-cta">
-      <div class="container text-center reveal-fade">
-        <h2>Wilt u ook profiteren van <span class="gradient-text">deze innovatie?</span></h2>
-        <p>Word klant bij NL Security en krijg als een van de eersten toegang tot ons vernieuwde portaal.</p>
-        <div class="cta-actions">
-          <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-outline">Contact opnemen</a>
+      <div class="container cta-inner">
+        <div class="cta-text reveal-fade">
+          <h2>Wilt u ook profiteren van <span class="gradient-text">deze innovatie?</span></h2>
+          <p>Word klant bij NL Security en krijg als een van de eersten toegang tot ons vernieuwde portaal.</p>
+          <div class="cta-actions">
+            <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-outline">Contact opnemen</a>
+          </div>
+        </div>
+        <div class="cta-image reveal-right">
+          <img src={`${import.meta.env.BASE_URL}/assets/images/Foto_Zuidas_Pak_2.png`} alt="NL Security professional" class="cta-img" />
         </div>
       </div>
     </section>
@@ -186,7 +191,12 @@ import Footer from '../components/Footer.astro';
   }
 
   .portal-hero {
-    background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
+    background:
+      linear-gradient(to bottom,
+        rgba(255,255,255,0.74) 0%,
+        rgba(255,255,255,0.82) 60%,
+        rgba(255,255,255,0.93) 100%),
+      var(--hero-bg) center 20% / cover no-repeat;
     padding: 10rem 0 6rem;
     text-align: center;
     position: relative;
@@ -538,6 +548,13 @@ import Footer from '../components/Footer.astro';
     border-top: 1px solid rgba(0, 0, 0, 0.05);
   }
 
+  .cta-inner {
+    display: grid;
+    grid-template-columns: 1fr 0.45fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
   .portal-cta h2 {
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
@@ -548,6 +565,25 @@ import Footer from '../components/Footer.astro';
     font-size: 1.2rem;
     color: var(--text-secondary);
     margin-bottom: 2.5rem;
+  }
+
+  .cta-image { flex-shrink: 0; }
+
+  .cta-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 32px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+  }
+
+  @media (max-width: 900px) {
+    .cta-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    .cta-image { max-width: 400px; margin: 0 auto; width: 100%; }
   }
 
 

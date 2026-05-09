@@ -589,6 +589,23 @@ const base = import.meta.env.BASE_URL;
   </main>
 </div>
 
+<!-- ── Welcome Tour ── -->
+<div id="tour-overlay" class="tour-overlay"></div>
+<div id="tour-ring" class="tour-ring"></div>
+<div id="tour-card" class="tour-card">
+  <div class="tour-header">
+    <span id="tour-step-label" class="tour-step-label">Stap 1 van 4</span>
+    <button id="tour-skip-btn" class="tour-skip-btn">Overslaan ✕</button>
+  </div>
+  <h3 id="tour-title"></h3>
+  <p id="tour-desc"></p>
+  <div id="tour-dots" class="tour-dots"></div>
+  <div class="tour-footer">
+    <button id="tour-prev-btn" class="tour-btn-sec">← Vorige</button>
+    <button id="tour-next-btn" class="tour-btn-pri">Volgende →</button>
+  </div>
+</div>
+
 <style>
   body { overflow: hidden; }
 
@@ -1036,6 +1053,170 @@ const base = import.meta.env.BASE_URL;
     .kpi-row { grid-template-columns: 1fr 1fr; }
     .tab-content { padding: 1rem; }
   }
+
+  /* ── Live planning animations ── */
+  .presence-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 0.45rem;
+    flex-shrink: 0;
+    animation: pulse-dot 2.5s ease-in-out infinite;
+  }
+  .presence-dot.away { background: #cbd5e1; animation: none; }
+
+  @keyframes row-flash-blue {
+    0%, 100% { background: transparent; }
+    20% { background: rgba(var(--brand-blue-rgb), 0.14); }
+    60% { background: rgba(var(--brand-blue-rgb), 0.08); }
+  }
+  .row-flash { animation: row-flash-blue 1.4s ease; }
+
+  @keyframes row-flash-green {
+    0%, 100% { background: transparent; }
+    20% { background: rgba(34,197,94,0.18); }
+    60% { background: rgba(34,197,94,0.09); }
+  }
+  .row-flash-green { animation: row-flash-green 1.6s ease; }
+
+  @keyframes kpi-bump {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(1.13); color: var(--brand-orange); }
+  }
+  .kpi-bump { animation: kpi-bump 0.5s cubic-bezier(0.16,1,0.3,1); }
+
+  /* ── Tour ── */
+  .tour-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.52);
+    z-index: 8000;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .tour-overlay.active { opacity: 1; pointer-events: all; }
+
+  .tour-ring {
+    position: fixed;
+    border: 2.5px solid var(--brand-orange);
+    border-radius: 14px;
+    z-index: 8001;
+    pointer-events: none;
+    box-shadow: 0 0 0 4px rgba(255,102,0,0.15), 0 0 24px rgba(255,102,0,0.25);
+    opacity: 0;
+    transition: opacity 0.3s ease, top 0.4s cubic-bezier(0.16,1,0.3,1), left 0.4s cubic-bezier(0.16,1,0.3,1), width 0.4s cubic-bezier(0.16,1,0.3,1), height 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .tour-ring.active { opacity: 1; }
+
+  .tour-card {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    width: 360px;
+    background: white;
+    border-radius: 20px;
+    padding: 1.6rem 1.75rem 1.4rem;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+    z-index: 8002;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  .tour-card.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .tour-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+  }
+  .tour-step-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--brand-orange);
+  }
+  .tour-skip-btn {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .tour-skip-btn:hover { color: #475569; }
+
+  .tour-card h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--brand-blue);
+    margin: 0 0 0.55rem;
+  }
+  .tour-card p {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.6;
+    margin: 0 0 1.1rem;
+  }
+
+  .tour-dots {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.1rem;
+  }
+  .tour-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .tour-dot.active { background: var(--brand-blue); transform: scale(1.25); }
+
+  .tour-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .tour-btn-sec {
+    background: none;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.2s;
+  }
+  .tour-btn-sec:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+  .tour-btn-sec:disabled { opacity: 0.3; cursor: default; }
+
+  .tour-btn-pri {
+    background: var(--brand-blue);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: white;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.2s;
+    margin-left: auto;
+  }
+  .tour-btn-pri:hover { background: var(--brand-orange); }
 </style>
 
 <script>
@@ -1144,18 +1325,18 @@ const base = import.meta.env.BASE_URL;
     setTimeout(() => countUp(el, target, 1100, 1), 300);
   });
 
-  // Animated bar charts — faster jitter
+  // Animated bar charts — visible jitter
   function animateBars(chartId: string) {
     const bars = document.querySelectorAll<HTMLElement>(`#${chartId} .bar`);
     bars.forEach(bar => {
       const base = parseInt(bar.dataset.base || '50');
       bar.style.height = base + '%';
       function pulse() {
-        const jitter = (Math.random() - 0.5) * 20;
+        const jitter = (Math.random() - 0.5) * 40;
         bar.style.height = Math.max(8, Math.min(98, base + jitter)) + '%';
-        setTimeout(pulse, 1200 + Math.random() * 1500);
+        setTimeout(pulse, 800 + Math.random() * 1000);
       }
-      setTimeout(pulse, Math.random() * 800);
+      setTimeout(pulse, Math.random() * 500);
     });
   }
   animateBars('dash-chart');
@@ -1188,7 +1369,226 @@ const base = import.meta.env.BASE_URL;
   updateClock();
   setInterval(updateClock, 30000);
 
-  // Live activity feed — new items appear periodically
+  // ── Continuous live animations ──
+
+  // KPI numbers fluctuate
+  function bumpEl(el: HTMLElement | null) {
+    if (!el) return;
+    el.classList.remove('kpi-bump');
+    void el.offsetWidth;
+    el.classList.add('kpi-bump');
+  }
+
+  function startLiveKPIs() {
+    let hours = 1248;
+    const hoursEl = document.querySelector<HTMLElement>('[data-count="1248"]');
+    setInterval(() => {
+      hours += Math.floor(Math.random() * 3) + 1;
+      if (hoursEl) { hoursEl.textContent = hours.toLocaleString('nl-NL'); bumpEl(hoursEl); }
+    }, 2200);
+
+    const bezEl = document.querySelector<HTMLElement>('[data-count-dec="94.3"]');
+    setInterval(() => {
+      const val = 92.5 + Math.random() * 3.5;
+      if (bezEl) { bezEl.textContent = val.toFixed(1); bumpEl(bezEl); }
+    }, 3000);
+
+    // Guards count fluctuates
+    const guardsEl = document.querySelector<HTMLElement>('[data-count="7"]');
+    setInterval(() => {
+      const val = Math.random() > 0.3 ? 7 : 6;
+      if (guardsEl) { guardsEl.textContent = String(val); bumpEl(guardsEl); }
+    }, 7000);
+
+    // Topbar status updates more visibly
+    const statusEl = document.querySelector<HTMLElement>('.topbar-status');
+    const statusTexts = [
+      '<span class="live-dot"></span> Bezetting wordt bijgewerkt…',
+      '<span class="live-dot"></span> 2 van 3 locaties volledig bezet',
+      '<span class="live-dot"></span> 3 van 3 locaties operationeel',
+    ];
+    let statusIdx = 0;
+    setInterval(() => {
+      if (!statusEl) return;
+      statusIdx = (statusIdx + 1) % statusTexts.length;
+      statusEl.style.opacity = '0.4';
+      setTimeout(() => {
+        statusEl.innerHTML = statusTexts[statusIdx];
+        statusEl.style.opacity = '1';
+        statusEl.style.transition = 'opacity 0.4s';
+      }, 400);
+    }, 8000);
+  }
+  startLiveKPIs();
+
+  // Planning tab: presence dots + row flashes
+  function startPlanningLive() {
+    // Add pulsing green dot to active guard rows
+    document.querySelectorAll<HTMLElement>('#tab-planning .dtable tbody tr').forEach(row => {
+      const guardDiv = row.querySelector<HTMLElement>('.guard');
+      if (!guardDiv || guardDiv.querySelector('.presence-dot')) return;
+      const dot = document.createElement('span');
+      dot.className = 'presence-dot' + (row.classList.contains('sick-row') ? ' away' : '');
+      guardDiv.insertBefore(dot, guardDiv.firstChild);
+    });
+
+    // Flash random active planning rows
+    const activeRows = Array.from(document.querySelectorAll<HTMLElement>('#tab-planning .dtable tbody tr:not(.sick-row)'));
+    setInterval(() => {
+      const row = activeRows[Math.floor(Math.random() * activeRows.length)];
+      row.classList.remove('row-flash');
+      void row.offsetWidth;
+      row.classList.add('row-flash');
+    }, 2500);
+  }
+  // Call once so dots are ready even before tab opens
+  startPlanningLive();
+  // Re-run when planning tab opens to ensure dots persist after card animation
+  document.querySelectorAll('.sb-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if ((btn as HTMLElement).dataset.tab === 'planning') {
+        setTimeout(startPlanningLive, 300);
+      }
+    });
+  });
+
+  // Dagrapportages: flash rows as if new data received
+  function startDagrapportLive() {
+    const rows = Array.from(document.querySelectorAll<HTMLElement>('#tab-dashboard .dtable tbody tr'));
+    setInterval(() => {
+      const row = rows[Math.floor(Math.random() * rows.length)];
+      row.classList.remove('row-flash-green');
+      void row.offsetWidth;
+      row.classList.add('row-flash-green');
+    }, 3500);
+  }
+  startDagrapportLive();
+
+  // Bezetting bars: visible oscillation
+  function startBezettingLive() {
+    document.querySelectorAll<HTMLElement>('.bezetting-fill:not(.orange)').forEach(fill => {
+      function breathe() {
+        const val = 70 + Math.random() * 30;
+        fill.style.transition = 'width 1.2s cubic-bezier(0.16,1,0.3,1)';
+        fill.style.width = val + '%';
+        setTimeout(breathe, 1400 + Math.random() * 1200);
+      }
+      setTimeout(breathe, Math.random() * 600);
+    });
+  }
+  startBezettingLive();
+
+  // Analyse stat bars: re-pulse every 10s
+  setInterval(() => {
+    if (!document.getElementById('tab-analyse')?.classList.contains('hidden')) {
+      animateStatBars();
+    }
+  }, 10000);
+
+  // ── Welcome tour ──
+  const tourSteps = [
+    {
+      title: 'Welkom bij de demo',
+      text: 'Dit is een interactieve demo van het Mijn NL Security portaal. Alle data is fictief. U kunt overal op klikken — volledig vrijblijvend.',
+      target: null,
+    },
+    {
+      title: 'Navigeer tussen modules',
+      text: 'Via de zijbalk schakelt u tussen Dashboard, Planning, Wijzigingen, Documenten, Analyse en Contact.',
+      target: '.sb-nav',
+    },
+    {
+      title: 'Live dashboard',
+      text: 'Het dashboard toont actuele KPI\'s, bezettingsgraad per locatie en een live activiteitenfeed.',
+      target: '.kpi-row',
+    },
+    {
+      title: 'Terug naar de website',
+      text: 'Via deze knop keert u terug naar de Mijn NL Security pagina. Ook bovenin het scherm vindt u een "Terug"-knop.',
+      target: '.back-btn',
+    },
+    {
+      title: 'Klaar om te verkennen',
+      text: 'Dat was de korte rondleiding. Klik op de tabbladen om alle functionaliteiten zelf te ontdekken.',
+      target: null,
+      isLast: true,
+    },
+  ];
+
+  let tourStep = 0;
+
+  const tourOverlay = document.getElementById('tour-overlay')!;
+  const tourRing = document.getElementById('tour-ring')!;
+  const tourCard = document.getElementById('tour-card')!;
+  const tourTitle = document.getElementById('tour-title')!;
+  const tourDesc = document.getElementById('tour-desc')!;
+  const tourDotsEl = document.getElementById('tour-dots')!;
+  const tourStepLabel = document.getElementById('tour-step-label')!;
+  const tourNextBtn = document.getElementById('tour-next-btn') as HTMLButtonElement;
+  const tourPrevBtn = document.getElementById('tour-prev-btn') as HTMLButtonElement;
+
+  function showTourStep(idx: number) {
+    const step = tourSteps[idx];
+    tourStepLabel.textContent = `Stap ${idx + 1} van ${tourSteps.length}`;
+    tourTitle.textContent = step.title;
+    tourDesc.textContent = step.text;
+    tourPrevBtn.disabled = idx === 0;
+    tourNextBtn.textContent = step.isLast ? 'Starten ✓' : 'Volgende →';
+
+    // Dots
+    tourDotsEl.innerHTML = '';
+    tourSteps.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'tour-dot' + (i === idx ? ' active' : '');
+      tourDotsEl.appendChild(d);
+    });
+
+    // Spotlight ring
+    if (step.target) {
+      const el = document.querySelector<HTMLElement>(step.target);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const pad = 10;
+        (tourRing as HTMLElement).style.top = (r.top - pad) + 'px';
+        (tourRing as HTMLElement).style.left = (r.left - pad) + 'px';
+        (tourRing as HTMLElement).style.width = (r.width + pad * 2) + 'px';
+        (tourRing as HTMLElement).style.height = (r.height + pad * 2) + 'px';
+        tourRing.classList.add('active');
+      }
+    } else {
+      tourRing.classList.remove('active');
+    }
+  }
+
+  function endTour() {
+    tourOverlay.classList.remove('active');
+    tourCard.classList.remove('active');
+    tourRing.classList.remove('active');
+  }
+
+  function startTour() {
+    tourStep = 0;
+    tourOverlay.classList.add('active');
+    tourCard.classList.add('active');
+    showTourStep(0);
+  }
+
+  tourNextBtn.addEventListener('click', () => {
+    if (tourStep >= tourSteps.length - 1) { endTour(); return; }
+    tourStep++;
+    showTourStep(tourStep);
+  });
+  tourPrevBtn.addEventListener('click', () => {
+    if (tourStep <= 0) return;
+    tourStep--;
+    showTourStep(tourStep);
+  });
+  document.getElementById('tour-skip-btn')?.addEventListener('click', endTour);
+
+  // Start tour after a short delay
+  setTimeout(startTour, 900);
+
+  // ── Live activity feed — new items appear periodically
   const liveEvents = [
     { dot: 'green', text: 'R. Krishnan — overdracht afgerond (Amsterdam HQ)' },
     { dot: 'blue', text: 'Dagrapport bevestigd — Rotterdam Depot' },
