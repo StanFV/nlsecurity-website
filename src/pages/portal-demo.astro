@@ -12,7 +12,7 @@ const base = import.meta.env.BASE_URL;
     <div class="sb-top">
       <img src={`${base}/assets/images/logo.png`} alt="NL Security" class="sb-logo" />
       <div class="sb-client">
-        <div class="sb-client-name">Pensioenfonds Horeca</div>
+        <div class="sb-client-name">Gemeentehuis Den Haag</div>
         <div class="sb-contract">Contract #NLS-2024-0847</div>
       </div>
     </div>
@@ -55,7 +55,7 @@ const base = import.meta.env.BASE_URL;
       </div>
       <a href={`${base}/mijn-nl-security`} class="back-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        Terug naar Mijn NL Security
+        Mijn NL Security sluiten
       </a>
       <div class="demo-tag">⚠ Concept demo — fictieve data</div>
     </div>
@@ -64,9 +64,12 @@ const base = import.meta.env.BASE_URL;
   <!-- ── Main ── -->
   <main class="portal-main">
     <div class="portal-topbar">
-      <div>
-        <h1 class="topbar-title" id="page-title">Dashboard</h1>
-        <div class="topbar-bread">Mijn NL Security <span>›</span> <span id="bread-current">Dashboard</span></div>
+      <div class="topbar-left">
+        <img src={`${base}/assets/images/logo zonder tekst.png`} alt="" class="topbar-logo-mobile" />
+        <div>
+          <h1 class="topbar-title" id="page-title">Dashboard</h1>
+          <div class="topbar-bread">Mijn NL Security <span>›</span> <span id="bread-current">Dashboard</span></div>
+        </div>
       </div>
       <div class="topbar-right">
         <div class="topbar-status">
@@ -75,37 +78,52 @@ const base = import.meta.env.BASE_URL;
         <div class="topbar-date" id="live-date">9 mei 2025 — 09:41</div>
         <a href={`${base}/mijn-nl-security`} class="topbar-back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          Terug
+          Mijn NL Security sluiten
         </a>
       </div>
     </div>
 
-    <!-- ── Mobile tab nav ── -->
-    <div class="mobile-tabs" id="mobile-tabs">
-      <button class="mobile-tab-btn active" data-tab="dashboard">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Dashboard
+    <!-- ── Mobile Bottom Nav ── -->
+    <nav class="bottom-nav">
+      <button class="bnav-item active" data-tab="dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
       </button>
-      <button class="mobile-tab-btn" data-tab="planning">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Planning
+      <button class="bnav-item" data-tab="planning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Planning</span>
       </button>
-      <button class="mobile-tab-btn" data-tab="wijzigingen">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.13"/></svg>
-        Wijzigingen
+      <button class="bnav-item" data-tab="wijzigingen">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.13"/></svg>
+        <span>Wijzigingen</span>
       </button>
-      <button class="mobile-tab-btn" data-tab="documenten">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-        Documenten
+      <button class="bnav-item" id="bnav-more-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        <span>Meer</span>
       </button>
-      <button class="mobile-tab-btn" data-tab="analyse">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Analyse
-      </button>
-      <button class="mobile-tab-btn" data-tab="contact">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Contact
-      </button>
+    </nav>
+
+    <!-- ── Mobile More Menu ── -->
+    <div class="more-menu-overlay" id="more-menu-overlay"></div>
+    <div class="more-menu" id="more-menu">
+      <div class="more-menu-header">
+        <h4>Meer opties</h4>
+        <button id="close-more-menu">✕</button>
+      </div>
+      <div class="more-menu-grid">
+        <button class="more-item" data-tab="documenten">
+          <div class="more-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+          <span>Documenten</span>
+        </button>
+        <button class="more-item" data-tab="analyse">
+          <div class="more-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <span>Analyse</span>
+        </button>
+        <button class="more-item" data-tab="contact">
+          <div class="more-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <span>Contact</span>
+        </button>
+      </div>
     </div>
 
     <!-- ── Demo notice ── -->
@@ -754,6 +772,17 @@ const base = import.meta.env.BASE_URL;
     flex-direction: column;
   }
 
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .topbar-logo-mobile {
+    display: none;
+    height: 32px;
+    width: auto;
+  }
+
   .portal-topbar {
     background: white;
     padding: 1.1rem 2rem;
@@ -775,7 +804,7 @@ const base = import.meta.env.BASE_URL;
   .topbar-date { font-size: 0.78rem; color: #94a3b8; }
 
   .topbar-back {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 0.4rem;
     padding: 0.45rem 1rem;
@@ -1101,23 +1130,193 @@ const base = import.meta.env.BASE_URL;
   .mobile-tab-btn.active { background: rgba(255,255,255,0.25); color: white; }
   .mobile-tab-btn:hover:not(.active) { background: rgba(255,255,255,0.15); color: white; }
 
+  /* ── Mobile Bottom Nav ── */
+  .bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2.5rem);
+    max-width: 450px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    padding: 0.75rem 1rem;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    z-index: 2000;
+  }
+
+  .bnav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: 0.3s;
+    flex: 1;
+    padding: 0.4rem 0;
+    font-family: inherit;
+  }
+
+  .bnav-item span {
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .bnav-item svg {
+    transition: 0.3s;
+  }
+
+  .bnav-item.active {
+    color: var(--brand-blue);
+  }
+
+  .bnav-item.active svg {
+    transform: translateY(-2px);
+  }
+
+  /* More Menu */
+  .more-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 2001;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+  }
+
+  .more-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .more-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: 24px 24px 0 0;
+    padding: 1.5rem;
+    transform: translateY(100%);
+    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2002;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+  }
+
+  .more-menu.active {
+    transform: translateY(0);
+  }
+
+  .more-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .more-menu-header h4 {
+    margin: 0;
+    color: var(--brand-blue);
+    font-weight: 800;
+  }
+
+  #close-more-menu {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #64748b;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .more-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .more-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .more-icon {
+    width: 54px;
+    height: 54px;
+    background: #f8fafc;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-blue);
+    transition: 0.3s;
+  }
+
+  .more-item:hover .more-icon {
+    background: var(--brand-blue);
+    color: white;
+    transform: translateY(-4px);
+  }
+
+  .more-item span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+  }
+
   @media (max-width: 1100px) {
     .kpi-row { grid-template-columns: repeat(2,1fr); }
     .dash-row, .two-col, .contact-grid, .dash-row-bottom { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 768px) {
-    body { overflow: auto; }
+    body { overflow: auto; padding-bottom: 80px; }
     .sidebar { display: none; }
     .portal-wrap { height: auto; overflow: visible; flex-direction: column; }
     .portal-main { overflow: visible; }
-    .mobile-tabs { display: flex; }
+    .bottom-nav { display: flex; }
     .kpi-row { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .tab-content { padding: 0.75rem; }
-    .portal-topbar { padding: 0.85rem 1rem; }
+    .topbar-logo-mobile { display: block; }
+    .portal-topbar { 
+      padding: 0.75rem 1rem; 
+      position: relative;
+    }
     .topbar-title { font-size: 1.1rem; }
-    .topbar-right { gap: 0.75rem; }
-    .topbar-status { font-size: 0.75rem; }
+    .topbar-bread { display: none; }
+    .topbar-right { 
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      display: flex;
+    }
+    .topbar-status { display: none; }
+    .topbar-back {
+      display: flex;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
     .topbar-date { display: none; }
     .card-head { padding: 0.9rem 1rem; }
     .card-head h3 { font-size: 0.85rem; }
@@ -1140,7 +1339,6 @@ const base = import.meta.env.BASE_URL;
   @media (max-width: 480px) {
     .kpi-row { grid-template-columns: 1fr; }
     .topbar-bread { display: none; }
-    .topbar-back span { display: none; }
   }
 
   /* ── Live planning animations ── */
@@ -1358,31 +1556,64 @@ const base = import.meta.env.BASE_URL;
   function switchTab(tab: string, sourceBtn?: Element) {
     document.querySelectorAll('.tab-content').forEach(p => p.classList.add('hidden'));
     document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    
     document.getElementById('tab-' + tab)?.classList.remove('hidden');
+    
     // Mark sidebar btn active
     document.querySelectorAll<HTMLElement>('.sb-item').forEach(b => { if (b.dataset.tab === tab) b.classList.add('active'); });
-    // Mark mobile btn active
-    document.querySelectorAll<HTMLElement>('.mobile-tab-btn').forEach(b => { if (b.dataset.tab === tab) b.classList.add('active'); });
+    // Mark bottom nav btn active
+    document.querySelectorAll<HTMLElement>('.bnav-item').forEach(b => { if (b.dataset.tab === tab) b.classList.add('active'); });
+
     (document.getElementById('page-title') as HTMLElement).textContent = tabTitles[tab];
     (document.getElementById('bread-current') as HTMLElement).textContent = tabTitles[tab];
+    
     animateTabIn(tab);
     if (tab === 'analyse') animateStatBars();
     if (tab === 'wijzigingen') {
       const badge = document.querySelector<HTMLElement>('.sb-badge');
       if (badge) { badge.style.transform = 'scale(0)'; badge.style.opacity = '0'; }
     }
-    // Scroll mobile tabs to show active btn
-    const mobileBtn = document.querySelector<HTMLElement>(`.mobile-tab-btn[data-tab="${tab}"]`);
-    mobileBtn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+    // Close more menu if an item was clicked
+    if (sourceBtn?.classList.contains('more-item')) {
+      closeMoreMenu();
+    }
   }
 
   document.querySelectorAll('.sb-item').forEach(btn => {
     btn.addEventListener('click', () => switchTab((btn as HTMLElement).dataset.tab!));
   });
-  document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+
+  document.querySelectorAll('.bnav-item[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => switchTab((btn as HTMLElement).dataset.tab!));
   });
+
+  document.querySelectorAll('.more-item').forEach(btn => {
+    btn.addEventListener('click', () => switchTab((btn as HTMLElement).dataset.tab!, btn));
+  });
+
+  // More Menu Logic
+  const moreBtn = document.getElementById('bnav-more-btn');
+  const moreMenu = document.getElementById('more-menu');
+  const moreOverlay = document.getElementById('more-menu-overlay');
+  const closeMore = document.getElementById('close-more-menu');
+
+  function openMoreMenu() {
+    moreMenu?.classList.add('active');
+    moreOverlay?.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMoreMenu() {
+    moreMenu?.classList.remove('active');
+    moreOverlay?.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  moreBtn?.addEventListener('click', openMoreMenu);
+  moreOverlay?.addEventListener('click', closeMoreMenu);
+  closeMore?.addEventListener('click', closeMoreMenu);
 
   // Initial animation on dashboard
   setTimeout(() => animateTabIn('dashboard'), 100);
@@ -1645,7 +1876,7 @@ const base = import.meta.env.BASE_URL;
     const isMobile = window.innerWidth <= 768;
     let target = step.target;
     if (isMobile) {
-      if (target === '.sb-nav') target = '.mobile-tabs';
+      if (target === '.sb-nav') target = '.bottom-nav';
       if (target === '.back-btn') target = '.topbar-back';
     }
     if (target) {
