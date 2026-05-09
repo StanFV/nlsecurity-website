@@ -3,24 +3,18 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Navigation from "../../../components/Navigation.astro";
 import Footer from "../../../components/Footer.astro";
 import { supabase } from "../../../lib/supabase";
+import { requireAdminAuth } from "../../../lib/admin-auth";
+import { supabaseAdmin } from "../../../lib/supabase-admin";
 
 const { id } = Astro.params;
 
-// Auth check
-const accessToken = Astro.cookies.get("sb-access-token")?.value;
-const refreshToken = Astro.cookies.get("sb-refresh-token")?.value;
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
 
-if (!accessToken || !refreshToken) {
-	return Astro.redirect("/admin");
-}
-
-const { data: authData, error: authError } = await supabase.auth.setSession({
-	access_token: accessToken,
-	refresh_token: refreshToken,
-});
-
-if (authError || !authData.user) {
-	return Astro.redirect("/admin");
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
 }
 
 // Haal de specifieke vacature op
@@ -29,6 +23,7 @@ const { data: vacancy, error: fetchError } = await supabase
 	.select('*')
 	.eq('id', id)
 	.single();
+
 
 if (fetchError || !vacancy) {
 	return Astro.redirect("/admin?error=notfound");
@@ -42,20 +37,19 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 	<Navigation />
 
 	<main class="admin-page">
-		<section class="admin-hero bg-light">
+		<section class="admin-hero">
 			<div class="container">
-				<div class="form-container glass reveal">
-					<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+				<div class="page-header reveal">
+					<a href="/admin/vacatures" class="back-link">← Terug naar Vacatures</a>
 					<h1>Bewerk <span class="orange-text">Vacature</span></h1>
-					
-					<form id="edit-vacancy-form" class="elite-form">
+				</div>
+				<div class="form-card reveal">
+					<form id="edit-vacancy-form">
 						<input type="hidden" id="v-id" value={vacancy.id} />
-						
 						<div class="form-group">
 							<label>Functietitel</label>
 							<input type="text" id="v-title" value={vacancy.title} required />
 						</div>
-
 						<div class="form-row">
 							<div class="form-group">
 								<label>Type</label>
@@ -71,23 +65,20 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 								<input type="text" id="v-loc" value={vacancy.location} />
 							</div>
 						</div>
-
 						<div class="form-group">
 							<label>Beschrijving</label>
 							<textarea id="v-desc" rows="4" required>{vacancy.description}</textarea>
 						</div>
-
 						<div class="form-group">
 							<label>Eisen (één per regel)</label>
 							<textarea id="v-req" rows="5" required>{vacancy.requirements ? vacancy.requirements.join('\n') : ''}</textarea>
 						</div>
-
 						<div class="form-group">
 							<label>Wat wij bieden (één per regel)</label>
 							<textarea id="v-offer" rows="5" required>{vacancy.offer ? vacancy.offer.join('\n') : ''}</textarea>
 						</div>
-
 						<div class="form-actions">
+							<a href="/admin/vacatures" class="btn-outline">Annuleren</a>
 							<button type="submit" id="save-btn" class="btn-glow">Wijzigingen Opslaan</button>
 						</div>
 					</form>
@@ -140,7 +131,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 						btn.textContent = "Wijzigingen Opslaan";
 					} else {
 						alert("Vacature succesvol bijgewerkt!");
-						window.location.href = "/admin";
+						window.location.href = "/admin/vacatures";
 					}
 				} catch (err) {
 					alert("Er is een onverwachte fout opgetreden: " + err.message);
@@ -155,57 +146,58 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 </script>
 
 <style>
-	.admin-page { padding-top: 80px; }
-	.admin-hero { padding: 6rem 0; }
-	.form-container {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 3.5rem;
-		background: white;
-		border-radius: 32px;
-	}
+	.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+	.admin-hero { padding: 5rem 0 7rem; }
+	.page-header { margin-bottom: 2rem; }
 	.back-link {
 		display: inline-block;
-		margin-bottom: 2rem;
-		color: var(--text-secondary);
+		margin-bottom: 1rem;
+		color: rgba(255,255,255,0.6);
 		text-decoration: none;
 		font-weight: 600;
+		font-size: 0.9rem;
+		transition: color 0.2s;
 	}
-	.back-link:hover { color: var(--brand-orange); }
-	h1 { margin-bottom: 2.5rem; font-size: 2.5rem; }
+	.back-link:hover { color: white; }
+	.page-header h1 { color: white; font-size: 2.2rem; margin: 0.4rem 0 0; }
+	.form-card {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 3rem;
+		background: white;
+		border-radius: 28px;
+		box-shadow: 0 16px 60px rgba(0,0,0,0.2);
+	}
 	.form-group { margin-bottom: 1.5rem; }
-	.form-row {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 1.5rem;
-	}
+	.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 	label {
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 700;
 		color: var(--brand-blue);
-		font-size: 0.9rem;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
 	}
 	input, select, textarea {
 		width: 100%;
-		padding: 1rem;
-		border-radius: 12px;
-		border: 1px solid rgba(0,0,0,0.1);
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		border: 1.5px solid rgba(0,0,0,0.1);
 		font-family: inherit;
+		font-size: 0.95rem;
 		background: #f8fafc;
+		transition: border-color 0.2s, background 0.2s;
 	}
 	input:focus, select:focus, textarea:focus {
 		outline: none;
 		border-color: var(--brand-orange);
 		background: white;
 	}
-	.form-actions { margin-top: 2.5rem; text-align: right; }
-	button:disabled {
-		opacity: 0.7;
-		cursor: not-allowed;
-	}
+	.form-actions { margin-top: 2.5rem; display: flex; justify-content: flex-end; gap: 1rem; }
+	button:disabled { opacity: 0.6; cursor: not-allowed; }
 	@media (max-width: 600px) {
 		.form-row { grid-template-columns: 1fr; }
-		.form-container { padding: 2rem; }
+		.form-card { padding: 2rem 1.5rem; }
 	}
 </style>

@@ -2,6 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { supabaseAdmin } from '../lib/supabase-admin';
+
+const { data: teamleden } = await supabaseAdmin
+  .from('team_members')
+  .select('*')
+  .eq('toon_over_ons', true)
+  .order('volgorde', { ascending: true });
 ---
 
 <BaseLayout title="Over Ons">
@@ -14,6 +21,11 @@ import Footer from '../components/Footer.astro';
         <span class="badge">Sinds 2006</span>
         <h1>Passie voor <br/><span class="gradient-text">Veiligheid</span></h1>
         <p class="lead max-700 mx-auto">NL Security zorgt voor uw Veiligheid en Beveiliging. De wereld verandert, behoeften veranderen. Wij stellen ons dagelijks de vraag: hoe houden we deze nieuwe wereld veilig?</p>
+        {teamleden && teamleden.length > 0 && (
+          <div class="hero-scroll-btns">
+            <a href="#ons-team" class="scroll-btn">👥 Ons team</a>
+          </div>
+        )}
       </div>
       
       <div class="container-large reveal" style="transition-delay: 0.2s; margin-top: 4rem;">
@@ -84,12 +96,41 @@ import Footer from '../components/Footer.astro';
       </div>
     </section>
 
-    <!-- Bottom photo banner -->
-    <section class="about-bottom-banner bg-light">
-      <div class="container-large reveal">
-        <img src={`${import.meta.env.BASE_URL}assets/images/Foto_Zuidas_pak_4.png`} alt="NL Security professional" class="about-banner-img" />
-      </div>
-    </section>
+    <!-- Team sectie -->
+    {teamleden && teamleden.length > 0 && (
+      <section class="team-section" id="ons-team" style={`--team-bg: url('${import.meta.env.BASE_URL}assets/images/Foto_Zuidas_pak_4.png')`}>
+        <div class="container">
+          <div class="team-header text-center reveal">
+            <span class="badge-orange">Ons Team</span>
+            <h2>De mensen achter <span class="orange-text">NL Security</span></h2>
+          </div>
+          <div class={`team-grid team-grid-${Math.min((teamleden as any[]).length, 4)}`}>
+            {(teamleden as any[]).map((lid, i) => (
+              <div class="team-card reveal" style={`transition-delay: ${(i % 4) * 0.08}s`}>
+                <div class="team-card-foto">
+                  {lid.foto_url
+                    ? <img src={lid.foto_url} alt={lid.naam} />
+                    : <span class="team-initials">{lid.naam.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}</span>
+                  }
+                  <div class="team-card-overlay">
+                    <div class="overlay-links">
+                      {lid.email && <a href={`mailto:${lid.email}`} class="overlay-btn" title="E-mail">✉</a>}
+                      {lid.phone && <a href={`tel:${lid.phone.replace(/\s/g,'')}`} class="overlay-btn" title="Telefoon">📞</a>}
+                      {lid.linkedin && <a href={lid.linkedin} target="_blank" rel="noopener" class="overlay-btn" title="LinkedIn">💼</a>}
+                    </div>
+                  </div>
+                </div>
+                <div class="team-card-body">
+                  <h3>{lid.naam}</h3>
+                  <p class="team-functie">{lid.functie}</p>
+                  {lid.beschrijving && <p class="team-bio">{lid.beschrijving}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
 
     <!-- Gratis Presentatie -->
     <section class="specialist-highlight">
@@ -113,6 +154,17 @@ import Footer from '../components/Footer.astro';
   <Footer />
 </BaseLayout>
 
+<script is:inline>
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
 <style>
   .items-center { align-items: center; }
   .text-center { text-align: center; }
@@ -121,6 +173,33 @@ import Footer from '../components/Footer.astro';
 
   .mx-auto { margin-left: auto; margin-right: auto; }
   .max-700 { max-width: 700px; }
+
+  .hero-scroll-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+  .scroll-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background: var(--brand-blue);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(0,46,93,0.2);
+  }
+  .scroll-btn:hover {
+    background: var(--brand-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,102,0,0.3);
+  }
 
   .about-hero {
     padding: 8rem 1rem 2rem;
@@ -357,8 +436,179 @@ import Footer from '../components/Footer.astro';
     margin-bottom: 1rem;
   }
 
-  .about-bottom-banner {
-    padding: 0 1rem 4rem;
+  /* Team sectie */
+  #ons-team {
+    scroll-margin-top: 80px;
+  }
+  .team-section {
+    padding: 3.5rem 1rem 4rem;
+    background:
+      linear-gradient(to bottom,
+        rgba(0,20,60,0.88) 0%,
+        rgba(0,30,75,0.82) 40%,
+        rgba(0,20,60,0.92) 100%),
+      var(--team-bg) center 30% / cover no-repeat;
+    position: relative;
+    overflow: hidden;
+  }
+  .team-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,102,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .team-header {
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .badge-orange {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(255,102,0,0.18);
+    color: var(--brand-orange);
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(255,102,0,0.25);
+  }
+  .team-header h2 {
+    color: white;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Grid auto-adjusts based on count */
+  .team-grid {
+    display: grid;
+    gap: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+  .team-grid-1 { grid-template-columns: repeat(1, minmax(0, 340px)); justify-content: center; }
+  .team-grid-2 { grid-template-columns: repeat(2, 1fr); max-width: 760px; margin: 0 auto; }
+  .team-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .team-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .team-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  }
+  .team-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  .team-card-foto {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+  }
+  .team-card-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform 0.4s;
+  }
+  .team-card:hover .team-card-foto img {
+    transform: scale(1.04);
+  }
+  .team-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.05);
+  }
+  .team-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,46,93,0.85) 0%, transparent 60%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .team-card:hover .team-card-overlay {
+    opacity: 1;
+  }
+  .overlay-links {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .overlay-btn {
+    width: 38px;
+    height: 38px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .overlay-btn:hover {
+    background: var(--brand-orange);
+    transform: scale(1.1);
+  }
+  .team-card-body {
+    padding: 1.5rem;
+  }
+  .team-card-body h3 {
+    font-size: 1.05rem;
+    color: white;
+    margin: 0 0 0.25rem;
+  }
+  .team-functie {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--brand-orange);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem;
+  }
+  .team-bio {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.55;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (max-width: 1100px) {
+    .team-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .team-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .team-header h2 { font-size: 2.2rem; }
+  }
+  @media (max-width: 600px) {
+    .team-grid-2,
+    .team-grid-3,
+    .team-grid-4 { grid-template-columns: 1fr; }
+    .team-section { padding: 3rem 1rem; }
+    .team-card-foto { height: 220px; }
+    .team-header h2 { font-size: 1.9rem; }
   }
 
   .specialist-highlight {

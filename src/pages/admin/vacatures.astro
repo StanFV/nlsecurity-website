@@ -1,0 +1,192 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { supabase } from "../../lib/supabase";
+import { requireAdminAuth } from "../../lib/admin-auth";
+import { supabaseAdmin } from "../../lib/supabase-admin";
+
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
+
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+}
+
+const { data: vacancies } = await supabase
+	.from("vacancies")
+	.select("*")
+	.order("created_at", { ascending: false });
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<BaseLayout title="Vacatures Beheer">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero">
+			<div class="container">
+
+				<div class="page-header reveal">
+					<div>
+						<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+						<span class="page-badge">Vacatures</span>
+						<h1>Vacatures <span class="orange-text">Beheer</span></h1>
+						<p>{vacancies?.length ?? 0} actieve vacature{(vacancies?.length ?? 0) !== 1 ? "s" : ""}</p>
+					</div>
+					<a href="/admin/new-vacancy" class="btn-glow">+ Nieuwe Vacature</a>
+				</div>
+
+				<div class="vacancies-card reveal">
+					{!vacancies || vacancies.length === 0 ? (
+						<div class="empty-state">
+							<div class="empty-icon">📋</div>
+							<p>Er zijn nog geen vacatures. Maak er een aan om te beginnen.</p>
+							<a href="/admin/new-vacancy" class="btn-glow" style="margin-top:1rem;">+ Eerste Vacature Aanmaken</a>
+						</div>
+					) : (
+						<div class="vacancies-list">
+							{vacancies.map((job) => (
+								<div class="vacancy-row">
+									<div class="vacancy-meta">
+										<span class="job-type">{job.type}</span>
+										<h3>{job.title}</h3>
+										<p class="job-location">{job.location}</p>
+									</div>
+									<div class="vacancy-actions">
+										<a href={`/admin/edit/${job.id}`} class="btn-action btn-edit">Bewerken</a>
+										<button class="btn-action btn-delete" data-id={job.id}>Verwijderen</button>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
+document.querySelectorAll(".btn-delete").forEach((btn) => {
+	btn.onclick = async () => {
+		const id = btn.dataset.id;
+		if (!confirm("Weet je zeker dat je deze vacature wilt verwijderen?")) return;
+		btn.disabled = true;
+
+		const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+		const supabase = createClient(supabaseUrl, supabaseKey);
+		const { error } = await supabase.from("vacancies").delete().eq("id", id);
+
+		if (error) {
+			alert("Fout bij verwijderen: " + error.message);
+			btn.disabled = false;
+		} else {
+			btn.closest(".vacancy-row").remove();
+		}
+	};
+});
+</script>
+
+<style>
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 7rem; }
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: 2.5rem;
+}
+.back-link {
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	color: rgba(255,255,255,0.6);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.page-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0; }
+.page-header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin: 0; }
+
+.vacancies-card {
+	background: white;
+	border-radius: 24px;
+	padding: 2rem;
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+
+.empty-state {
+	text-align: center;
+	padding: 3rem 1rem;
+	color: var(--text-secondary);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+.vacancies-list { display: flex; flex-direction: column; }
+.vacancy-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1.1rem 1.2rem;
+	border-radius: 12px;
+	border: 1.5px solid transparent;
+	transition: background 0.15s, border-color 0.15s;
+}
+.vacancy-row:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,0.06); border-radius: 0; }
+.vacancy-row:hover { background: #f8fafc; }
+
+.job-type {
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--brand-orange);
+}
+.vacancy-meta h3 { font-size: 1rem; color: var(--brand-blue); margin: 0.2rem 0; }
+.job-location { font-size: 0.82rem; color: var(--text-secondary); margin: 0; }
+
+.vacancy-actions { display: flex; gap: 0.6rem; align-items: center; }
+.btn-action {
+	padding: 0.4rem 0.9rem;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	cursor: pointer;
+	border: none;
+	transition: 0.2s;
+	text-decoration: none;
+	display: inline-block;
+}
+.btn-edit { background: rgba(0,46,93,0.08); color: var(--brand-blue); }
+.btn-edit:hover { background: var(--brand-blue); color: white; }
+.btn-delete { background: #fee2e2; color: #dc2626; }
+.btn-delete:hover { background: #dc2626; color: white; }
+.btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+	.page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+	.vacancy-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+</style>
