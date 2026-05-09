@@ -1,0 +1,284 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Navigation from "../components/Navigation.astro";
+import Footer from "../components/Footer.astro";
+import { supabase } from "../lib/supabase";
+
+// Check of we een actieve sessie hebben via cookies
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
+
+let user = null;
+
+if (accessToken && refreshToken) {
+	try {
+		const { data, error } = await supabase.auth.setSession({
+			access_token: accessToken.value,
+			refresh_token: refreshToken.value,
+		});
+		if (!error) {
+			user = data.user;
+		}
+	} catch (e) {
+		console.error("Auth session error:", e);
+	}
+}
+
+// Haal vacatures op als ingelogd
+let vacancies = [];
+if (user) {
+	const { data } = await supabase.from('vacancies').select('*').order('created_at', { ascending: false });
+	vacancies = data || [];
+}
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<BaseLayout title="Admin Panel">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero bg-light">
+			<div class="container">
+				{!user ? (
+					<div class="login-container reveal">
+						<span class="badge-blue">Beheerderstoegang</span>
+						<h1>Admin <span class="orange-text">Login</span></h1>
+						<p>Log in met je e-mailadres en wachtwoord om vacatures te beheren.</p>
+						
+						<form id="login-form" class="elite-form admin-form" onsubmit="return false;">
+							<input type="email" id="email" placeholder="E-mailadres (@bc-capital.nl)" required />
+							<input type="password" id="password" placeholder="Wachtwoord" required />
+							<button type="button" id="login-submit-btn" class="btn-glow">Inloggen</button>
+							<p id="error-msg" class="error-text" style="display:none;"></p>
+						</form>
+					</div>
+				) : (
+					<div class="admin-dashboard reveal">
+						<div class="dashboard-header">
+							<div>
+								<span class="badge-orange">Admin Dashboard</span>
+								<h1>Welkom, <span class="gradient-text">{user.email}</span></h1>
+								<p>Beheer hier de vacatures van NL Security.</p>
+							</div>
+							<button id="logout" class="btn-outline">Uitloggen</button>
+						</div>
+
+						<div class="admin-actions">
+							<a href={`${import.meta.env.BASE_URL}admin/new-vacancy`} class="btn-glow">+ Nieuwe Vacature</a>
+						</div>
+
+						<div class="vacancies-management glass">
+							<h2>Huidige Vacatures</h2>
+							<div class="admin-vacancies-grid">
+								{vacancies.length === 0 ? (
+									<p>Er zijn nog geen vacatures. Voeg er een toe om te beginnen.</p>
+								) : (
+									vacancies.map((job) => (
+										<div class="admin-vacancy-item">
+											<div class="job-info">
+												<span class="job-type">{job.type}</span>
+												<h3>{job.title}</h3>
+												<p>{job.location}</p>
+											</div>
+											<div class="job-actions">
+												<a href={`${import.meta.env.BASE_URL}admin/edit/${job.id}`} class="btn-sm btn-outline">Bewerken</a>
+												<button class="btn-sm btn-delete" data-id={job.id}>Verwijderen</button>
+											</div>
+										</div>
+									))
+								)}
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
+	// Met define:vars geeft Astro de variabelen veilig door aan het inline script
+	
+	const initAdmin = () => {
+		const loginBtn = document.getElementById("login-submit-btn");
+		const errorMsg = document.getElementById("error-msg");
+		const logoutBtn = document.getElementById("logout");
+
+		if (loginBtn) {
+			loginBtn.onclick = async () => {
+				const email = document.getElementById("email").value;
+				const password = document.getElementById("password").value;
+
+				if (!email.endsWith("@bc-capital.nl")) {
+					if (errorMsg) {
+						errorMsg.textContent = "Alleen @bc-capital.nl e-mailadressen zijn toegestaan.";
+						errorMsg.style.display = "block";
+					}
+					return;
+				}
+
+				// Importeer Supabase direct
+				const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+				const supabase = createClient(supabaseUrl, supabaseKey);
+
+				const { data, error } = await supabase.auth.signInWithPassword({
+					email,
+					password,
+				});
+
+				if (error) {
+					if (errorMsg) {
+						errorMsg.textContent = "Inloggen mislukt: " + error.message;
+						errorMsg.style.display = "block";
+					}
+				} else {
+					const expirationDate = new Date();
+					expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+					
+					document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax; Secure`;
+					document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax; Secure`;
+					
+					window.location.reload();
+				}
+			};
+		}
+
+		if (logoutBtn) {
+			logoutBtn.onclick = async () => {
+				document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+				document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+				window.location.reload();
+			};
+		}
+
+		// Verwijderen logica
+		const deleteBtns = document.querySelectorAll(".btn-delete");
+		deleteBtns.forEach(btn => {
+			btn.onclick = async () => {
+				const id = btn.dataset.id;
+				if (confirm("Weet je zeker dat je deze vacature wilt verwijderen?")) {
+					const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+					const supabase = createClient(supabaseUrl, supabaseKey);
+					const { error } = await supabase.from('vacancies').delete().eq('id', id);
+					if (error) alert("Fout bij verwijderen: " + error.message);
+					else window.location.reload();
+				}
+			};
+		});
+	};
+
+	initAdmin();
+</script>
+
+<style>
+	.admin-page {
+		padding-top: 80px;
+		min-height: 80vh;
+	}
+
+	.admin-hero {
+		padding: 8rem 0;
+	}
+
+	.login-container {
+		text-align: center;
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	.admin-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-top: 2rem;
+	}
+
+	.admin-form input {
+		width: 100%;
+		padding: 1rem;
+		border-radius: 12px;
+		border: 1px solid rgba(0,0,0,0.1);
+	}
+
+	.error-text {
+		color: #dc3545;
+		font-size: 0.9rem;
+		margin-top: 0.5rem;
+	}
+
+	.dashboard-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		margin-bottom: 3rem;
+	}
+
+	.admin-vacancies-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.admin-vacancy-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1.5rem;
+		background: #f8fafc;
+		border-radius: 16px;
+		border: 1px solid rgba(0,0,0,0.05);
+	}
+
+	.job-info h3 {
+		font-size: 1.25rem;
+		margin: 0.25rem 0;
+	}
+
+	.job-actions {
+		display: flex;
+		gap: 1rem;
+	}
+
+	.btn-sm {
+		padding: 0.5rem 1rem !important;
+		font-size: 0.8rem !important;
+		height: auto !important;
+	}
+
+	.btn-delete {
+		background: #fee2e2;
+		color: #dc2626;
+		border: 1px solid #fecaca;
+		border-radius: 50px;
+		font-weight: 700;
+		cursor: pointer;
+		transition: 0.2s;
+	}
+
+	.btn-delete:hover {
+		background: #dc2626;
+		color: white;
+	}
+
+	.vacancies-management {
+		padding: 3rem;
+		border-radius: 32px;
+		background: white;
+	}
+
+	@media (max-width: 768px) {
+		.dashboard-header {
+			flex-direction: column;
+			gap: 1.5rem;
+		}
+		.admin-vacancy-item {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1.5rem;
+		}
+	}
+</style>
