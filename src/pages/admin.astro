@@ -139,8 +139,9 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 					const expirationDate = new Date();
 					expirationDate.setFullYear(expirationDate.getFullYear() + 1);
 					
-					document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax; Secure`;
-					document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax; Secure`;
+					const isSecure = location.protocol === 'https:' ? '; Secure' : '';
+					document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
+					document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
 					
 					window.location.reload();
 				}
