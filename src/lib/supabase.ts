@@ -1,4 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
+
+// Polyfill WebSocket voor omgevingen die dit missen (zoals Vercel Node runtimes < 22)
+if (typeof globalThis.WebSocket === 'undefined') {
+  globalThis.WebSocket = ws as any;
+}
 
 const supabaseUrl = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseKey = import.meta.env.SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
@@ -12,6 +18,6 @@ export const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
     persistSession: false
   },
   realtime: {
-    worker: false // Disable realtime worker to avoid WebSocket issues
+    transport: ws, // Forceer de transport naar ws bibliotheek
   }
 });
