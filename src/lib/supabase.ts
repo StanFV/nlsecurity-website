@@ -9,6 +9,9 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
   auth: {
-    persistSession: false // Belangrijk voor SSR/Server-side omgevingen
+    persistSession: false
+  },
+  realtime: {
+    worker: false // Disable realtime worker to avoid WebSocket issues
   }
 });
