@@ -8,7 +8,8 @@ Dit is de moderne website voor **NL Security**, gebouwd met [Astro](https://astr
 
 - **Framework:** [Astro 4.0](https://astro.build/)
 - **Styling:** Vanilla CSS (Modern & Responsive)
-- **Deployment:** GitHub Actions & GitHub Pages
+- **Deployment:** Vercel (SSR Enabled)
+- **Database & Auth:** Supabase
 - **Taal:** TypeScript / JavaScript
 
 ## 📁 Projectstructuur
@@ -19,9 +20,10 @@ Dit is de moderne website voor **NL Security**, gebouwd met [Astro](https://astr
 ├── src/
 │   ├── components/      # Herbruikbare UI-componenten (bijv. Navigation)
 │   ├── layouts/         # Pagina layouts (BaseLayout)
-│   ├── pages/           # Website pagina's (index, over, contact, etc.)
+│   ├── pages/           # Website pagina's (index, over, admin, etc.)
+│   ├── lib/             # Database configuratie (Supabase)
 │   └── styles/          # Globale CSS en thema-instellingen
-├── astro.config.mjs     # Astro configuratie
+├── astro.config.mjs     # Astro configuratie (Vercel SSR)
 └── package.json         # Project afhankelijkheden en scripts
 ```
 
@@ -40,30 +42,29 @@ Om dit project lokaal te draaien, volg je deze stappen:
     npm install
     ```
 
-3.  **Start de development server:**
+3.  **Configuratie:**
+    Maak een `.env` bestand aan met de Supabase credentials (zie Vercel dashboard voor de waarden).
+
+4.  **Start de development server:**
     ```bash
     npm run dev
     ```
 
-4.  **Open de website:**
-    Navigeer naar `http://localhost:4321/nlsecurity-website/` in je browser.
+5.  **Open de website:**
+    Navigeer naar `http://localhost:4321/` in je browser.
 
 ## 📦 Build & Deployment
 
-Het project is geconfigureerd om automatisch te builden en te deployen naar GitHub Pages via GitHub Actions wanneer er een push plaatsvindt naar de `main` branch.
+Het project is geconfigureerd om automatisch te builden en te deployen naar **Vercel** wanneer er een push plaatsvindt naar de `main` branch.
 
-**Handmatig builden:**
-```bash
-npm run build
-```
-De output wordt gegenereerd in de `dist/` map.
+**Live Website:** [https://nlsecurity-website.vercel.app/](https://nlsecurity-website.vercel.app/)
 
 ## ✨ Kenmerken
 
+- **Admin Panel:** Beheer vacatures via `/admin` (beveiligd met Supabase Auth).
+- **Dynamische Vacatures:** Vacatures worden live uit Supabase geladen op de `/werken-bij` pagina.
 - **Modern Design:** Gebruik van video-backgrounds, glassmorphism en vloeiende animaties.
 - **Responsive:** Volledig geoptimaliseerd voor desktop, tablet en mobiel.
-- **SEO Vriendelijk:** Snelle laadtijden en schone HTML dankzij de statische generatie van Astro.
-- **Client Marquee:** Dynamische weergave van partners en opdrachtgevers.
 - **Direct Contact:** Zwevende bel-knop voor snelle interactie op mobiel.
 
 ---
