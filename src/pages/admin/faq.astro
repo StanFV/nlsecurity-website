@@ -1,0 +1,725 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+import { requireAdminAuth } from "../../lib/admin-auth";
+import { supabaseAdmin } from "../../lib/supabase-admin";
+
+const auth = await requireAdminAuth(Astro.cookies);
+if (!auth) return Astro.redirect("/admin");
+
+if (auth.mfa_required && auth.aal !== "aal2") {
+	const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+	const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
+	return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+}
+
+const { data: faqItems } = await supabaseAdmin
+	.from("faq_items")
+	.select("*")
+	.order("volgorde", { ascending: true });
+
+const { data: bestPractices } = await supabaseAdmin
+	.from("best_practices")
+	.select("*")
+	.order("volgorde", { ascending: true });
+
+const faqCount = (faqItems ?? []).length;
+const bpCount = (bestPractices ?? []).length;
+---
+
+<BaseLayout title="FAQ Beheer">
+	<Navigation />
+
+	<main class="admin-page">
+		<section class="admin-hero">
+			<div class="container">
+
+				<div class="page-header reveal">
+					<div>
+						<a href="/admin" class="back-link">← Terug naar Dashboard</a>
+						<span class="page-badge">Website</span>
+						<h1>FAQ <span class="orange-text">Beheer</span></h1>
+						<p>{faqCount} vraag{faqCount !== 1 ? "en" : ""} · {bpCount} best practice{bpCount !== 1 ? "s" : ""}</p>
+					</div>
+				</div>
+
+				<!-- Tabs -->
+				<div class="tabs reveal">
+					<button class="tab active" data-tab="faq">FAQ Vragen ({faqCount})</button>
+					<button class="tab" data-tab="bp">Best Practices ({bpCount})</button>
+				</div>
+
+				<!-- FAQ Tab -->
+				<div class="tab-content active" id="tab-faq">
+					<div class="card-header">
+						<h2>Veelgestelde Vragen</h2>
+						<button class="btn-glow" id="btn-add-faq">+ Vraag Toevoegen</button>
+					</div>
+
+					<div class="items-card reveal">
+						{!faqItems || faqItems.length === 0 ? (
+							<div class="empty-state">
+								<div class="empty-icon">❓</div>
+								<p>Nog geen FAQ-vragen toegevoegd.</p>
+								<button class="btn-glow" id="btn-add-faq-empty" style="margin-top:1rem;">+ Eerste Vraag Toevoegen</button>
+							</div>
+						) : (
+							<div class="faq-list">
+								{(faqItems as any[]).map((item) => (
+									<div class="faq-row" data-id={item.id}>
+										<div class="faq-meta">
+											<div class="faq-top">
+												<span class={`status-dot ${item.gepubliceerd ? "published" : "draft"}`}></span>
+												{item.categorie && <span class="cat-pill">{item.categorie}</span>}
+												<span class="volgorde-label">#{item.volgorde}</span>
+											</div>
+											<h3>{item.vraag}</h3>
+											<p class="faq-answer-preview">{item.antwoord}</p>
+										</div>
+										<div class="row-actions">
+											<button
+												class="btn-action btn-edit"
+												data-action="edit-faq"
+												data-id={item.id}
+												data-vraag={item.vraag}
+												data-antwoord={item.antwoord}
+												data-categorie={item.categorie}
+												data-volgorde={item.volgorde}
+												data-gepubliceerd={item.gepubliceerd ? "true" : "false"}
+											>Bewerken</button>
+											<button class="btn-action btn-delete" data-action="delete-faq" data-id={item.id}>Verwijderen</button>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+
+				<!-- Best Practices Tab -->
+				<div class="tab-content" id="tab-bp">
+					<div class="card-header">
+						<h2>Best Practices</h2>
+						<button class="btn-glow" id="btn-add-bp">+ Best Practice Toevoegen</button>
+					</div>
+
+					<div class="items-card reveal">
+						{!bestPractices || bestPractices.length === 0 ? (
+							<div class="empty-state">
+								<div class="empty-icon">⭐</div>
+								<p>Nog geen best practices toegevoegd.</p>
+								<button class="btn-glow" id="btn-add-bp-empty" style="margin-top:1rem;">+ Eerste Best Practice Toevoegen</button>
+							</div>
+						) : (
+							<div class="faq-list">
+								{(bestPractices as any[]).map((bp) => (
+									<div class="faq-row" data-id={bp.id}>
+										<div class="faq-meta">
+											<div class="faq-top">
+												<span class={`status-dot ${bp.gepubliceerd ? "published" : "draft"}`}></span>
+												{bp.sector && <span class="cat-pill">{bp.sector}</span>}
+												<span class="volgorde-label">#{bp.volgorde}</span>
+											</div>
+											<h3>{bp.titel}</h3>
+											{(bp.klant_naam || bp.klant_bedrijf) && (
+												<p class="bp-client-info">
+													{bp.klant_naam}{bp.klant_naam && bp.klant_bedrijf ? " · " : ""}{bp.klant_bedrijf}
+												</p>
+											)}
+											<p class="faq-answer-preview">{bp.beschrijving}</p>
+										</div>
+										<div class="row-actions">
+											<button
+												class="btn-action btn-edit"
+												data-action="edit-bp"
+												data-id={bp.id}
+												data-titel={bp.titel}
+												data-beschrijving={bp.beschrijving}
+												data-klant-naam={bp.klant_naam ?? ""}
+												data-klant-bedrijf={bp.klant_bedrijf ?? ""}
+												data-sector={bp.sector ?? ""}
+												data-volgorde={bp.volgorde}
+												data-gepubliceerd={bp.gepubliceerd ? "true" : "false"}
+											>Bewerken</button>
+											<button class="btn-action btn-delete" data-action="delete-bp" data-id={bp.id}>Verwijderen</button>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<!-- Modal: FAQ -->
+<div class="modal-overlay" id="modal-faq">
+	<div class="modal">
+		<div class="modal-header">
+			<h3 id="modal-faq-title">FAQ Vraag Toevoegen</h3>
+			<button class="modal-close" data-close="modal-faq">×</button>
+		</div>
+		<form id="form-faq" class="modal-form">
+			<input type="hidden" id="faq-id" />
+			<div class="form-group">
+				<label>Vraag <span class="required">*</span></label>
+				<input type="text" id="faq-vraag" placeholder="Wat is uw beveiligingsvraag?" required />
+			</div>
+			<div class="form-group">
+				<label>Antwoord <span class="required">*</span></label>
+				<textarea id="faq-antwoord" rows="5" placeholder="Geef een duidelijk en volledig antwoord..." required></textarea>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label>Categorie</label>
+					<input type="text" id="faq-categorie" placeholder="bijv. Algemeen, Beveiliging, Prijzen" />
+				</div>
+				<div class="form-group">
+					<label>Volgorde</label>
+					<input type="number" id="faq-volgorde" value="0" min="0" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="checkbox-label">
+					<input type="checkbox" id="faq-gepubliceerd" checked />
+					<span>Gepubliceerd (zichtbaar op website)</span>
+				</label>
+			</div>
+			<div class="modal-actions">
+				<button type="button" class="btn-cancel" data-close="modal-faq">Annuleren</button>
+				<button type="submit" class="btn-glow" id="faq-submit-btn">Opslaan</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Modal: Best Practice -->
+<div class="modal-overlay" id="modal-bp">
+	<div class="modal">
+		<div class="modal-header">
+			<h3 id="modal-bp-title">Best Practice Toevoegen</h3>
+			<button class="modal-close" data-close="modal-bp">×</button>
+		</div>
+		<form id="form-bp" class="modal-form">
+			<input type="hidden" id="bp-id" />
+			<div class="form-group">
+				<label>Titel <span class="required">*</span></label>
+				<input type="text" id="bp-titel" placeholder="bijv. Toegangsbeveiliging op locatie" required />
+			</div>
+			<div class="form-group">
+				<label>Beschrijving <span class="required">*</span></label>
+				<textarea id="bp-beschrijving" rows="5" placeholder="Beschrijf de best practice en het resultaat..." required></textarea>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label>Klantnaam</label>
+					<input type="text" id="bp-klant-naam" placeholder="bijv. Jan de Vries" />
+				</div>
+				<div class="form-group">
+					<label>Klantsector / Bedrijfsnaam</label>
+					<input type="text" id="bp-klant-bedrijf" placeholder="bijv. Retailketen Amsterdam" />
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label>Sector</label>
+					<input type="text" id="bp-sector" placeholder="bijv. Retail, Zorg, Kantoor" />
+				</div>
+				<div class="form-group">
+					<label>Volgorde</label>
+					<input type="number" id="bp-volgorde" value="0" min="0" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="checkbox-label">
+					<input type="checkbox" id="bp-gepubliceerd" checked />
+					<span>Gepubliceerd (zichtbaar op website)</span>
+				</label>
+			</div>
+			<div class="modal-actions">
+				<button type="button" class="btn-cancel" data-close="modal-bp">Annuleren</button>
+				<button type="submit" class="btn-glow" id="bp-submit-btn">Opslaan</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script is:inline>
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+	tab.onclick = () => {
+		document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+		document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+		tab.classList.add('active');
+		document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+	};
+});
+
+// Modal helpers
+function openModal(id) {
+	document.getElementById(id).classList.add('active');
+	document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+	document.getElementById(id).classList.remove('active');
+	document.body.style.overflow = '';
+}
+
+document.querySelectorAll('[data-close]').forEach(btn => {
+	btn.onclick = () => closeModal(btn.dataset.close);
+});
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+	overlay.onclick = (e) => {
+		if (e.target === overlay) closeModal(overlay.id);
+	};
+});
+
+// ---- FAQ Modal ----
+function openFaqModal(data = null) {
+	document.getElementById('modal-faq-title').textContent = data ? 'FAQ Vraag Bewerken' : 'FAQ Vraag Toevoegen';
+	document.getElementById('faq-id').value = data?.id ?? '';
+	document.getElementById('faq-vraag').value = data?.vraag ?? '';
+	document.getElementById('faq-antwoord').value = data?.antwoord ?? '';
+	document.getElementById('faq-categorie').value = data?.categorie ?? 'Algemeen';
+	document.getElementById('faq-volgorde').value = data?.volgorde ?? 0;
+	document.getElementById('faq-gepubliceerd').checked = data ? data.gepubliceerd === 'true' : true;
+	openModal('modal-faq');
+}
+
+document.getElementById('btn-add-faq').onclick = () => openFaqModal();
+const btnAddFaqEmpty = document.getElementById('btn-add-faq-empty');
+if (btnAddFaqEmpty) btnAddFaqEmpty.onclick = () => openFaqModal();
+
+document.querySelectorAll('[data-action="edit-faq"]').forEach(btn => {
+	btn.onclick = () => openFaqModal({
+		id: btn.dataset.id,
+		vraag: btn.dataset.vraag,
+		antwoord: btn.dataset.antwoord,
+		categorie: btn.dataset.categorie,
+		volgorde: btn.dataset.volgorde,
+		gepubliceerd: btn.dataset.gepubliceerd,
+	});
+});
+
+document.getElementById('form-faq').onsubmit = async (e) => {
+	e.preventDefault();
+	const id = document.getElementById('faq-id').value;
+	const submitBtn = document.getElementById('faq-submit-btn');
+	submitBtn.disabled = true;
+	submitBtn.textContent = 'Opslaan...';
+
+	const body = {
+		vraag: document.getElementById('faq-vraag').value,
+		antwoord: document.getElementById('faq-antwoord').value,
+		categorie: document.getElementById('faq-categorie').value || 'Algemeen',
+		volgorde: parseInt(document.getElementById('faq-volgorde').value) || 0,
+		gepubliceerd: document.getElementById('faq-gepubliceerd').checked,
+	};
+
+	const url = id ? `/api/admin/faq/${id}` : '/api/admin/faq';
+	const method = id ? 'PATCH' : 'POST';
+	const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+	if (res.ok) {
+		window.location.reload();
+	} else {
+		const err = await res.json();
+		alert('Fout: ' + (err.error ?? 'Onbekende fout'));
+		submitBtn.disabled = false;
+		submitBtn.textContent = 'Opslaan';
+	}
+};
+
+document.querySelectorAll('[data-action="delete-faq"]').forEach(btn => {
+	btn.onclick = async () => {
+		if (!confirm('Weet je zeker dat je deze vraag wilt verwijderen?')) return;
+		const res = await fetch(`/api/admin/faq/${btn.dataset.id}`, { method: 'DELETE' });
+		if (res.ok) btn.closest('.faq-row').remove();
+		else alert('Verwijderen mislukt.');
+	};
+});
+
+// ---- Best Practices Modal ----
+function openBpModal(data = null) {
+	document.getElementById('modal-bp-title').textContent = data ? 'Best Practice Bewerken' : 'Best Practice Toevoegen';
+	document.getElementById('bp-id').value = data?.id ?? '';
+	document.getElementById('bp-titel').value = data?.titel ?? '';
+	document.getElementById('bp-beschrijving').value = data?.beschrijving ?? '';
+	document.getElementById('bp-klant-naam').value = data?.klantNaam ?? '';
+	document.getElementById('bp-klant-bedrijf').value = data?.klantBedrijf ?? '';
+	document.getElementById('bp-sector').value = data?.sector ?? '';
+	document.getElementById('bp-volgorde').value = data?.volgorde ?? 0;
+	document.getElementById('bp-gepubliceerd').checked = data ? data.gepubliceerd === 'true' : true;
+	openModal('modal-bp');
+}
+
+document.getElementById('btn-add-bp').onclick = () => openBpModal();
+const btnAddBpEmpty = document.getElementById('btn-add-bp-empty');
+if (btnAddBpEmpty) btnAddBpEmpty.onclick = () => openBpModal();
+
+document.querySelectorAll('[data-action="edit-bp"]').forEach(btn => {
+	btn.onclick = () => openBpModal({
+		id: btn.dataset.id,
+		titel: btn.dataset.titel,
+		beschrijving: btn.dataset.beschrijving,
+		klantNaam: btn.dataset.klantNaam,
+		klantBedrijf: btn.dataset.klantBedrijf,
+		sector: btn.dataset.sector,
+		volgorde: btn.dataset.volgorde,
+		gepubliceerd: btn.dataset.gepubliceerd,
+	});
+});
+
+document.getElementById('form-bp').onsubmit = async (e) => {
+	e.preventDefault();
+	const id = document.getElementById('bp-id').value;
+	const submitBtn = document.getElementById('bp-submit-btn');
+	submitBtn.disabled = true;
+	submitBtn.textContent = 'Opslaan...';
+
+	const body = {
+		titel: document.getElementById('bp-titel').value,
+		beschrijving: document.getElementById('bp-beschrijving').value,
+		klant_naam: document.getElementById('bp-klant-naam').value || null,
+		klant_bedrijf: document.getElementById('bp-klant-bedrijf').value || null,
+		sector: document.getElementById('bp-sector').value || null,
+		volgorde: parseInt(document.getElementById('bp-volgorde').value) || 0,
+		gepubliceerd: document.getElementById('bp-gepubliceerd').checked,
+	};
+
+	const url = id ? `/api/admin/best-practices/${id}` : '/api/admin/best-practices';
+	const method = id ? 'PATCH' : 'POST';
+	const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+	if (res.ok) {
+		window.location.reload();
+	} else {
+		const err = await res.json();
+		alert('Fout: ' + (err.error ?? 'Onbekende fout'));
+		submitBtn.disabled = false;
+		submitBtn.textContent = 'Opslaan';
+	}
+};
+
+document.querySelectorAll('[data-action="delete-bp"]').forEach(btn => {
+	btn.onclick = async () => {
+		if (!confirm('Weet je zeker dat je deze best practice wilt verwijderen?')) return;
+		const res = await fetch(`/api/admin/best-practices/${btn.dataset.id}`, { method: 'DELETE' });
+		if (res.ok) btn.closest('.faq-row').remove();
+		else alert('Verwijderen mislukt.');
+	};
+});
+</script>
+
+<style>
+.admin-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.admin-hero { padding: 5rem 0 7rem; }
+
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: 2rem;
+}
+.back-link {
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	color: rgba(255,255,255,0.6);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+.page-badge {
+	display: inline-block;
+	background: var(--brand-orange);
+	color: white;
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.5rem;
+}
+.page-header h1 { color: white; font-size: 2.2rem; margin: 0.3rem 0; }
+.page-header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin: 0; }
+
+/* Tabs */
+.tabs {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 2rem;
+	background: rgba(255,255,255,0.08);
+	border-radius: 14px;
+	padding: 0.4rem;
+	width: fit-content;
+}
+.tab {
+	padding: 0.6rem 1.5rem;
+	border-radius: 10px;
+	border: none;
+	background: transparent;
+	color: rgba(255,255,255,0.6);
+	font-size: 0.88rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition: 0.2s;
+	font-family: inherit;
+}
+.tab.active {
+	background: white;
+	color: var(--brand-blue);
+}
+.tab:hover:not(.active) { color: white; }
+
+/* Tab content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.25rem;
+}
+.card-header h2 { color: white; font-size: 1.3rem; margin: 0; }
+
+.items-card {
+	background: white;
+	border-radius: 24px;
+	padding: 2rem;
+	box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+
+.empty-state {
+	text-align: center;
+	padding: 3rem 1rem;
+	color: var(--text-secondary);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+.faq-list { display: flex; flex-direction: column; }
+
+.faq-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	padding: 1.2rem 0;
+	border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.faq-row:last-child { border-bottom: none; padding-bottom: 0; }
+.faq-row:first-child { padding-top: 0; }
+
+.faq-top {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.4rem;
+}
+
+.status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+.status-dot.published { background: #22c55e; }
+.status-dot.draft { background: #f59e0b; }
+
+.cat-pill {
+	font-size: 0.68rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 0.15rem 0.55rem;
+	background: rgba(var(--brand-blue-rgb), 0.08);
+	color: var(--brand-blue);
+	border-radius: 999px;
+}
+
+.volgorde-label {
+	font-size: 0.7rem;
+	color: #94a3b8;
+	font-weight: 600;
+}
+
+.faq-meta { flex: 1; min-width: 0; }
+.faq-meta h3 { font-size: 0.98rem; color: var(--brand-blue); margin: 0 0 0.4rem; }
+.faq-answer-preview {
+	font-size: 0.82rem;
+	color: var(--text-secondary);
+	margin: 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	line-height: 1.5;
+}
+.bp-client-info {
+	font-size: 0.78rem;
+	color: var(--brand-orange);
+	font-weight: 600;
+	margin: 0 0 0.3rem;
+}
+
+.row-actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
+	align-items: flex-start;
+}
+
+.btn-action {
+	padding: 0.4rem 0.9rem;
+	border-radius: 8px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	cursor: pointer;
+	border: none;
+	transition: 0.2s;
+	text-decoration: none;
+	display: inline-block;
+	white-space: nowrap;
+}
+.btn-edit { background: rgba(0,46,93,0.08); color: var(--brand-blue); }
+.btn-edit:hover { background: var(--brand-blue); color: white; }
+.btn-delete { background: #fee2e2; color: #dc2626; }
+.btn-delete:hover { background: #dc2626; color: white; }
+
+/* Modal */
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.5);
+	z-index: 5000;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+	background: white;
+	border-radius: 24px;
+	padding: 2rem;
+	width: 100%;
+	max-width: 560px;
+	max-height: 90vh;
+	overflow-y: auto;
+	box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.modal-header h3 { font-size: 1.25rem; color: var(--brand-blue); margin: 0; }
+.modal-close {
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	color: #94a3b8;
+	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+	border-radius: 8px;
+	transition: 0.2s;
+	line-height: 1;
+}
+.modal-close:hover { background: #f1f5f9; color: var(--brand-blue); }
+
+.modal-form { display: flex; flex-direction: column; gap: 1rem; }
+
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group label {
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--brand-blue);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.required { color: var(--brand-orange); }
+
+.form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.modal-form input[type="text"],
+.modal-form input[type="number"],
+.modal-form textarea {
+	padding: 0.8rem 1rem;
+	border: 1.5px solid #e2e8f0;
+	border-radius: 10px;
+	font-family: inherit;
+	font-size: 0.93rem;
+	color: var(--brand-blue);
+	background: #f8fafc;
+	transition: 0.2s;
+}
+.modal-form input:focus,
+.modal-form textarea:focus {
+	outline: none;
+	border-color: var(--brand-orange);
+	background: white;
+}
+.modal-form textarea { resize: vertical; min-height: 100px; }
+
+.checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	font-size: 0.88rem !important;
+	font-weight: 600 !important;
+	text-transform: none !important;
+	letter-spacing: 0 !important;
+	color: var(--text-secondary) !important;
+}
+.checkbox-label input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--brand-orange);
+	cursor: pointer;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 0.75rem;
+	justify-content: flex-end;
+	margin-top: 0.5rem;
+}
+.btn-cancel {
+	padding: 0.7rem 1.5rem;
+	border: 1.5px solid #e2e8f0;
+	border-radius: 50px;
+	background: white;
+	color: var(--text-secondary);
+	font-size: 0.85rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition: 0.2s;
+	font-family: inherit;
+}
+.btn-cancel:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+
+@media (max-width: 640px) {
+	.page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+	.faq-row { flex-direction: column; }
+	.form-row { grid-template-columns: 1fr; }
+	.card-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+}
+</style>

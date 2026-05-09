@@ -1,0 +1,517 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import { supabaseAdmin } from '../lib/supabase-admin';
+
+const { data: faqItems } = await supabaseAdmin
+  .from('faq_items')
+  .select('*')
+  .eq('gepubliceerd', true)
+  .order('volgorde', { ascending: true });
+
+const { data: bestPractices } = await supabaseAdmin
+  .from('best_practices')
+  .select('*')
+  .eq('gepubliceerd', true)
+  .order('volgorde', { ascending: true });
+
+const categorieen = [...new Set((faqItems ?? []).map((item: any) => item.categorie))];
+---
+
+<BaseLayout title="Veelgestelde Vragen">
+  <Navigation />
+
+  <main class="page-faq">
+
+    <!-- Hero -->
+    <section class="faq-hero" style={`--hero-bg: url('${import.meta.env.BASE_URL}assets/images/Foto_Zuidas_Pak_1.png')`}>
+      <div class="container text-center reveal">
+        <span class="badge">FAQ</span>
+        <h1>Veelgestelde <br/><span class="gradient-text">Vragen</span></h1>
+        <p class="lead max-700 mx-auto">Heeft u een vraag over onze beveiligingsdiensten? Hieronder vindt u antwoorden op de meest gestelde vragen. Staat uw vraag er niet bij? Neem dan gerust contact met ons op.</p>
+        {bestPractices && bestPractices.length > 0 && (
+          <div class="hero-scroll-btns">
+            <a href="#faq" class="scroll-btn">Bekijk vragen</a>
+            <a href="#best-practices" class="scroll-btn scroll-btn-outline">Klantervaringen</a>
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- FAQ Accordion -->
+    {faqItems && faqItems.length > 0 && (
+      <section class="faq-section bg-light" id="faq">
+        <div class="container">
+          <div class="faq-header text-center reveal">
+            <span class="badge-orange">Antwoorden</span>
+            <h2>Heeft u een <span class="orange-text">vraag?</span></h2>
+          </div>
+
+          {categorieen.map((cat, ci) => (
+            <div class="faq-category reveal" style={`transition-delay: ${ci * 0.05}s`}>
+              {categorieen.length > 1 && (
+                <h3 class="cat-label">{cat}</h3>
+              )}
+              <div class="faq-list">
+                {(faqItems as any[]).filter((item) => item.categorie === cat).map((item, i) => (
+                  <div class="faq-item" data-index={`${ci}-${i}`}>
+                    <button class="faq-question" aria-expanded="false">
+                      <span>{item.vraag}</span>
+                      <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                      <p>{item.antwoord}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {(!faqItems || faqItems.length === 0) && (
+      <section class="faq-section bg-light" id="faq">
+        <div class="container text-center reveal">
+          <p class="lead">Er zijn momenteel geen vragen beschikbaar. Neem gerust contact met ons op.</p>
+        </div>
+      </section>
+    )}
+
+    <!-- Best Practices -->
+    {bestPractices && bestPractices.length > 0 && (
+      <section class="best-practices-section" id="best-practices">
+        <div class="container">
+          <div class="bp-header text-center reveal">
+            <span class="badge-blue">Klantervaringen</span>
+            <h2>Best <span class="orange-text">Practices</span></h2>
+            <p class="section-sub">Ontdek hoe onze klanten optimale veiligheid bereiken met NL Security.</p>
+          </div>
+          <div class="bp-grid">
+            {(bestPractices as any[]).map((bp, i) => (
+              <div class="bp-card reveal glass" style={`transition-delay: ${(i % 3) * 0.08}s`}>
+                <div class="bp-card-header">
+                  {bp.sector && <span class="bp-sector">{bp.sector}</span>}
+                  <h3>{bp.titel}</h3>
+                  {(bp.klant_naam || bp.klant_bedrijf) && (
+                    <p class="bp-client">
+                      {bp.klant_naam && <span>{bp.klant_naam}</span>}
+                      {bp.klant_naam && bp.klant_bedrijf && ' · '}
+                      {bp.klant_bedrijf && <span class="bp-company">{bp.klant_bedrijf}</span>}
+                    </p>
+                  )}
+                </div>
+                <p class="bp-beschrijving">{bp.beschrijving}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- CTA -->
+    <section class="faq-cta">
+      <div class="container grid grid-2 items-center">
+        <div class="reveal">
+          <span class="badge">Nog vragen?</span>
+          <h2>Staat uw vraag er <span class="orange-text">niet bij?</span></h2>
+          <p>Onze beveiligingsexperts staan voor u klaar. Neem direct contact op voor een persoonlijk adviesgesprek of een vrijblijvende offerte.</p>
+          <div class="actions-group">
+            <a href={`${import.meta.env.BASE_URL}contact`} class="btn-glow">Neem Contact Op</a>
+            <a href="tel:0880202800" class="btn-outline">088 - 02 02 800</a>
+          </div>
+        </div>
+        <div class="visual reveal" style="transition-delay: 0.2s">
+          <img src={`${import.meta.env.BASE_URL}assets/images/Foto_zuidas_pak_5.png`} alt="NL Security Expert" class="rounded-image" />
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script is:inline>
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+      document.querySelectorAll('.faq-question').forEach(b => {
+        b.setAttribute('aria-expanded', 'false');
+        b.querySelector('.faq-icon').textContent = '+';
+        b.closest('.faq-item').classList.remove('open');
+      });
+
+      if (!isOpen) {
+        btn.setAttribute('aria-expanded', 'true');
+        btn.querySelector('.faq-icon').textContent = '×';
+        item.classList.add('open');
+      }
+    });
+  });
+</script>
+
+<style>
+  .text-center { text-align: center; }
+  .bg-light { background-color: var(--bg-light); }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .max-700 { max-width: 700px; }
+  .items-center { align-items: center; }
+  .grid { display: grid; gap: 5rem; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+
+  #faq, #best-practices { scroll-margin-top: 80px; }
+
+  .faq-hero {
+    padding: 10rem 1rem 5rem;
+    background:
+      linear-gradient(to bottom,
+        rgba(255,255,255,0.62) 0%,
+        rgba(255,255,255,0.72) 60%,
+        rgba(255,255,255,0.88) 100%),
+      var(--hero-bg) center 20% / cover no-repeat;
+  }
+
+  .faq-hero h1 {
+    font-size: 4.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero-scroll-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .scroll-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background: var(--brand-blue);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+    box-shadow: 0 4px 16px rgba(0,46,93,0.2);
+  }
+
+  .scroll-btn:hover {
+    background: var(--brand-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,102,0,0.3);
+  }
+
+  .scroll-btn-outline {
+    background: transparent;
+    border: 2px solid var(--brand-blue);
+    color: var(--brand-blue);
+    box-shadow: none;
+  }
+
+  .scroll-btn-outline:hover {
+    background: var(--brand-orange);
+    border-color: var(--brand-orange);
+    color: white;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background: rgba(var(--brand-blue-rgb), 0.1);
+    color: var(--brand-blue);
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .badge-orange {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(255,102,0,0.1);
+    color: var(--brand-orange);
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(255,102,0,0.2);
+  }
+
+  .badge-blue {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    background: rgba(var(--brand-blue-rgb), 0.08);
+    color: var(--brand-blue);
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(var(--brand-blue-rgb), 0.12);
+  }
+
+  /* FAQ Section */
+  .faq-section {
+    padding: 5rem 1rem 6rem;
+  }
+
+  .faq-header {
+    margin-bottom: 3rem;
+  }
+
+  .faq-header h2 {
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .cat-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--brand-orange);
+    margin: 2.5rem 0 1rem;
+  }
+
+  .faq-category:first-child .cat-label {
+    margin-top: 0;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .faq-item {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .faq-item.open {
+    border-color: var(--brand-orange);
+    box-shadow: 0 6px 24px rgba(255,102,0,0.1);
+  }
+
+  .faq-question {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--brand-blue);
+    transition: color 0.2s;
+  }
+
+  .faq-question:hover {
+    color: var(--brand-orange);
+  }
+
+  .faq-item.open .faq-question {
+    color: var(--brand-orange);
+  }
+
+  .faq-icon {
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--brand-orange);
+    flex-shrink: 0;
+    line-height: 1;
+    transition: transform 0.3s;
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+
+  .faq-item.open .faq-answer {
+    max-height: 500px;
+  }
+
+  .faq-answer p {
+    padding: 0 1.5rem 1.5rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  /* Best Practices */
+  .best-practices-section {
+    padding: 6rem 1rem;
+    background: var(--brand-blue);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .best-practices-section::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -15%;
+    width: 70%;
+    height: 160%;
+    background: radial-gradient(circle, rgba(255,102,0,0.05) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .bp-header {
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bp-header h2 {
+    font-size: 3.5rem;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-sub {
+    color: rgba(255,255,255,0.6);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .bp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.75rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bp-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 2rem;
+    transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
+  }
+
+  .bp-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  }
+
+  .bp-card-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .bp-sector {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(255,102,0,0.2);
+    color: var(--brand-orange);
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(255,102,0,0.3);
+  }
+
+  .bp-card-header h3 {
+    font-size: 1.1rem;
+    color: white;
+    margin: 0 0 0.5rem;
+    line-height: 1.35;
+  }
+
+  .bp-client {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin: 0;
+  }
+
+  .bp-company {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+  }
+
+  .bp-beschrijving {
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  /* CTA */
+  .faq-cta {
+    padding: 8rem 1rem;
+  }
+
+  .rounded-image {
+    width: 100%;
+    border-radius: 40px;
+  }
+
+  .actions-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 1024px) {
+    .bp-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .faq-hero { padding: 7rem 1rem 3rem; }
+    .faq-hero h1 { font-size: 2.5rem; }
+    .faq-header h2 { font-size: 2.25rem; }
+    .bp-header h2 { font-size: 2.25rem; }
+    .faq-section { padding: 3rem 1rem 4rem; }
+    .best-practices-section { padding: 4rem 1rem; }
+    .faq-cta { padding: 4rem 1rem; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .actions-group { flex-direction: column; gap: 1rem; }
+    .btn-glow, .btn-outline { width: 100%; text-align: center; }
+  }
+
+  @media (max-width: 600px) {
+    .bp-grid { grid-template-columns: 1fr; }
+    .faq-hero h1 { font-size: 2rem; }
+  }
+</style>
