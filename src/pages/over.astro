@@ -391,10 +391,22 @@ import Footer from '../components/Footer.astro';
 
   @media (max-width: 768px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .about-hero h1 { font-size: 3rem; }
-    .vision-card { padding: 3rem; }
-    .envido-banner { padding: 3rem; }
-    .specialist-highlight { padding: 6rem 1rem; }
-    .actions-group { flex-direction: column; }
+    .about-hero h1 { font-size: 2.5rem; }
+    .vision-card { padding: 2rem; border-radius: 24px; }
+    .vision-card h2 { font-size: 1.9rem; }
+    .envido-banner { padding: 2.5rem 1.25rem; border-radius: 24px; }
+    .envido-content h2 { font-size: 1.75rem; }
+    .specialist-highlight { padding: 4rem 1rem; }
+    .actions-group { flex-direction: column; gap: 1rem; }
+    .btn-glow, .btn-outline { width: 100%; text-align: center; }
+    .core-values h2 { font-size: 2rem; }
+    .about-hero { padding: 6rem 1rem 1rem; }
+  }
+
+  @media (max-width: 480px) {
+    .about-hero h1 { font-size: 2rem; }
+    .vision-card h2 { font-size: 1.6rem; }
+    .envido-content h2 { font-size: 1.5rem; }
+    .about-banner-img { height: 200px; border-radius: 20px; }
   }
 </style>
