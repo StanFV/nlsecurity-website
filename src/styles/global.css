@@ -91,6 +91,32 @@ h1, h2, h3 {
   border: 2px solid var(--brand-orange);
 }
 
+.btn-blue-glow {
+  position: relative;
+  background: var(--brand-blue);
+  color: white;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-weight: bold;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: 0.3s;
+  border: 2px solid var(--brand-blue);
+  cursor: pointer;
+  overflow: hidden;
+  display: inline-block;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.btn-blue-glow:hover {
+  background: white;
+  color: var(--brand-blue);
+  box-shadow: 0 5px 15px rgba(var(--brand-blue-rgb), 0.2);
+  border: 2px solid var(--brand-blue);
+}
+
 .btn-outline {
   padding: 1rem 2.5rem;
   border: 2px solid var(--brand-blue);
