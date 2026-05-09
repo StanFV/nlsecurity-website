@@ -33,7 +33,7 @@ const { data: teamleden } = await supabaseAdmin
         <!-- Form Column -->
         <div class="contact-form-elite reveal">
           <div id="form-container">
-            <h2>Stuur een <span style="color:var(--brand-orange)">bericht</span></h2>
+            <h2>Stuur een <span class="orange-text">bericht</span></h2>
             <p class="form-intro">Laat uw gegevens achter en wij nemen binnen 24 uur contact met u op.</p>
 
             <form class="elite-form" id="contact-form" action="https://formspree.io/f/xaqvpjzv" method="POST">
@@ -82,7 +82,7 @@ const { data: teamleden } = await supabaseAdmin
 
           <div id="success-message" style="display:none; text-align:center; padding:3rem 0;">
             <div style="font-size:4rem; margin-bottom:1.5rem;">✅</div>
-            <h2 style="color:var(--brand-orange)">Bericht verzonden!</h2>
+            <h2 class="gradient-text">Bericht verzonden!</h2>
             <p style="font-size:1.1rem; color:rgba(255,255,255,0.75); line-height:1.6;">Bedankt voor uw bericht. Wij nemen binnen 24 uur contact met u op.</p>
           </div>
           <div id="error-message" style="display:none; padding:1rem; color:#fca5a5; background:rgba(220,53,69,0.2); border-radius:12px; margin-top:1rem; text-align:center;">
@@ -312,15 +312,45 @@ const { data: teamleden } = await supabaseAdmin
     )}
 
     <!-- Map Section -->
-    <section class="map-section bg-light" id="locaties">
+    <section class="map-section" id="locaties">
       <div class="container">
         <div class="section-header text-center reveal">
-          <h2>Onze <span class="orange-text">Locaties</span></h2>
-          <p>Bekijk onze vestigingen in Zoetermeer en Den Haag.</p>
+          <h2>Onze <span class="gradient-text">Locaties</span></h2>
+          <p>Bezoek ons in Zoetermeer of Den Haag — of plan direct uw route.</p>
         </div>
-        
-        <div class="map-container-outer reveal">
-          <div id="map" style="height: 500px; border-radius: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); z-index: 1;"></div>
+
+        <div class="map-layout reveal">
+          <!-- Locatiekaarten -->
+          <div class="location-cards">
+            <div class="location-card active" data-index="0">
+              <div class="loc-icon">🏢</div>
+              <div class="loc-info">
+                <span class="loc-label">Hoofdkantoor</span>
+                <h3>Zoetermeer</h3>
+                <p>Boerhaavelaan 31<br/>2713 HA Zoetermeer</p>
+              </div>
+              <button class="route-btn" data-lat="52.0722" data-lng="4.4842" data-name="NL Security Zoetermeer, Boerhaavelaan 31">
+                <span class="route-icon">↗</span> Route plannen
+              </button>
+            </div>
+
+            <div class="location-card" data-index="1">
+              <div class="loc-icon">📍</div>
+              <div class="loc-info">
+                <span class="loc-label">Regiokantoor</span>
+                <h3>Den Haag</h3>
+                <p>Stadhouderslaan 9<br/>2517 HV Den Haag</p>
+              </div>
+              <button class="route-btn" data-lat="52.0886" data-lng="4.2831" data-name="NL Security Den Haag, Stadhouderslaan 9">
+                <span class="route-icon">↗</span> Route plannen
+              </button>
+            </div>
+          </div>
+
+          <!-- Kaart -->
+          <div class="map-wrapper">
+            <div id="map"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -344,42 +374,102 @@ const { data: teamleden } = await supabaseAdmin
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
-    const map = L.map('map').setView([52.078, 4.38], 11);
+  const locations = [
+    { name: "Hoofdkantoor Zoetermeer", address: "Boerhaavelaan 31, 2713 HA Zoetermeer", coords: [52.0722, 4.4842] },
+    { name: "Regiokantoor Den Haag",   address: "Stadhouderslaan 9, 2517 HV Den Haag",  coords: [52.0886, 4.2831] }
+  ];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  let map, markers = [], activeIndex = 0;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    map = L.map('map', { zoomControl: false, scrollWheelZoom: false }).setView([52.078, 4.38], 11);
+
+    // CartoDB Positron — schone moderne stijl
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
     }).addTo(map);
 
-    const locations = [
-      {
-        name: "Hoofdkantoor Zoetermeer",
-        address: "Boerhaavelaan 31, Zoetermeer",
-        coords: [52.0722, 4.4842]
-      },
-      {
-        name: "Regio Den Haag",
-        address: "Stadhouderslaan 9, Den Haag",
-        coords: [52.0886, 4.2831]
-      }
-    ];
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    const orangeIcon = L.divIcon({
-      className: 'custom-div-icon',
-      html: "<div style='background-color:#FF6600; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);'></div>",
-      iconSize: [15, 15],
-      iconAnchor: [7, 7]
-    });
+    function makeIcon(active) {
+      return L.divIcon({
+        className: '',
+        html: `<div style="
+          width:${active ? 20 : 14}px;
+          height:${active ? 20 : 14}px;
+          background:${active ? '#FF6600' : '#002E5D'};
+          border-radius:50%;
+          border:3px solid white;
+          box-shadow:0 4px 16px rgba(0,0,0,${active ? '0.35' : '0.2'});
+          transition:all 0.3s;
+        "></div>`,
+        iconSize: [active ? 20 : 14, active ? 20 : 14],
+        iconAnchor: [active ? 10 : 7, active ? 10 : 7]
+      });
+    }
 
-    locations.forEach(loc => {
-      L.marker(loc.coords, {icon: orangeIcon})
+    locations.forEach((loc, i) => {
+      const marker = L.marker(loc.coords, { icon: makeIcon(i === 0) })
         .addTo(map)
-        .bindPopup(`<strong>${loc.name}</strong><br>${loc.address}`);
+        .bindPopup(`
+          <div style="font-family:inherit;min-width:160px;">
+            <strong style="color:#002E5D;font-size:0.9rem;">${loc.name}</strong>
+            <br/><span style="color:#64748b;font-size:0.8rem;">${loc.address}</span>
+          </div>
+        `, { offset: [0, -8] });
+      markers.push(marker);
     });
 
-    // Auto fit bounds if possible
-    const group = new L.featureGroup(locations.map(loc => L.marker(loc.coords)));
-    map.fitBounds(group.getBounds().pad(0.5));
+    // Fit both locations in view
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.45));
+
+    // Klik op locatiekaart → zoom naar marker
+    document.querySelectorAll('.location-card').forEach((card, i) => {
+      card.addEventListener('click', () => selectLocation(i));
+    });
+
+    function selectLocation(i) {
+      activeIndex = i;
+      document.querySelectorAll('.location-card').forEach((c, j) => c.classList.toggle('active', j === i));
+      markers.forEach((m, j) => m.setIcon(makeIcon(j === i)));
+      map.flyTo(locations[i].coords, 14, { duration: 1 });
+      markers[i].openPopup();
+    }
+
+    // Route plannen
+    document.querySelectorAll('.route-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const destLat = btn.dataset.lat;
+        const destLng = btn.dataset.lng;
+        const destName = encodeURIComponent(btn.dataset.name);
+
+        if (navigator.geolocation) {
+          btn.textContent = 'Locatie bepalen...';
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              const url = `https://www.google.com/maps/dir/${latitude},${longitude}/${destLat},${destLng}`;
+              window.open(url, '_blank');
+              btn.innerHTML = '<span class="route-icon">↗</span> Route plannen';
+            },
+            () => {
+              // Geen toestemming → open Google Maps met alleen bestemming
+              const url = `https://www.google.com/maps/search/?api=1&query=${destLat},${destLng}`;
+              window.open(url, '_blank');
+              btn.innerHTML = '<span class="route-icon">↗</span> Route plannen';
+            },
+            { timeout: 8000 }
+          );
+        } else {
+          const url = `https://www.google.com/maps/search/?api=1&query=${destLat},${destLng}`;
+          window.open(url, '_blank');
+        }
+      });
+    });
   });
 </script>
 
@@ -430,13 +520,24 @@ const { data: teamleden } = await supabaseAdmin
 
   /* Team sectie */
   .team-section {
-    padding: 6rem 1rem;
-    background: white;
+    padding: 3.5rem 1rem;
+    background: var(--brand-blue);
+    position: relative;
+    overflow: hidden;
   }
+  .team-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,102,0,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .team-section .section-header { position: relative; z-index: 1; }
+  .team-section .section-header h2 { color: white; }
   .badge-orange {
     display: inline-block;
     padding: 0.5rem 1.2rem;
-    background: rgba(255,102,0,0.1);
+    background: rgba(255,102,0,0.18);
     color: var(--brand-orange);
     border-radius: 50px;
     font-size: 0.8rem;
@@ -444,9 +545,10 @@ const { data: teamleden } = await supabaseAdmin
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 1rem;
+    border: 1px solid rgba(255,102,0,0.25);
   }
   .section-sub {
-    color: var(--text-secondary);
+    color: rgba(255,255,255,0.55);
     font-size: 1rem;
     margin-top: 0.5rem;
   }
@@ -455,9 +557,12 @@ const { data: teamleden } = await supabaseAdmin
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-top: 3rem;
+    position: relative;
+    z-index: 1;
   }
   .team-member-card {
-    background: #f8fafc;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: 24px;
     padding: 2rem;
     display: flex;
@@ -465,12 +570,12 @@ const { data: teamleden } = await supabaseAdmin
     align-items: center;
     text-align: center;
     gap: 1.25rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
   }
   .team-member-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
   }
   .member-foto {
     width: 100px;
@@ -482,27 +587,27 @@ const { data: teamleden } = await supabaseAdmin
     height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid white;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 4px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
   .member-initials {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: var(--brand-blue);
+    background: rgba(255,255,255,0.1);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     font-weight: 800;
-    border: 4px solid white;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 4px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
   .member-details { width: 100%; }
-  .member-details h3 { font-size: 1.1rem; color: var(--brand-blue); margin: 0 0 0.3rem; }
+  .member-details h3 { font-size: 1.1rem; color: white; margin: 0 0 0.3rem; }
   .member-func { font-size: 0.82rem; font-weight: 700; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.75rem; }
-  .member-bio { font-size: 0.83rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 1rem; }
+  .member-bio { font-size: 0.83rem; color: rgba(255,255,255,0.5); line-height: 1.55; margin: 0 0 1rem; }
   .member-contact-links {
     display: flex;
     flex-direction: column;
@@ -514,7 +619,7 @@ const { data: teamleden } = await supabaseAdmin
     align-items: center;
     gap: 0.4rem;
     font-size: 0.8rem;
-    color: var(--brand-blue);
+    color: rgba(255,255,255,0.65);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s;
@@ -859,21 +964,133 @@ const { data: teamleden } = await supabaseAdmin
 
   /* Map Section */
   .map-section {
-    padding: 6rem 1rem 10rem;
+    padding: 6rem 1rem 8rem;
+    background: var(--bg-light);
   }
 
   .section-header {
     margin-bottom: 3rem;
   }
 
+  .map-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+
+  .location-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .location-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+
+  .location-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+
+  .location-card.active {
+    border-color: var(--brand-orange);
+    box-shadow: 0 8px 32px rgba(255,102,0,0.15);
+  }
+
+  .loc-icon {
+    font-size: 1.75rem;
+    width: 48px;
+    height: 48px;
+    background: rgba(var(--brand-blue-rgb), 0.06);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .location-card.active .loc-icon {
+    background: rgba(255,102,0,0.1);
+  }
+
+  .loc-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--brand-orange);
+  }
+
+  .loc-info h3 {
+    font-size: 1.1rem;
+    color: var(--brand-blue);
+    margin: 0.2rem 0 0.4rem;
+  }
+
+  .loc-info p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .route-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: var(--brand-blue);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.2s;
+    width: fit-content;
+  }
+
+  .route-btn:hover {
+    background: var(--brand-orange);
+    transform: translateY(-1px);
+  }
+
+  .route-icon {
+    font-size: 0.9rem;
+  }
+
   .map-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    min-height: 420px;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
   }
 
   @media (max-width: 1024px) {
     .grid-2 { grid-template-columns: 1fr; }
     .grid { gap: 2.5rem; }
+    .map-layout { grid-template-columns: 1fr; }
+    .location-cards { flex-direction: row; }
+    .location-card { flex: 1; }
+    .map-wrapper { min-height: 360px; }
+    #map { min-height: 360px; }
   }
 
   @media (max-width: 768px) {
@@ -887,10 +1104,12 @@ const { data: teamleden } = await supabaseAdmin
     .info-block { gap: 1rem; }
     .contact-toggle { width: 100%; }
     .toggle-opt { flex: 1; text-align: center; }
-    #map { height: 320px !important; }
     .section-header h2 { font-size: 2rem; }
     .map-section { padding: 3rem 1rem 5rem; }
     .contact-grid-elite { padding-bottom: 3rem; }
+    .location-cards { flex-direction: column; }
+    .map-wrapper { min-height: 300px; }
+    #map { min-height: 300px; }
   }
 
   @media (max-width: 480px) {
