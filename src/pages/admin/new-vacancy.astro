@@ -5,19 +5,19 @@ import Footer from "../../components/Footer.astro";
 import { supabase } from "../../lib/supabase";
 
 // Auth check
-const accessToken = Astro.cookies.get("sb-access-token");
-const refreshToken = Astro.cookies.get("sb-refresh-token");
+const accessToken = Astro.cookies.get("sb-access-token")?.value;
+const refreshToken = Astro.cookies.get("sb-refresh-token")?.value;
 
 if (!accessToken || !refreshToken) {
 	return Astro.redirect("/admin");
 }
 
-const { error: authError } = await supabase.auth.setSession({
-	access_token: accessToken.value,
-	refresh_token: refreshToken.value,
+const { data, error: authError } = await supabase.auth.setSession({
+	access_token: accessToken,
+	refresh_token: refreshToken,
 });
 
-if (authError) {
+if (authError || !data.user) {
 	return Astro.redirect("/admin");
 }
 ---
