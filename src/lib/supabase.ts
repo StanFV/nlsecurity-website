@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import ws from 'ws';
 
-// Polyfill WebSocket voor omgevingen die dit missen (zoals Vercel Node runtimes < 22)
+// Robuuste polyfill voor Node.js omgevingen op Vercel
 if (typeof globalThis.WebSocket === 'undefined') {
-  globalThis.WebSocket = ws as any;
+  (globalThis as any).WebSocket = ws;
 }
 
 const supabaseUrl = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
@@ -16,8 +16,5 @@ if (!supabaseUrl || !supabaseKey) {
 export const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
   auth: {
     persistSession: false
-  },
-  realtime: {
-    transport: ws, // Forceer de transport naar ws bibliotheek
   }
 });
