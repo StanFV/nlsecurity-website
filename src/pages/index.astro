@@ -12,7 +12,7 @@ import Footer from '../components/Footer.astro';
     <section class="hero-video-light">
       <div class="hero-bg">
         <video autoplay muted loop playsinline class="bg-video">
-          <source src={`${import.meta.env.BASE_URL}/assets/video/film.mp4`} type="video/mp4" />
+          <source src={`${import.meta.env.BASE_URL}assets/video/film.mp4`} type="video/mp4" />
         </video>
         <div class="video-overlay"></div>
       </div>
@@ -23,7 +23,7 @@ import Footer from '../components/Footer.astro';
         <p class="hero-description">Met een hecht team van vele honderden beveiligers beschermen wij dagelijks onze en uw eigendommen.</p>
         <div class="hero-actions">
           <button id="play-video" class="btn-glow">Bekijk onze film</button>
-          <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="btn-blue-glow">Onze diensten</a>
+          <a href={`${import.meta.env.BASE_URL}oplossingen`} class="btn-blue-glow">Onze diensten</a>
         </div>
       </div>
 
@@ -37,7 +37,7 @@ import Footer from '../components/Footer.astro';
       <div class="modal-content">
         <button id="close-modal" class="close-modal">&times;</button>
         <video id="modal-video" controls>
-          <source src={`${import.meta.env.BASE_URL}/assets/video/film.mp4`} type="video/mp4" />
+          <source src={`${import.meta.env.BASE_URL}assets/video/film.mp4`} type="video/mp4" />
         </video>
       </div>
     </div>
@@ -61,7 +61,7 @@ import Footer from '../components/Footer.astro';
             { name: 'Gemeente Lansingerland', logo: 'Gemeente Lansingerland logo.png' }
           ].map(client => (
             <div class="client-logo-wrap">
-              <img src={`${import.meta.env.BASE_URL}/assets/images/${client.logo}`} alt={client.name} class="client-logo" />
+              <img src={`${import.meta.env.BASE_URL}assets/images/${client.logo}`} alt={client.name} class="client-logo" />
             </div>
           ))}
           {/* Repeat for infinite scroll */}
@@ -74,7 +74,7 @@ import Footer from '../components/Footer.astro';
             { name: 'Gemeente Lansingerland', logo: 'Gemeente Lansingerland logo.png' }
           ].map(client => (
             <div class="client-logo-wrap">
-              <img src={`${import.meta.env.BASE_URL}/assets/images/${client.logo}`} alt={client.name} class="client-logo" />
+              <img src={`${import.meta.env.BASE_URL}assets/images/${client.logo}`} alt={client.name} class="client-logo" />
             </div>
           ))}
         </div>
@@ -94,19 +94,19 @@ import Footer from '../components/Footer.astro';
             <div class="card-icon">01</div>
             <h3>Objectbeveiliging</h3>
             <p>Scherpe bewaking van uw panden en terreinen door gecertificeerde professionals die weten wat er speelt.</p>
-            <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
+            <a href={`${import.meta.env.BASE_URL}oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
           </div>
           <div class="service-card reveal" style="transition-delay: 0.1s">
             <div class="card-icon">02</div>
             <h3>Mobiele Surveillance</h3>
             <p>Proactieve rondes en razendsnelle alarmopvolging met onze moderne vloot en deskundige surveillanten.</p>
-            <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
+            <a href={`${import.meta.env.BASE_URL}oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
           </div>
           <div class="service-card reveal" style="transition-delay: 0.2s">
             <div class="card-icon">03</div>
             <h3>Verkeersregelaars</h3>
             <p>Veilige doorstroming en professioneel verkeersbeheer bij elk project, van bouwlocatie tot groot evenement.</p>
-            <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
+            <a href={`${import.meta.env.BASE_URL}oplossingen`} class="card-link">Lees meer <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ import Footer from '../components/Footer.astro';
             <h2>Klaar voor een <span class="orange-text">veiligere toekomst?</span></h2>
             <p>Laat onze experts uw huidige beveiligingssituatie analyseren en ontdek hoe het scherper en beter kan.</p>
             <div class="cta-actions">
-              <a href={`${import.meta.env.BASE_URL}/contact`} class="btn-glow">Nu Analyse Aanvragen</a>
+              <a href={`${import.meta.env.BASE_URL}contact`} class="btn-glow">Nu Analyse Aanvragen</a>
               <a href="tel:0880202800" class="btn-outline-white-real">Bel direct: 088 - 02 02 800</a>
             </div>
           </div>
