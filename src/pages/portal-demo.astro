@@ -5,13 +5,9 @@ const base = import.meta.env.BASE_URL;
 
 <BaseLayout title="Demo — Mijn NL Security Portaal">
 
-<div class="demo-notice">
-  <span class="demo-badge">DEMO</span>
-  Demonstratie omgeving — alle gegevens zijn fictief en dienen uitsluitend ter illustratie
-  <a href={`${base}/mijn-nl-security`} class="demo-back">← Terug naar informatiepagina</a>
-</div>
-
 <div class="portal-wrap" data-app>
+
+  <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sb-top">
       <img src={`${base}/assets/images/logo.png`} alt="NL Security" class="sb-logo" />
@@ -33,6 +29,7 @@ const base = import.meta.env.BASE_URL;
       <button class="sb-item" data-tab="wijzigingen">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.13"/></svg>
         Wijzigingen
+        <span class="sb-badge">1</span>
       </button>
       <button class="sb-item" data-tab="documenten">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -43,20 +40,28 @@ const base = import.meta.env.BASE_URL;
         Analyse & Rapportage
       </button>
       <button class="sb-item" data-tab="contact">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.69 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        Direct Contact
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Contact
       </button>
     </nav>
 
-    <div class="sb-user">
-      <div class="sb-avatar">AG</div>
-      <div>
-        <div class="sb-uname">A. de Groot</div>
-        <div class="sb-urole">Portaalbeheerder</div>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="sb-avatar">AG</div>
+        <div>
+          <div class="sb-uname">A. de Groot</div>
+          <div class="sb-urole">Portaalbeheerder</div>
+        </div>
       </div>
+      <a href={`${base}/mijn-nl-security`} class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Terug naar Mijn NL Security
+      </a>
+      <div class="demo-tag">⚠ Concept demo — fictieve data</div>
     </div>
   </aside>
 
+  <!-- ── Main ── -->
   <main class="portal-main">
     <div class="portal-topbar">
       <div>
@@ -64,8 +69,23 @@ const base = import.meta.env.BASE_URL;
         <div class="topbar-bread">Mijn NL Security <span>›</span> <span id="bread-current">Dashboard</span></div>
       </div>
       <div class="topbar-right">
-        <div class="topbar-status"><span class="sdot green"></span> 2 van 3 locaties veilig</div>
-        <div class="topbar-date">08 mei 2025 — 14:32</div>
+        <div class="topbar-status">
+          <span class="live-dot"></span> 3 van 3 locaties operationeel
+        </div>
+        <div class="topbar-date" id="live-date">9 mei 2025 — 09:41</div>
+        <a href={`${base}/mijn-nl-security`} class="topbar-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Terug
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Demo notice ── -->
+    <div class="demo-notice" id="demo-notice">
+      <div class="demo-notice-inner">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>CONCEPT DEMO OMGEVING</strong> — Alle weergegeven gegevens zijn volledig fictief en dienen uitsluitend ter illustratie van het portaal. Dit is geen live klantomgeving.</span>
+        <button class="demo-dismiss" id="demo-dismiss">✕ Sluiten</button>
       </div>
     </div>
 
@@ -77,37 +97,37 @@ const base = import.meta.env.BASE_URL;
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
           </div>
           <div>
-            <div class="kpi-val">3</div>
+            <div class="kpi-val" data-count="3">0</div>
             <div class="kpi-label">Actieve Locaties</div>
             <div class="kpi-sub">Amsterdam · Rotterdam · Utrecht</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon orange">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
           <div>
-            <div class="kpi-val">6</div>
-            <div class="kpi-label">Beveiligers Vandaag</div>
-            <div class="kpi-sub warn">⚠ 1 positie open — Utrecht</div>
+            <div class="kpi-val" data-count="7">0</div>
+            <div class="kpi-label">Ingezette Beveiligers</div>
+            <div class="kpi-sub">Deze week door NL Security</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon blue">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
           <div>
-            <div class="kpi-val">2</div>
-            <div class="kpi-label">Incidenten Deze Maand</div>
-            <div class="kpi-sub good">↓ 33% t.o.v. vorige maand</div>
+            <div class="kpi-val" data-count="1248" data-suffix="">0</div>
+            <div class="kpi-label">Contracturen April</div>
+            <div class="kpi-sub">Van 1.260 geplande uren</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon orange">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
           <div>
-            <div class="kpi-val">96.4<small>%</small></div>
+            <div class="kpi-val"><span data-count-dec="94.3">0</span><small>%</small></div>
             <div class="kpi-label">Bezettingsgraad</div>
             <div class="kpi-sub">Afgelopen 30 dagen</div>
           </div>
@@ -116,80 +136,123 @@ const base = import.meta.env.BASE_URL;
 
       <div class="dash-row">
         <div class="card">
-          <div class="card-head"><h3>Incidenten — Afgelopen 7 Dagen</h3></div>
+          <div class="card-head">
+            <h3>Ingezette uren — Afgelopen 7 dagen</h3>
+            <span class="live-badge"><span class="live-dot sm"></span> Live</span>
+          </div>
           <div class="chart-wrap">
             <div class="bar-chart" id="dash-chart">
-              <div class="bar-col"><div class="bar" data-base="25"></div><span>ma</span></div>
-              <div class="bar-col"><div class="bar" data-base="55"></div><span>di</span></div>
-              <div class="bar-col"><div class="bar accent" data-base="80"></div><span>wo</span></div>
-              <div class="bar-col"><div class="bar" data-base="35"></div><span>do</span></div>
-              <div class="bar-col"><div class="bar" data-base="65"></div><span>vr</span></div>
-              <div class="bar-col"><div class="bar" data-base="45"></div><span>za</span></div>
-              <div class="bar-col"><div class="bar" data-base="20"></div><span>zo</span></div>
+              <div class="bar-col"><div class="bar" data-base="72"></div><span>ma</span></div>
+              <div class="bar-col"><div class="bar" data-base="88"></div><span>di</span></div>
+              <div class="bar-col"><div class="bar accent" data-base="95"></div><span>wo</span></div>
+              <div class="bar-col"><div class="bar" data-base="80"></div><span>do</span></div>
+              <div class="bar-col"><div class="bar" data-base="85"></div><span>vr</span></div>
+              <div class="bar-col"><div class="bar" data-base="55"></div><span>za</span></div>
+              <div class="bar-col"><div class="bar" data-base="30"></div><span>zo</span></div>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-head"><h3>Locatiestatus</h3></div>
+          <div class="card-head"><h3>Locaties & Bezetting</h3></div>
           <div class="loc-list">
             <div class="loc-item">
-              <div class="loc-dot green"></div>
+              <div class="loc-dot-wrap"><div class="loc-dot green"></div></div>
               <div class="loc-info">
                 <strong>Amsterdam HQ</strong>
-                <span>Herengracht 450 — 4 beveiligers actief</span>
+                <span>Herengracht 450</span>
               </div>
-              <span class="badge green">Veilig</span>
+              <div class="loc-right">
+                <div class="bezetting-bar"><div class="bezetting-fill" style="width:100%"></div></div>
+                <span class="loc-count">4 / 4</span>
+              </div>
             </div>
             <div class="loc-item">
-              <div class="loc-dot green"></div>
+              <div class="loc-dot-wrap"><div class="loc-dot green"></div></div>
               <div class="loc-info">
                 <strong>Rotterdam Depot</strong>
-                <span>Waalhaven 12 — 2 beveiligers actief</span>
+                <span>Waalhaven 12</span>
               </div>
-              <span class="badge green">Veilig</span>
+              <div class="loc-right">
+                <div class="bezetting-bar"><div class="bezetting-fill" style="width:100%"></div></div>
+                <span class="loc-count">2 / 2</span>
+              </div>
             </div>
             <div class="loc-item">
-              <div class="loc-dot orange"></div>
+              <div class="loc-dot-wrap"><div class="loc-dot orange"></div></div>
               <div class="loc-info">
                 <strong>Utrecht Kantoor</strong>
-                <span>Stadsplateau 1 — 0 van 1 bezet</span>
+                <span>Stadsplateau 1 — week 19 tijdelijk onderbezet</span>
               </div>
-              <span class="badge orange">Aandacht</span>
+              <div class="loc-right">
+                <div class="bezetting-bar"><div class="bezetting-fill orange" style="width:0%"></div></div>
+                <span class="loc-count orange">0 / 1</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <h3>Recente Meldingen</h3>
-          <button class="btn-sm">Alle meldingen →</button>
+      <div class="dash-row-bottom">
+        <div class="card">
+          <div class="card-head">
+            <h3>Live Activiteitenfeed</h3>
+            <span class="live-badge"><span class="live-dot sm"></span> Live</span>
+          </div>
+          <div class="activity-feed" id="activity-feed">
+            <div class="activity-item">
+              <span class="act-dot green"></span>
+              <span class="act-time">09:41</span>
+              <span class="act-text">J. de Vries — dienst gestart (Amsterdam HQ)</span>
+            </div>
+            <div class="activity-item">
+              <span class="act-dot blue"></span>
+              <span class="act-time">09:15</span>
+              <span class="act-text">Dagrapport ontvangen — Amsterdam HQ</span>
+            </div>
+            <div class="activity-item">
+              <span class="act-dot orange"></span>
+              <span class="act-time">08:52</span>
+              <span class="act-text">Wijzigingsverzoek ingediend — Utrecht (vervanging L. Hendriks)</span>
+            </div>
+            <div class="activity-item">
+              <span class="act-dot blue"></span>
+              <span class="act-time">08:00</span>
+              <span class="act-text">M. Santos — dienst gestart (Rotterdam Depot)</span>
+            </div>
+          </div>
         </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Dagrapportages</h3>
+            <button class="btn-sm">Alle rapportages →</button>
+          </div>
         <div class="table-scroll">
           <table class="dtable">
-            <thead><tr><th>Datum & Tijd</th><th>Locatie</th><th>Omschrijving</th><th>Status</th></tr></thead>
+            <thead><tr><th>Datum</th><th>Locatie</th><th>Onderwerp</th><th>Status</th></tr></thead>
             <tbody>
               <tr>
-                <td>06 mei 2025 — 14:32</td>
+                <td>09 mei 2025 — 08:00</td>
                 <td>Amsterdam HQ</td>
-                <td>Ongeautoriseerde bezoekers aangetroffen bij ingang B</td>
-                <td><span class="badge green">Opgelost</span></td>
+                <td>W19 dagrapport maandag — reguliere dienst, geen bijzonderheden</td>
+                <td><span class="badge green">Ontvangen</span></td>
               </tr>
               <tr>
-                <td>02 mei 2025 — 09:15</td>
+                <td>08 mei 2025 — 22:15</td>
                 <td>Rotterdam Depot</td>
-                <td>Gepland alarmtest uitgevoerd</td>
-                <td><span class="badge grey">Geen actie</span></td>
+                <td>Overdrachtsrapport avonddienst — sleuteloverdracht geregistreerd</td>
+                <td><span class="badge green">Ontvangen</span></td>
               </tr>
               <tr>
-                <td>28 apr 2025 — 21:40</td>
+                <td>07 mei 2025 — 14:00</td>
                 <td>Amsterdam HQ</td>
-                <td>Verdacht voertuig parkeerterrein — rondes verhoogd</td>
-                <td><span class="badge orange">In behandeling</span></td>
+                <td>Instructiewijziging toegangsbeleid receptie — update verwerkt</td>
+                <td><span class="badge grey">Verwerkt</span></td>
               </tr>
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </section>
@@ -204,18 +267,22 @@ const base = import.meta.env.BASE_URL;
             <button class="btn-sm">Volgende week →</button>
           </div>
         </div>
+        <div class="nl-security-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Onderstaande medewerkers zijn in dienst van NL Security en worden ingezet op uw locaties.
+        </div>
         <div class="table-scroll">
           <table class="dtable planning">
             <thead>
               <tr>
-                <th>Beveiliger</th><th>Functie</th><th>Locatie</th>
+                <th>Medewerker</th><th>Functie</th><th>Locatie</th>
                 <th>Ma</th><th>Di</th><th>Wo</th><th>Do</th><th>Vr</th><th>Za</th><th>Zo</th>
                 <th>Kwalificaties</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><div class="guard"><div class="gav blue">JV</div>Jan de Vries</div></td>
+                <td><div class="guard"><div class="gav blue">JV</div>J. de Vries</div></td>
                 <td><span class="role-badge sr">Sr. Beveiliger</span></td>
                 <td>Amsterdam HQ</td>
                 <td><span class="shift d">06–14</span></td><td><span class="shift d">06–14</span></td>
@@ -225,7 +292,7 @@ const base = import.meta.env.BASE_URL;
                 <td><span class="cert">BHV</span><span class="cert">EHBO</span></td>
               </tr>
               <tr>
-                <td><div class="guard"><div class="gav orange">FE</div>Fatima el Amrani</div></td>
+                <td><div class="guard"><div class="gav orange">FE</div>F. el Amrani</div></td>
                 <td><span class="role-badge">Beveiliger</span></td>
                 <td>Amsterdam HQ</td>
                 <td><span class="shift m">14–22</span></td><td><span class="shift m">14–22</span></td>
@@ -235,7 +302,7 @@ const base = import.meta.env.BASE_URL;
                 <td><span class="cert">BHV</span></td>
               </tr>
               <tr>
-                <td><div class="guard"><div class="gav blue">SB</div>Stefan Bakker</div></td>
+                <td><div class="guard"><div class="gav blue">SB</div>S. Bakker</div></td>
                 <td><span class="role-badge">Beveiliger</span></td>
                 <td>Amsterdam HQ</td>
                 <td class="off">—</td><td class="off">—</td><td class="off">—</td><td class="off">—</td><td class="off">—</td>
@@ -243,7 +310,7 @@ const base = import.meta.env.BASE_URL;
                 <td>—</td>
               </tr>
               <tr>
-                <td><div class="guard"><div class="gav blue">RK</div>Ravi Krishnan</div></td>
+                <td><div class="guard"><div class="gav blue">RK</div>R. Krishnan</div></td>
                 <td><span class="role-badge sr">Sr. Beveiliger</span></td>
                 <td>Amsterdam HQ</td>
                 <td><span class="shift n">22–06</span></td><td><span class="shift n">22–06</span></td>
@@ -253,7 +320,7 @@ const base = import.meta.env.BASE_URL;
                 <td><span class="cert">BHV</span></td>
               </tr>
               <tr>
-                <td><div class="guard"><div class="gav orange">MS</div>Maria Santos</div></td>
+                <td><div class="guard"><div class="gav orange">MS</div>M. Santos</div></td>
                 <td><span class="role-badge">Beveiliger</span></td>
                 <td>Rotterdam Depot</td>
                 <td><span class="shift d">08–16</span></td><td><span class="shift d">08–16</span></td>
@@ -263,7 +330,7 @@ const base = import.meta.env.BASE_URL;
                 <td><span class="cert">BHV</span></td>
               </tr>
               <tr>
-                <td><div class="guard"><div class="gav blue">KP</div>Kevin Prins</div></td>
+                <td><div class="guard"><div class="gav blue">KP</div>K. Prins</div></td>
                 <td><span class="role-badge">Beveiliger</span></td>
                 <td>Rotterdam Depot</td>
                 <td><span class="shift m">16–00</span></td><td><span class="shift m">16–00</span></td>
@@ -273,17 +340,11 @@ const base = import.meta.env.BASE_URL;
                 <td>—</td>
               </tr>
               <tr class="sick-row">
-                <td><div class="guard"><div class="gav grey">LH</div>Lotte Hendriks</div></td>
+                <td><div class="guard"><div class="gav grey">LH</div>L. Hendriks</div></td>
                 <td><span class="role-badge">Beveiliger</span></td>
                 <td>Utrecht Kantoor</td>
-                <td colspan="7" class="sick-cell">🤒 Ziekmelding — week 19 · vervanging aangevraagd</td>
+                <td colspan="7" class="sick-cell">Afwezig week 19 — vervanging aangevraagd bij NL Security planning</td>
                 <td><span class="cert">BHV</span></td>
-              </tr>
-              <tr class="open-row">
-                <td colspan="11">
-                  <span>⚠ Utrecht Kantoor — 1 openstaande positie</span>
-                  <button class="btn-orange">Vervanging aanvragen</button>
-                </td>
               </tr>
             </tbody>
           </table>
@@ -302,8 +363,8 @@ const base = import.meta.env.BASE_URL;
               <select>
                 <option>Extra inzet aanvragen</option>
                 <option>Instructies wijzigen</option>
-                <option>Incident escaleren</option>
                 <option>Vervanging aanvragen</option>
+                <option>Roosterwijziging</option>
                 <option>Overige</option>
               </select>
             </div>
@@ -316,12 +377,12 @@ const base = import.meta.env.BASE_URL;
               </select>
             </div>
             <div class="fg">
-              <label>Datum</label>
-              <input type="date" value="2025-05-10" />
+              <label>Datum / Periode</label>
+              <input type="date" value="2025-05-12" />
             </div>
             <div class="fg">
               <label>Omschrijving</label>
-              <textarea rows="4" placeholder="Beschrijf uw verzoek..."></textarea>
+              <textarea rows="4" placeholder="Beschrijf uw verzoek. Onze planners nemen zo snel mogelijk contact op."></textarea>
             </div>
             <div class="fg">
               <label>Urgentie</label>
@@ -332,10 +393,9 @@ const base = import.meta.env.BASE_URL;
               </div>
             </div>
             <button type="button" class="btn-primary" id="submit-btn">Verzoek Indienen</button>
-            <div id="success-msg" class="success-msg hidden">✓ Verzoek ontvangen — u ontvangt een bevestiging per e-mail</div>
+            <div id="success-msg" class="success-msg hidden">✓ Verzoek ontvangen — onze planners nemen contact op (ma–vr 07:00–17:00)</div>
           </form>
         </div>
-
         <div class="card">
           <div class="card-head"><h3>Recente Verzoeken</h3></div>
           <div class="req-list">
@@ -344,7 +404,7 @@ const base = import.meta.env.BASE_URL;
                 <strong>Extra inzet — Koningsdag</strong>
                 <span>Amsterdam HQ · 27 apr 2025</span>
               </div>
-              <span class="badge green">Goedgekeurd</span>
+              <span class="badge green">Gehonoreerd</span>
             </div>
             <div class="req-item">
               <div class="req-info">
@@ -355,15 +415,15 @@ const base = import.meta.env.BASE_URL;
             </div>
             <div class="req-item">
               <div class="req-info">
-                <strong>Verhoog nachtronde frequentie</strong>
-                <span>Rotterdam Depot · 1 apr 2025</span>
+                <strong>Vervanging L. Hendriks — Utrecht</strong>
+                <span>Utrecht Kantoor · 8 mei 2025</span>
               </div>
               <span class="badge orange">In behandeling</span>
             </div>
             <div class="req-item">
               <div class="req-info">
-                <strong>Toegangspas deactiveren #A-042</strong>
-                <span>Amsterdam HQ · 15 mrt 2025</span>
+                <strong>Roosterwijziging Rotterdam za/zo</strong>
+                <span>Rotterdam Depot · 15 mrt 2025</span>
               </div>
               <span class="badge green">Verwerkt</span>
             </div>
@@ -386,9 +446,9 @@ const base = import.meta.env.BASE_URL;
             </thead>
             <tbody>
               <tr>
-                <td><div class="doc-name">📋 Beveiligingsplan 2024–2025</div></td>
-                <td>Plan</td><td>01 jan 2024</td><td>31 dec 2025</td>
-                <td><span class="badge green">Geldig</span></td>
+                <td><div class="doc-name">📋 Detacheringsovereenkomst 2024–2025</div></td>
+                <td>Contract</td><td>01 jan 2024</td><td>31 dec 2025</td>
+                <td><span class="badge green">Actief</span></td>
                 <td><button class="btn-xs">↓ PDF</button></td>
               </tr>
               <tr>
@@ -398,21 +458,21 @@ const base = import.meta.env.BASE_URL;
                 <td><button class="btn-xs">↓ PDF</button></td>
               </tr>
               <tr>
-                <td><div class="doc-name">📊 Risicoanalyse Q1 2025</div></td>
-                <td>Rapportage</td><td>1 apr 2025</td><td>—</td>
+                <td><div class="doc-name">📋 Instructiekaart Rotterdam Depot v2</div></td>
+                <td>Instructie</td><td>01 feb 2025</td><td>—</td>
                 <td><span class="badge green">Geldig</span></td>
+                <td><button class="btn-xs">↓ PDF</button></td>
+              </tr>
+              <tr>
+                <td><div class="doc-name">📊 Kwartaalrapportage Q1 2025</div></td>
+                <td>Rapportage</td><td>1 apr 2025</td><td>—</td>
+                <td><span class="badge green">Beschikbaar</span></td>
                 <td><button class="btn-xs">↓ PDF</button></td>
               </tr>
               <tr>
                 <td><div class="doc-name">💶 Factuur April 2025</div></td>
                 <td>Factuur</td><td>30 apr 2025</td><td>—</td>
                 <td><span class="badge green">Betaald</span></td>
-                <td><button class="btn-xs">↓ PDF</button></td>
-              </tr>
-              <tr>
-                <td><div class="doc-name">📋 Dienstverleningsovereenkomst 2024</div></td>
-                <td>Contract</td><td>01 jan 2024</td><td>31 dec 2025</td>
-                <td><span class="badge green">Actief</span></td>
                 <td><button class="btn-xs">↓ PDF</button></td>
               </tr>
               <tr>
@@ -431,39 +491,55 @@ const base = import.meta.env.BASE_URL;
     <section id="tab-analyse" class="tab-content hidden">
       <div class="two-col">
         <div class="card">
-          <div class="card-head"><h3>Incidenten per Maand — 2025</h3></div>
+          <div class="card-head"><h3>Ingezette uren per maand — 2025</h3></div>
           <div class="chart-wrap tall">
             <div class="bar-chart" id="analyse-chart">
-              <div class="bar-col"><div class="bar" data-base="20"></div><span>jan</span></div>
-              <div class="bar-col"><div class="bar" data-base="5"></div><span>feb</span></div>
-              <div class="bar-col"><div class="bar accent" data-base="62"></div><span>mrt</span></div>
-              <div class="bar-col"><div class="bar" data-base="40"></div><span>apr</span></div>
-              <div class="bar-col"><div class="bar" data-base="40"></div><span>mei</span></div>
+              <div class="bar-col"><div class="bar" data-base="78"></div><span>jan</span></div>
+              <div class="bar-col"><div class="bar" data-base="72"></div><span>feb</span></div>
+              <div class="bar-col"><div class="bar accent" data-base="95"></div><span>mrt</span></div>
+              <div class="bar-col"><div class="bar" data-base="85"></div><span>apr</span></div>
+              <div class="bar-col"><div class="bar" data-base="62"></div><span>mei</span></div>
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-head"><h3>Statistieken</h3></div>
           <div class="stat-rows">
-            <div class="stat-row"><span>Gem. responstijd</span><strong>3.2 min</strong></div>
-            <div class="stat-row"><span>Snelste respons</span><strong>1.1 min</strong></div>
-            <div class="stat-row"><span>Langzaamste respons</span><strong>8.4 min</strong></div>
-            <div class="stat-row"><span>Totaal incidenten 2025</span><strong>8</strong></div>
-            <div class="stat-row"><span>Opgelost binnen 1 uur</span><strong class="good">100%</strong></div>
-            <div class="stat-row"><span>Bezettingsgraad YTD</span><strong>97.1%</strong></div>
+            <div class="stat-row">
+              <span>Contracturen april</span>
+              <div class="stat-right"><strong>1.248</strong><div class="stat-bar"><div class="stat-fill" data-pct="99"></div></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Bezettingsgraad YTD</span>
+              <div class="stat-right"><strong>94.3%</strong><div class="stat-bar"><div class="stat-fill" data-pct="94"></div></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Ingezette medewerkers</span>
+              <div class="stat-right"><strong>7</strong><div class="stat-bar"><div class="stat-fill" data-pct="88"></div></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Dagrapportages ontvangen</span>
+              <div class="stat-right"><strong>100%</strong><div class="stat-bar"><div class="stat-fill" data-pct="100"></div></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Verzoeken gehonoreerd</span>
+              <div class="stat-right"><strong class="good">98%</strong><div class="stat-bar"><div class="stat-fill good" data-pct="98"></div></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Actieve locaties</span>
+              <div class="stat-right"><strong>3</strong><div class="stat-bar"><div class="stat-fill" data-pct="100"></div></div></div>
+            </div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-head">
-          <h3>Maandrapportage April 2025</h3>
+          <h3>Kwartaalrapportage Q1 2025</h3>
           <button class="btn-sm">↓ PDF downloaden</button>
         </div>
         <div class="report-text">
-          <p>In april 2025 zijn er <strong>2 incidenten</strong> geregistreerd op uw locaties. Beide zijn binnen 30 minuten opgelost zonder verdere escalatie. De bezettingsgraad lag op <strong>98.5%</strong>, met één geplande afwezigheid wegens verlof.</p>
-          <p>Op basis van de trendanalyse is de incidentfrequentie stabiel en binnen de verwachte marges. Er zijn geen aanpassingen in het beveiligingsplan nodig voor de komende periode. Aanbeveling: vervanging Lotte Hendriks (Utrecht) formeel vastleggen voor week 20.</p>
+          <p>In het eerste kwartaal van 2025 zijn in totaal <strong>3.744 contracturen</strong> ingezet op uw drie locaties. De bezettingsgraad lag gemiddeld op <strong>96.1%</strong>. Alle dagrapportages zijn tijdig ontvangen en verwerkt.</p>
+          <p>Er zijn <strong>6 wijzigingsverzoeken</strong> ingediend, waarvan 5 volledig gehonoreerd en 1 gedeeltelijk vanwege beschikbaarheid. NL Security adviseert voor Q2 een roosterbespreking in te plannen voor de zomerperiode.</p>
         </div>
       </div>
     </section>
@@ -474,25 +550,26 @@ const base = import.meta.env.BASE_URL;
         <div class="card contact-card">
           <div class="contact-av blue">MvdB</div>
           <h3>Marc van den Berg</h3>
-          <p class="contact-role">Uw vaste accountmanager</p>
+          <p class="contact-role">Accountmanager</p>
           <div class="contact-rows">
-            <div>📞 <a href="tel:0612345678">06 – 12 345 678</a></div>
             <div>✉️ <a href="mailto:m.vandenberg@nlsecurity.nl">m.vandenberg@nlsecurity.nl</a></div>
             <div>🕐 Bereikbaar ma–vr 08:00–18:00</div>
           </div>
+          <p class="contact-note">Uw vaste aanspreekpunt voor contractzaken, rapportages en strategische afstemming.</p>
           <button class="btn-primary">Stuur bericht</button>
         </div>
 
         <div class="card contact-card">
-          <div class="contact-av orange">MC</div>
-          <h3>Meldkamer 24/7</h3>
-          <p class="contact-role">Directe alarmopvolging</p>
+          <div class="contact-av orange">PL</div>
+          <h3>Planning & Roostering</h3>
+          <p class="contact-role">NL Security Planningsafdeling</p>
           <div class="contact-rows">
             <div>📞 <a href="tel:0880202800">088 – 02 02 800</a></div>
-            <div>✉️ <a href="mailto:meldkamer@nlsecurity.nl">meldkamer@nlsecurity.nl</a></div>
-            <div>🕐 24 uur per dag, 7 dagen per week</div>
+            <div>✉️ <a href="mailto:planning@nlsecurity.nl">planning@nlsecurity.nl</a></div>
+            <div>🕐 Bereikbaar ma–vr 07:00–17:00</div>
           </div>
-          <button class="btn-primary">Bel direct</button>
+          <p class="contact-note">Voor roosterwijzigingen, vervangingsaanvragen en operationele afstemming.</p>
+          <button class="btn-primary">Bel planners</button>
         </div>
 
         <div class="card">
@@ -503,7 +580,7 @@ const base = import.meta.env.BASE_URL;
             <div class="stat-row"><span>Einddatum</span><strong>31 dec 2025</strong></div>
             <div class="stat-row"><span>Opzegtermijn</span><strong>3 maanden</strong></div>
             <div class="stat-row"><span>Locaties</span><strong>3</strong></div>
-            <div class="stat-row"><span>Beheerder</span><strong>Marc van den Berg</strong></div>
+            <div class="stat-row"><span>Algemeen e-mail</span><strong><a href="mailto:info@nlsecurity.nl" style="color:var(--brand-blue)">info@nlsecurity.nl</a></strong></div>
           </div>
         </div>
       </div>
@@ -513,108 +590,115 @@ const base = import.meta.env.BASE_URL;
 </div>
 
 <style>
-  /* ── Reset voor app-layout ── */
-  body { overflow-x: hidden; }
-
-  .demo-notice {
-    background: var(--brand-orange);
-    color: white;
-    padding: 0.6rem 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 2000;
-    flex-wrap: wrap;
-  }
-  .demo-badge {
-    background: white;
-    color: var(--brand-orange);
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 900;
-    letter-spacing: 1px;
-  }
-  .demo-back {
-    margin-left: auto;
-    color: white;
-    text-decoration: none;
-    opacity: 0.85;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  .demo-back:hover { opacity: 1; }
+  body { overflow: hidden; }
 
   .portal-wrap {
     display: flex;
-    height: calc(100vh - 36px);
+    height: 100vh;
     overflow: hidden;
+    font-family: 'Inter', sans-serif;
   }
 
   /* ── Sidebar ── */
   .sidebar {
-    width: 260px;
-    min-width: 260px;
+    width: 268px;
+    min-width: 268px;
     background: var(--brand-blue);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
   }
+
   .sb-top {
-    padding: 1.5rem 1.5rem 1rem;
+    padding: 1.5rem 1.5rem 1.25rem;
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
-  .sb-logo { height: 36px; filter: brightness(0) invert(1); margin-bottom: 1rem; }
-  .sb-client-name { color: white; font-weight: 800; font-size: 0.95rem; }
-  .sb-contract { color: rgba(255,255,255,0.45); font-size: 0.75rem; margin-top: 0.2rem; }
+  .sb-logo { height: 34px; filter: brightness(0) invert(1); margin-bottom: 1rem; }
+  .sb-client-name { color: white; font-weight: 800; font-size: 0.95rem; line-height: 1.3; }
+  .sb-contract { color: rgba(255,255,255,0.4); font-size: 0.72rem; margin-top: 0.2rem; }
 
   .sb-nav {
     flex: 1;
     padding: 1rem 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.2rem;
   }
   .sb-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
     border-radius: 10px;
     background: none;
     border: none;
-    color: rgba(255,255,255,0.6);
-    font-size: 0.9rem;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.88rem;
     font-weight: 600;
     cursor: pointer;
     text-align: left;
-    transition: 0.2s;
+    transition: background 0.2s, color 0.2s;
     width: 100%;
+    font-family: inherit;
   }
-  .sb-item:hover { background: rgba(255,255,255,0.06); color: white; }
-  .sb-item.active { background: rgba(255,255,255,0.12); color: white; }
-  .sb-item svg { flex-shrink: 0; }
+  .sb-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+  .sb-item.active { background: rgba(255,255,255,0.13); color: white; }
+  .sb-item svg { flex-shrink: 0; opacity: 0.8; }
+  .sb-item.active svg { opacity: 1; }
 
-  .sb-user {
-    padding: 1rem 1.5rem;
+  .sb-bottom {
+    padding: 1rem 1.25rem 1.5rem;
     border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .sb-user {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .sb-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
+    width: 34px; height: 34px; border-radius: 50%;
     background: var(--brand-orange);
-    color: white; font-weight: 800; font-size: 0.75rem;
+    color: white; font-weight: 800; font-size: 0.72rem;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .sb-uname { color: white; font-weight: 700; font-size: 0.85rem; }
-  .sb-urole { color: rgba(255,255,255,0.45); font-size: 0.75rem; }
+  .sb-uname { color: white; font-weight: 700; font-size: 0.82rem; }
+  .sb-urole { color: rgba(255,255,255,0.4); font-size: 0.7rem; }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+  .back-btn:hover {
+    background: white;
+    color: var(--brand-blue);
+    border-color: white;
+  }
+  .back-btn svg { flex-shrink: 0; }
+
+  .demo-tag {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
 
   /* ── Main ── */
   .portal-main {
@@ -627,7 +711,7 @@ const base = import.meta.env.BASE_URL;
 
   .portal-topbar {
     background: white;
-    padding: 1.25rem 2rem;
+    padding: 1.1rem 2rem;
     border-bottom: 1px solid #e8ecf2;
     display: flex;
     align-items: center;
@@ -635,196 +719,326 @@ const base = import.meta.env.BASE_URL;
     flex-shrink: 0;
     gap: 1rem;
     flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-  .topbar-title { font-size: 1.5rem; font-weight: 900; color: var(--brand-blue); margin: 0; }
-  .topbar-bread { font-size: 0.78rem; color: #94a3b8; margin-top: 0.2rem; }
-  .topbar-right { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
-  .topbar-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #334155; }
-  .topbar-date { font-size: 0.8rem; color: #94a3b8; }
-  .sdot { width: 8px; height: 8px; border-radius: 50%; }
-  .sdot.green { background: #22c55e; }
+  .topbar-title { font-size: 1.4rem; font-weight: 900; color: var(--brand-blue); margin: 0; }
+  .topbar-bread { font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem; }
+  .topbar-right { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+  .topbar-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 600; color: #334155; }
+  .topbar-date { font-size: 0.78rem; color: #94a3b8; }
+
+  .topbar-back {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 1rem;
+    background: var(--brand-blue);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+  .topbar-back:hover { background: var(--brand-orange); }
+
+  /* ── Live indicators ── */
+  .live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .live-dot.sm { width: 6px; height: 6px; }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+    50% { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+  }
+  .live-badge {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.72rem; font-weight: 700; color: #16a34a;
+    background: #dcfce7; padding: 0.25rem 0.65rem; border-radius: 50px;
+  }
 
   /* ── Tabs ── */
-  .tab-content { padding: 1.75rem 2rem; flex: 1; }
+  .tab-content { padding: 1.5rem 1.75rem; }
   .tab-content.hidden { display: none; }
 
   /* ── KPI ── */
-  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.25rem; }
   .kpi-card {
     background: white; border-radius: 16px;
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem 1.25rem;
     display: flex; align-items: flex-start; gap: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .kpi-icon {
-    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .kpi-icon.blue { background: rgba(var(--brand-blue-rgb), 0.1); color: var(--brand-blue); }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .kpi-icon { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .kpi-icon.blue { background: rgba(var(--brand-blue-rgb),0.1); color: var(--brand-blue); }
   .kpi-icon.orange { background: rgba(255,102,0,0.1); color: var(--brand-orange); }
   .kpi-val { font-size: 2rem; font-weight: 900; color: var(--brand-blue); line-height: 1; }
   .kpi-val small { font-size: 1rem; }
-  .kpi-label { font-size: 0.8rem; font-weight: 700; color: #64748b; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
-  .kpi-sub { font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem; }
+  .kpi-label { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-sub { font-size: 0.76rem; color: #94a3b8; margin-top: 0.2rem; }
   .kpi-sub.warn { color: var(--brand-orange); font-weight: 600; }
   .kpi-sub.good { color: #22c55e; font-weight: 600; }
 
   /* ── Cards ── */
-  .card {
-    background: white; border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    overflow: hidden;
-  }
+  .card { background: white; border-radius: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 1rem; }
   .card-head {
-    padding: 1.25rem 1.5rem;
+    padding: 1.1rem 1.5rem;
     border-bottom: 1px solid #f1f5f9;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .card-head h3 { font-size: 1rem; font-weight: 800; color: var(--brand-blue); margin: 0; }
-  .dash-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .card-head h3 { font-size: 0.95rem; font-weight: 800; color: var(--brand-blue); margin: 0; }
+  .dash-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem; margin-bottom: 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
   /* ── Chart ── */
-  .chart-wrap { padding: 1.25rem 1.5rem; height: 160px; }
-  .chart-wrap.tall { height: 200px; }
+  .chart-wrap { padding: 1.25rem 1.5rem; height: 150px; }
+  .chart-wrap.tall { height: 190px; }
   .bar-chart { display: flex; align-items: flex-end; gap: 0.5rem; height: 100%; }
   .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; height: 100%; }
-  .bar-col span { font-size: 0.72rem; color: #94a3b8; font-weight: 600; flex-shrink: 0; }
+  .bar-col span { font-size: 0.7rem; color: #94a3b8; font-weight: 600; flex-shrink: 0; }
   .bar {
     width: 100%; border-radius: 4px 4px 0 0;
-    background: rgba(var(--brand-blue-rgb), 0.18);
-    transition: height 1.2s cubic-bezier(0.16,1,0.3,1);
+    background: rgba(var(--brand-blue-rgb),0.18);
+    transition: height 1.4s cubic-bezier(0.16,1,0.3,1);
     margin-top: auto;
+    cursor: default;
   }
+  .bar:hover { background: rgba(var(--brand-blue-rgb),0.35); }
   .bar.accent { background: rgba(255,102,0,0.25); }
+  .bar.accent:hover { background: rgba(255,102,0,0.45); }
 
-  /* ── Location list ── */
-  .loc-list { padding: 0.5rem 0; }
+  /* ── Locations ── */
+  .loc-list { padding: 0.25rem 0; }
   .loc-item {
     display: flex; align-items: center; gap: 1rem;
     padding: 0.9rem 1.5rem; border-bottom: 1px solid #f8fafc;
-    transition: 0.2s;
+    transition: background 0.15s;
   }
   .loc-item:last-child { border-bottom: none; }
   .loc-item:hover { background: #f8fafc; }
-  .loc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .loc-dot.green { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
-  .loc-dot.orange { background: var(--brand-orange); box-shadow: 0 0 0 3px rgba(255,102,0,0.15); }
-  .loc-info { flex: 1; }
-  .loc-info strong { display: block; font-size: 0.9rem; color: #1e293b; }
-  .loc-info span { font-size: 0.78rem; color: #94a3b8; }
+  .loc-dot-wrap { flex-shrink: 0; }
+  .loc-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .loc-dot.green { background: #22c55e; animation: pulse-dot 2.5s ease-in-out infinite; }
+  .loc-dot.orange { background: var(--brand-orange); }
+  .loc-info { flex: 1; min-width: 0; }
+  .loc-info strong { display: block; font-size: 0.88rem; color: #1e293b; }
+  .loc-info span { font-size: 0.75rem; color: #94a3b8; }
+  .loc-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+  .bezetting-bar { width: 60px; height: 5px; background: #e8ecf2; border-radius: 3px; overflow: hidden; }
+  .bezetting-fill { height: 100%; background: #22c55e; border-radius: 3px; transition: width 1.5s cubic-bezier(0.16,1,0.3,1); }
+  .bezetting-fill.orange { background: var(--brand-orange); }
+  .loc-count { font-size: 0.78rem; font-weight: 700; color: #334155; }
+  .loc-count.orange { color: var(--brand-orange); }
 
   /* ── Badges ── */
-  .badge {
-    display: inline-block; padding: 0.25rem 0.65rem;
-    border-radius: 50px; font-size: 0.72rem; font-weight: 700; white-space: nowrap;
-  }
+  .badge { display: inline-block; padding: 0.22rem 0.6rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
   .badge.green { background: #dcfce7; color: #166534; }
   .badge.orange { background: #fff3e0; color: #c2410c; }
   .badge.grey { background: #f1f5f9; color: #64748b; }
 
   /* ── Table ── */
   .table-scroll { overflow-x: auto; }
-  .dtable { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .dtable th { padding: 0.75rem 1.25rem; background: #f8fafc; color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; border-bottom: 1px solid #e8ecf2; white-space: nowrap; }
+  .dtable { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  .dtable th { padding: 0.7rem 1.25rem; background: #f8fafc; color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; border-bottom: 1px solid #e8ecf2; white-space: nowrap; }
   .dtable td { padding: 0.85rem 1.25rem; color: #334155; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
   .dtable tbody tr:last-child td { border-bottom: none; }
   .dtable tbody tr:hover td { background: #fafbff; }
   .dtable.planning td { white-space: nowrap; }
 
-  /* ── Planning specific ── */
-  .guard { display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
-  .gav { width: 30px; height: 30px; border-radius: 50%; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  /* ── Planning ── */
+  .nl-security-note {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(var(--brand-blue-rgb),0.05);
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.8rem; color: #475569; font-weight: 600;
+  }
+  .nl-security-note svg { color: var(--brand-blue); flex-shrink: 0; }
+  .guard { display: flex; align-items: center; gap: 0.55rem; }
+  .gav { width: 28px; height: 28px; border-radius: 50%; font-size: 0.62rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .gav.blue { background: rgba(var(--brand-blue-rgb),0.12); color: var(--brand-blue); }
   .gav.orange { background: rgba(255,102,0,0.12); color: var(--brand-orange); }
   .gav.grey { background: #f1f5f9; color: #94a3b8; }
-  .role-badge { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: #f1f5f9; color: #475569; font-weight: 600; white-space: nowrap; }
+  .role-badge { font-size: 0.7rem; padding: 0.18rem 0.45rem; border-radius: 4px; background: #f1f5f9; color: #475569; font-weight: 600; white-space: nowrap; }
   .role-badge.sr { background: rgba(var(--brand-blue-rgb),0.1); color: var(--brand-blue); }
-  .shift { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
+  .shift { display: inline-block; padding: 0.18rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
   .shift.d { background: #dbeafe; color: #1d4ed8; }
   .shift.m { background: #fef9c3; color: #854d0e; }
   .shift.n { background: #ede9fe; color: #6d28d9; }
   .off { color: #cbd5e1; text-align: center; }
-  .cert { display: inline-block; margin-right: 0.25rem; padding: 0.15rem 0.4rem; background: #dcfce7; color: #166534; border-radius: 3px; font-size: 0.68rem; font-weight: 700; }
+  .cert { display: inline-block; margin-right: 0.2rem; padding: 0.12rem 0.35rem; background: #dcfce7; color: #166534; border-radius: 3px; font-size: 0.65rem; font-weight: 700; }
   .sick-row td { background: #fff8f5; }
-  .sick-cell { color: #c2410c; font-weight: 600; }
-  .open-row td { background: #fffbeb; padding: 0.75rem 1.25rem; }
-  .open-row td span { color: #92400e; font-weight: 600; font-size: 0.85rem; margin-right: 1rem; }
+  .sick-cell { color: #92400e; font-weight: 600; }
 
-  /* ── Wijzigingen form ── */
-  .pform { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-  .fg { display: flex; flex-direction: column; gap: 0.4rem; }
-  .fg label { font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
-  .fg input, .fg select, .fg textarea {
-    padding: 0.7rem 0.9rem; border: 1.5px solid #e2e8f0; border-radius: 8px;
-    font-size: 0.9rem; color: #1e293b; transition: 0.2s; font-family: inherit;
-    background: white;
-  }
+  /* ── Form ── */
+  .pform { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .fg { display: flex; flex-direction: column; gap: 0.35rem; }
+  .fg label { font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+  .fg input, .fg select, .fg textarea { padding: 0.65rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; color: #1e293b; transition: border-color 0.2s; font-family: inherit; background: white; }
   .fg input:focus, .fg select:focus, .fg textarea:focus { outline: none; border-color: var(--brand-blue); }
-  .radio-row { display: flex; gap: 1.5rem; }
-  .radio-row label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; color: #334155; text-transform: none; letter-spacing: 0; cursor: pointer; }
-  .success-msg { background: #dcfce7; color: #166534; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.88rem; }
+  .radio-row { display: flex; gap: 1.25rem; }
+  .radio-row label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #334155; text-transform: none; letter-spacing: 0; cursor: pointer; }
+  .success-msg { background: #dcfce7; color: #166534; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; }
   .success-msg.hidden { display: none; }
-
-  .req-list { padding: 0.5rem 0; }
-  .req-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9; }
+  .req-list { padding: 0.25rem 0; }
+  .req-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.5rem; border-bottom: 1px solid #f1f5f9; }
   .req-item:last-child { border-bottom: none; }
-  .req-info strong { display: block; font-size: 0.9rem; color: #1e293b; }
-  .req-info span { font-size: 0.78rem; color: #94a3b8; }
+  .req-info strong { display: block; font-size: 0.87rem; color: #1e293b; }
+  .req-info span { font-size: 0.75rem; color: #94a3b8; }
 
   /* ── Documenten ── */
   .doc-name { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #1e293b; }
 
-  /* ── Analyse ── */
-  .stat-rows { padding: 0.5rem 0; }
-  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; }
+  /* ── Analyse stats ── */
+  .stat-rows { padding: 0.25rem 0; }
+  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; gap: 1rem; }
   .stat-row:last-child { border-bottom: none; }
-  .stat-row span { color: #64748b; }
-  .stat-row strong { color: #1e293b; font-weight: 800; }
-  .stat-row strong.good { color: #16a34a; }
+  .stat-row > span { color: #64748b; flex-shrink: 0; }
+  .stat-right { display: flex; align-items: center; gap: 0.75rem; }
+  .stat-right strong { color: #1e293b; font-weight: 800; white-space: nowrap; }
+  .stat-right strong.good { color: #16a34a; }
+  .stat-bar { width: 80px; height: 5px; background: #e8ecf2; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+  .stat-fill { height: 100%; background: rgba(var(--brand-blue-rgb),0.6); border-radius: 3px; width: 0%; transition: width 1.6s cubic-bezier(0.16,1,0.3,1); }
+  .stat-fill.good { background: #22c55e; }
   .report-text { padding: 1.5rem; }
-  .report-text p { color: #475569; line-height: 1.7; margin-bottom: 1rem; font-size: 0.9rem; }
+  .report-text p { color: #475569; line-height: 1.7; margin-bottom: 1rem; font-size: 0.88rem; }
   .report-text p:last-child { margin-bottom: 0; }
 
   /* ── Contact ── */
   .contact-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-  .contact-card { padding: 2rem; text-align: center; }
-  .contact-card h3 { font-size: 1.1rem; margin: 0.75rem 0 0.25rem; color: var(--brand-blue); }
-  .contact-role { color: #94a3b8; font-size: 0.82rem; margin-bottom: 1.25rem; }
-  .contact-av {
-    width: 64px; height: 64px; border-radius: 50%; margin: 0 auto;
-    font-size: 0.75rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
-  }
+  .contact-card { padding: 2rem 1.5rem; text-align: center; }
+  .contact-card h3 { font-size: 1.05rem; margin: 0.75rem 0 0.2rem; color: var(--brand-blue); }
+  .contact-role { color: #94a3b8; font-size: 0.78rem; margin-bottom: 1rem; }
+  .contact-av { width: 60px; height: 60px; border-radius: 50%; margin: 0 auto; font-size: 0.72rem; font-weight: 900; display: flex; align-items: center; justify-content: center; }
   .contact-av.blue { background: rgba(var(--brand-blue-rgb),0.12); color: var(--brand-blue); }
   .contact-av.orange { background: rgba(255,102,0,0.12); color: var(--brand-orange); }
-  .contact-rows { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #475569; }
+  .contact-rows { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.82rem; color: #475569; }
   .contact-rows a { color: var(--brand-blue); text-decoration: none; font-weight: 600; }
+  .contact-note { font-size: 0.78rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1.25rem; }
 
   /* ── Buttons ── */
-  .btn-sm { padding: 0.4rem 0.9rem; border: 1.5px solid #e2e8f0; border-radius: 6px; background: white; font-size: 0.78rem; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s; }
+  .btn-sm { padding: 0.38rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 6px; background: white; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s; font-family: inherit; }
   .btn-sm:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
   .btn-group { display: flex; gap: 0.5rem; }
-  .btn-primary { padding: 0.75rem 1.5rem; background: var(--brand-blue); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; width: 100%; }
+  .btn-primary { padding: 0.7rem 1.5rem; background: var(--brand-blue); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: 0.2s; width: 100%; font-family: inherit; }
   .btn-primary:hover { background: var(--brand-orange); }
-  .btn-primary-sm { padding: 0.4rem 0.9rem; background: var(--brand-blue); color: white; border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+  .btn-primary-sm { padding: 0.38rem 0.85rem; background: var(--brand-blue); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; }
   .btn-primary-sm:hover { background: var(--brand-orange); }
-  .btn-xs { padding: 0.25rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 4px; background: white; font-size: 0.72rem; font-weight: 700; color: #64748b; cursor: pointer; transition: 0.2s; }
+  .btn-xs { padding: 0.22rem 0.55rem; border: 1px solid #e2e8f0; border-radius: 4px; background: white; font-size: 0.7rem; font-weight: 700; color: #64748b; cursor: pointer; transition: 0.2s; }
   .btn-xs:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
-  .btn-orange { padding: 0.35rem 0.8rem; background: var(--brand-orange); color: white; border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; margin-left: 0.75rem; }
 
-  @media (max-width: 1024px) {
-    .kpi-row { grid-template-columns: repeat(2, 1fr); }
-    .dash-row, .two-col, .contact-grid { grid-template-columns: 1fr; }
+  /* ── Demo notice ── */
+  .demo-notice {
+    background: linear-gradient(90deg, #fffbeb, #fef3c7);
+    border-bottom: 2px solid #f59e0b;
+    flex-shrink: 0;
+    animation: slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .demo-notice-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.75rem;
+    font-size: 0.8rem;
+    color: #92400e;
+  }
+  .demo-notice-inner svg { color: #d97706; flex-shrink: 0; }
+  .demo-notice-inner span { flex: 1; line-height: 1.4; }
+  .demo-dismiss {
+    background: #f59e0b;
+    border: none;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    font-family: inherit;
+  }
+  .demo-dismiss:hover { background: #b45309; }
+
+  /* ── Sidebar badge ── */
+  .sb-badge {
+    margin-left: auto;
+    background: var(--brand-orange);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 900;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: badge-pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes badge-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,102,0,0.4); }
+    50% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(255,102,0,0); }
+  }
+
+  /* ── Card entrance animation ── */
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card-in { animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+
+  /* ── Activity feed ── */
+  .dash-row-bottom { display: grid; grid-template-columns: 1fr 1.6fr; gap: 1rem; margin-bottom: 0; }
+  .activity-feed { padding: 0.5rem 0; max-height: 200px; overflow: hidden; }
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.5rem;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 0.8rem;
+    animation: feedIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes feedIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .act-dot.green { background: #22c55e; }
+  .act-dot.blue { background: var(--brand-blue); }
+  .act-dot.orange { background: var(--brand-orange); }
+  .act-time { color: #94a3b8; font-weight: 700; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+  .act-text { color: #475569; flex: 1; }
+  .act-new { background: #f0f9ff; }
+
+  @media (max-width: 1100px) {
+    .kpi-row { grid-template-columns: repeat(2,1fr); }
+    .dash-row, .two-col, .contact-grid, .dash-row-bottom { grid-template-columns: 1fr; }
   }
   @media (max-width: 768px) {
+    body { overflow: auto; }
     .sidebar { display: none; }
+    .portal-wrap { height: auto; overflow: visible; }
+    .portal-main { overflow: visible; }
     .kpi-row { grid-template-columns: 1fr 1fr; }
     .tab-content { padding: 1rem; }
   }
 </style>
 
 <script>
-  // Skip global animations on this app page
   document.documentElement.dataset.app = '1';
 
   const tabTitles: Record<string, string> = {
@@ -833,8 +1047,43 @@ const base = import.meta.env.BASE_URL;
     wijzigingen: 'Wijzigingen Doorgeven',
     documenten: 'Documentenbeheer',
     analyse: 'Analyse & Rapportage',
-    contact: 'Direct Contact',
+    contact: 'Contact',
   };
+
+  // Card entrance animations on tab switch
+  function animateTabIn(tabId: string) {
+    const tab = document.getElementById('tab-' + tabId);
+    if (!tab) return;
+    const cards = tab.querySelectorAll<HTMLElement>('.card, .kpi-card, .contact-card');
+    cards.forEach((card, i) => {
+      card.classList.remove('card-in');
+      card.style.animationDelay = `${i * 0.07}s`;
+      void card.offsetWidth; // reflow
+      card.classList.add('card-in');
+    });
+    // Stagger table rows
+    tab.querySelectorAll<HTMLElement>('.dtable tbody tr').forEach((row, i) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-10px)';
+      row.style.transition = 'none';
+      setTimeout(() => {
+        row.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        row.style.opacity = '1';
+        row.style.transform = '';
+      }, 120 + i * 55);
+    });
+    // Stagger req-list items
+    tab.querySelectorAll<HTMLElement>('.req-item').forEach((item, i) => {
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(10px)';
+      item.style.transition = 'none';
+      setTimeout(() => {
+        item.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        item.style.opacity = '1';
+        item.style.transform = '';
+      }, 80 + i * 60);
+    });
+  }
 
   document.querySelectorAll('.sb-item').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -845,32 +1094,126 @@ const base = import.meta.env.BASE_URL;
       btn.classList.add('active');
       (document.getElementById('page-title') as HTMLElement).textContent = tabTitles[tab];
       (document.getElementById('bread-current') as HTMLElement).textContent = tabTitles[tab];
+
+      animateTabIn(tab);
+      if (tab === 'analyse') animateStatBars();
+      // Remove badge when wijzigingen is opened
+      if (tab === 'wijzigingen') {
+        const badge = btn.querySelector('.sb-badge') as HTMLElement;
+        if (badge) { badge.style.transform = 'scale(0)'; badge.style.opacity = '0'; }
+      }
     });
+  });
+
+  // Initial animation on dashboard
+  setTimeout(() => animateTabIn('dashboard'), 100);
+
+  // Demo notice dismiss
+  document.getElementById('demo-dismiss')?.addEventListener('click', () => {
+    const notice = document.getElementById('demo-notice');
+    if (notice) { notice.style.transition = 'opacity 0.3s, transform 0.3s'; notice.style.opacity = '0'; notice.style.transform = 'translateY(-8px)'; setTimeout(() => notice.style.display = 'none', 300); }
   });
 
   // Submit demo
   document.getElementById('submit-btn')?.addEventListener('click', () => {
-    document.getElementById('success-msg')?.classList.remove('hidden');
-    setTimeout(() => document.getElementById('success-msg')?.classList.add('hidden'), 4000);
+    const msg = document.getElementById('success-msg');
+    msg?.classList.remove('hidden');
+    setTimeout(() => msg?.classList.add('hidden'), 5000);
   });
 
-  // Animated bars
+  // KPI count-up
+  function countUp(el: HTMLElement, target: number, duration = 900, decimals = 0) {
+    const start = performance.now();
+    const suffix = el.dataset.suffix ?? '';
+    function step(now: number) {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const val = ease * target;
+      el.textContent = (decimals > 0 ? val.toFixed(decimals) : Math.round(val).toLocaleString('nl-NL')) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-count]').forEach(el => {
+    const target = parseFloat(el.dataset.count!);
+    setTimeout(() => countUp(el, target, 1000), 300);
+  });
+  document.querySelectorAll<HTMLElement>('[data-count-dec]').forEach(el => {
+    const target = parseFloat(el.dataset.countDec!);
+    setTimeout(() => countUp(el, target, 1100, 1), 300);
+  });
+
+  // Animated bar charts — faster jitter
   function animateBars(chartId: string) {
     const bars = document.querySelectorAll<HTMLElement>(`#${chartId} .bar`);
     bars.forEach(bar => {
       const base = parseInt(bar.dataset.base || '50');
       bar.style.height = base + '%';
       function pulse() {
-        const jitter = (Math.random() - 0.5) * 22;
-        bar.style.height = Math.max(5, Math.min(95, base + jitter)) + '%';
-        setTimeout(pulse, 1800 + Math.random() * 2400);
+        const jitter = (Math.random() - 0.5) * 20;
+        bar.style.height = Math.max(8, Math.min(98, base + jitter)) + '%';
+        setTimeout(pulse, 1200 + Math.random() * 1500);
       }
-      setTimeout(pulse, Math.random() * 1500);
+      setTimeout(pulse, Math.random() * 800);
+    });
+  }
+  animateBars('dash-chart');
+  animateBars('analyse-chart');
+
+  // Bezetting bar animate on load
+  document.querySelectorAll<HTMLElement>('.bezetting-fill').forEach(el => {
+    const width = el.style.width;
+    el.style.width = '0%';
+    setTimeout(() => { el.style.transition = 'width 1.4s cubic-bezier(0.16,1,0.3,1)'; el.style.width = width; }, 500);
+  });
+
+  // Stat bars animate when analyse tab opens
+  function animateStatBars() {
+    document.querySelectorAll<HTMLElement>('.stat-fill').forEach(el => {
+      const pct = el.dataset.pct || '0';
+      el.style.width = '0%';
+      setTimeout(() => { el.style.width = pct + '%'; }, 100);
     });
   }
 
-  animateBars('dash-chart');
-  animateBars('analyse-chart');
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const d = now.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    const t = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const el = document.getElementById('live-date');
+    if (el) el.textContent = `${d} — ${t}`;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // Live activity feed — new items appear periodically
+  const liveEvents = [
+    { dot: 'green', text: 'R. Krishnan — overdracht afgerond (Amsterdam HQ)' },
+    { dot: 'blue', text: 'Dagrapport bevestigd — Rotterdam Depot' },
+    { dot: 'orange', text: 'Planning update — week 20 concept beschikbaar' },
+    { dot: 'green', text: 'K. Prins — dienst gestart (Rotterdam Depot)' },
+    { dot: 'blue', text: 'Factuur mei 2025 klaargezet in Documenten' },
+  ];
+  let eventIdx = 0;
+  function addFeedItem() {
+    const feed = document.getElementById('activity-feed');
+    if (!feed) return;
+    const ev = liveEvents[eventIdx % liveEvents.length];
+    eventIdx++;
+    const now = new Date();
+    const time = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const item = document.createElement('div');
+    item.className = 'activity-item act-new';
+    item.innerHTML = `<span class="act-dot ${ev.dot}"></span><span class="act-time">${time}</span><span class="act-text">${ev.text}</span>`;
+    feed.insertBefore(item, feed.firstChild);
+    // Remove oldest if more than 5
+    while (feed.children.length > 5) feed.removeChild(feed.lastChild!);
+    // Schedule next
+    setTimeout(addFeedItem, 6000 + Math.random() * 8000);
+  }
+  setTimeout(addFeedItem, 7000);
 </script>
 
 </BaseLayout>
