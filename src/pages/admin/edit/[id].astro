@@ -1,8 +1,10 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Navigation from "../../components/Navigation.astro";
-import Footer from "../../components/Footer.astro";
-import { supabase } from "../../lib/supabase";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Navigation from "../../../components/Navigation.astro";
+import Footer from "../../../components/Footer.astro";
+import { supabase } from "../../../lib/supabase";
+
+const { id } = Astro.params;
 
 // Auth check
 const accessToken = Astro.cookies.get("sb-access-token")?.value;
@@ -12,20 +14,31 @@ if (!accessToken || !refreshToken) {
 	return Astro.redirect("/admin");
 }
 
-const { data, error: authError } = await supabase.auth.setSession({
+const { data: authData, error: authError } = await supabase.auth.setSession({
 	access_token: accessToken,
 	refresh_token: refreshToken,
 });
 
-if (authError || !data.user) {
+if (authError || !authData.user) {
 	return Astro.redirect("/admin");
+}
+
+// Haal de specifieke vacature op
+const { data: vacancy, error: fetchError } = await supabase
+	.from('vacancies')
+	.select('*')
+	.eq('id', id)
+	.single();
+
+if (fetchError || !vacancy) {
+	return Astro.redirect("/admin?error=notfound");
 }
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
 ---
 
-<BaseLayout title="Nieuwe Vacature">
+<BaseLayout title={`Bewerk: ${vacancy.title}`}>
 	<Navigation />
 
 	<main class="admin-page">
@@ -33,47 +46,49 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 			<div class="container">
 				<div class="form-container glass reveal">
 					<a href="/admin" class="back-link">← Terug naar Dashboard</a>
-					<h1>Nieuwe <span class="orange-text">Vacature</span></h1>
+					<h1>Bewerk <span class="orange-text">Vacature</span></h1>
 					
-					<form id="vacancy-form" class="elite-form">
+					<form id="edit-vacancy-form" class="elite-form">
+						<input type="hidden" id="v-id" value={vacancy.id} />
+						
 						<div class="form-group">
 							<label>Functietitel</label>
-							<input type="text" name="title" id="v-title" placeholder="bijv. Professionele Beveiliger" required />
+							<input type="text" id="v-title" value={vacancy.title} required />
 						</div>
 
 						<div class="form-row">
 							<div class="form-group">
 								<label>Type</label>
-								<select name="type" id="v-type" required>
-									<option value="Beveiliging">Beveiliging</option>
-									<option value="Hospitality">Hospitality</option>
-									<option value="Kantoor">Kantoor</option>
-									<option value="Logistiek">Logistiek</option>
+								<select id="v-type" required>
+									<option value="Beveiliging" selected={vacancy.type === 'Beveiliging'}>Beveiliging</option>
+									<option value="Hospitality" selected={vacancy.type === 'Hospitality'}>Hospitality</option>
+									<option value="Kantoor" selected={vacancy.type === 'Kantoor'}>Kantoor</option>
+									<option value="Logistiek" selected={vacancy.type === 'Logistiek'}>Logistiek</option>
 								</select>
 							</div>
 							<div class="form-group">
 								<label>Locatie / Uren</label>
-								<input type="text" name="location" id="v-loc" placeholder="bijv. Regio Zuid-Holland of 40 uur" />
+								<input type="text" id="v-loc" value={vacancy.location} />
 							</div>
 						</div>
 
 						<div class="form-group">
 							<label>Beschrijving</label>
-							<textarea name="description" id="v-desc" rows="4" placeholder="Korte introductie over de functie..." required></textarea>
+							<textarea id="v-desc" rows="4" required>{vacancy.description}</textarea>
 						</div>
 
 						<div class="form-group">
 							<label>Eisen (één per regel)</label>
-							<textarea name="requirements" id="v-req" rows="5" placeholder="Diploma Beveiliger 2&#10;Minimaal 2 jaar ervaring..." required></textarea>
+							<textarea id="v-req" rows="5" required>{vacancy.requirements ? vacancy.requirements.join('\n') : ''}</textarea>
 						</div>
 
 						<div class="form-group">
 							<label>Wat wij bieden (één per regel)</label>
-							<textarea name="offer" id="v-offer" rows="5" placeholder="Salaris conform CAO&#10;Pensioenregeling..." required></textarea>
+							<textarea id="v-offer" rows="5" required>{vacancy.offer ? vacancy.offer.join('\n') : ''}</textarea>
 						</div>
 
 						<div class="form-actions">
-							<button type="submit" id="submit-btn" class="btn-glow">Vacature Publiceren</button>
+							<button type="submit" id="save-btn" class="btn-glow">Wijzigingen Opslaan</button>
 						</div>
 					</form>
 				</div>
@@ -85,16 +100,17 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 </BaseLayout>
 
 <script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
-	const initForm = () => {
-		const form = document.getElementById("vacancy-form");
-		const btn = document.getElementById("submit-btn");
+	const initEditForm = () => {
+		const form = document.getElementById("edit-vacancy-form");
+		const btn = document.getElementById("save-btn");
 
 		if (form && btn) {
 			form.onsubmit = async (e) => {
 				e.preventDefault();
 				btn.disabled = true;
-				btn.textContent = "Bezig met publiceren...";
+				btn.textContent = "Bezig met opslaan...";
 				
+				const id = document.getElementById("v-id").value;
 				const title = document.getElementById("v-title").value;
 				const type = document.getElementById("v-type").value;
 				const location = document.getElementById("v-loc").value;
@@ -106,33 +122,36 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 					const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
 					const supabase = createClient(supabaseUrl, supabaseKey);
 
-					const { error } = await supabase.from('vacancies').insert([{
-						title,
-						type,
-						location,
-						description,
-						requirements,
-						offer
-					}]);
+					const { error } = await supabase
+						.from('vacancies')
+						.update({
+							title,
+							type,
+							location,
+							description,
+							requirements,
+							offer
+						})
+						.eq('id', id);
 
 					if (error) {
 						alert("Fout bij opslaan: " + error.message);
 						btn.disabled = false;
-						btn.textContent = "Vacature Publiceren";
+						btn.textContent = "Wijzigingen Opslaan";
 					} else {
-						alert("Vacature succesvol geplaatst!");
+						alert("Vacature succesvol bijgewerkt!");
 						window.location.href = "/admin";
 					}
 				} catch (err) {
 					alert("Er is een onverwachte fout opgetreden: " + err.message);
 					btn.disabled = false;
-					btn.textContent = "Vacature Publiceren";
+					btn.textContent = "Wijzigingen Opslaan";
 				}
 			};
 		}
 	};
 
-	initForm();
+	initEditForm();
 </script>
 
 <style>
