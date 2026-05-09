@@ -5,10 +5,19 @@ import Footer from '../components/Footer.astro';
 import { supabase } from '../lib/supabase';
 
 // Haal vacatures live op uit Supabase
-const { data: vacancies = [] } = await supabase
-  .from('vacancies')
-  .select('*')
-  .order('created_at', { ascending: false });
+let vacancies = [];
+try {
+  const { data, error } = await supabase
+    .from('vacancies')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (!error && data) {
+    vacancies = data;
+  }
+} catch (e) {
+  console.error("Fout bij ophalen vacatures:", e);
+}
 ---
 
 <BaseLayout title="Werken bij">
