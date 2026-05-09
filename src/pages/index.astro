@@ -23,7 +23,7 @@ import Footer from '../components/Footer.astro';
         <p class="hero-description">Met een hecht team van vele honderden beveiligers beschermen wij dagelijks onze en uw eigendommen.</p>
         <div class="hero-actions">
           <button id="play-video" class="btn-glow">Bekijk onze film</button>
-          <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="btn-outline-white">Onze diensten</a>
+          <a href={`${import.meta.env.BASE_URL}/oplossingen`} class="btn-blue-glow">Onze diensten</a>
         </div>
       </div>
 
@@ -239,13 +239,9 @@ import Footer from '../components/Footer.astro';
       flex-direction: column;
       gap: 1rem;
     }
-    .btn-glow, .btn-outline-white {
-      width: 100%;
-      max-width: 300px;
-    }
   }
 
-  .btn-glow, .btn-outline-white {
+  .btn-glow, .btn-blue-glow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -259,24 +255,11 @@ import Footer from '../components/Footer.astro';
     white-space: nowrap;
   }
 
-  .btn-glow {
-    background: var(--brand-orange);
-    color: white;
-    border: none;
-  }
-
-  .btn-outline-white {
-    border: 2px solid var(--brand-blue);
-    color: white;
-    background: var(--brand-blue);
-    font-weight: 800;
-  }
-
-  .btn-outline-white:hover {
-    background: transparent;
-    color: var(--brand-blue);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 46, 93, 0.18);
+  @media (max-width: 768px) {
+    .btn-glow, .btn-blue-glow {
+      width: 100%;
+      max-width: 300px;
+    }
   }
 
   /* Marquee */
@@ -729,7 +712,7 @@ import Footer from '../components/Footer.astro';
     .hero-description {
       font-size: 0.95rem !important;
     }
-    .btn-glow, .btn-outline-white {
+    .btn-glow, .btn-blue-glow {
       max-width: 100%;
       width: 100%;
     }
