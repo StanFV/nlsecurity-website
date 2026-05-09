@@ -267,13 +267,16 @@ import Footer from '../components/Footer.astro';
 
   .btn-outline-white {
     border: 2px solid var(--brand-blue);
-    color: var(--brand-blue);
-    background: white;
+    color: white;
+    background: var(--brand-blue);
+    font-weight: 800;
   }
 
   .btn-outline-white:hover {
-    background: var(--brand-blue);
-    color: white;
+    background: transparent;
+    color: var(--brand-blue);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 46, 93, 0.18);
   }
 
   /* Marquee */
@@ -500,17 +503,27 @@ import Footer from '../components/Footer.astro';
   }
 
   .btn-outline-white-real {
-    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 3.5rem;
+    padding: 0 2.5rem;
+    border-radius: 50px;
+    font-weight: 800;
     text-decoration: none;
-    font-weight: 700;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 0.5rem;
     transition: 0.3s;
+    white-space: nowrap;
+    background: white;
+    color: var(--brand-blue);
+    border: 2px solid white;
   }
 
   .btn-outline-white-real:hover {
-    border-color: white;
-    padding-left: 0.5rem;
+    background: var(--brand-orange);
+    border-color: var(--brand-orange);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   }
 
   .cta-visual {

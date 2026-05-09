@@ -9,7 +9,7 @@ import Footer from '../components/Footer.astro';
   
   <main class="page-contact">
     <!-- Hero -->
-    <section class="contact-hero">
+    <section class="contact-hero" style={`--hero-bg: url('${import.meta.env.BASE_URL}/assets/images/Foto_Contact_opnemen.png')`}>
       <div class="container text-center reveal">
         <span class="badge-blue">Neem Contact Op</span>
         <h1>Zorg nu voor optimale <br/><span class="gradient-text">Beveiliging</span></h1>
@@ -20,31 +20,108 @@ import Footer from '../components/Footer.astro';
     <section class="contact-grid-elite">
       <div class="container grid grid-2">
         <!-- Form Column -->
-        <div class="contact-form-elite glass reveal">
+        <div class="contact-form-elite reveal">
           <div id="form-container">
-            <h2>Stuur een <span class="orange-text">bericht</span></h2>
+            <h2>Stuur een <span style="color:var(--brand-orange)">bericht</span></h2>
             <p class="form-intro">Laat uw gegevens achter en wij nemen binnen 24 uur contact met u op.</p>
+
             <form class="elite-form" id="contact-form" action="https://formspree.io/f/xaqvpjzv" method="POST">
-              <div class="form-row">
-                <input type="text" name="name" placeholder="Volledige naam" required />
-                <input type="email" name="email" placeholder="E-mailadres" required />
+
+              <!-- Naam -->
+              <div class="form-row-3">
+                <input type="text" name="voornaam" placeholder="Voornaam" required />
+                <input type="text" name="tussenvoegsel" placeholder="Tussenvoegsel" />
+                <input type="text" name="achternaam" placeholder="Achternaam" required />
               </div>
-              <input type="tel" name="phone" placeholder="Telefoonnummer" />
-              <textarea name="message" placeholder="Waarmee kunnen we u helpen?" rows="6" required></textarea>
-              <button type="submit" id="submit-btn" class="btn-glow">Bericht Verzenden</button>
+
+              <!-- Bedrijf -->
+              <input type="text" name="bedrijfsnaam" placeholder="Bedrijfsnaam" required />
+
+              <!-- Contact voorkeur toggle -->
+              <div class="contact-pref-label">Hoe mogen wij u bereiken?</div>
+              <div class="contact-toggle">
+                <button type="button" class="toggle-opt active" data-method="email">✉ E-mail</button>
+                <button type="button" class="toggle-opt" data-method="phone">📞 Telefoon</button>
+              </div>
+
+              <!-- E-mail veld -->
+              <div>
+                <input type="email" name="email" id="input-email" placeholder="E-mailadres" required />
+                <div class="field-error" id="error-email"></div>
+              </div>
+
+              <!-- Telefoon veld -->
+              <div>
+                <input type="tel" name="phone" id="input-phone" placeholder="Telefoonnummer (bijv. 06-12345678)" />
+                <div class="field-error" id="error-phone"></div>
+              </div>
+
+              <textarea name="message" placeholder="Waarmee kunnen wij u helpen?" rows="5" required></textarea>
+              <button type="submit" id="submit-btn" class="form-submit-btn">Bericht Verzenden</button>
             </form>
           </div>
-          <div id="success-message" style="display: none; text-align: center; padding: 3rem 0;">
-            <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
-            <h2 class="orange-text">Bericht verzonden!</h2>
-            <p style="font-size: 1.2rem; color: var(--text-secondary); line-height: 1.6;">Bedankt voor uw bericht. Wij hebben uw aanvraag ontvangen en nemen binnen 24 uur contact met u op.</p>
+
+          <div id="success-message" style="display:none; text-align:center; padding:3rem 0;">
+            <div style="font-size:4rem; margin-bottom:1.5rem;">✅</div>
+            <h2 style="color:var(--brand-orange)">Bericht verzonden!</h2>
+            <p style="font-size:1.1rem; color:rgba(255,255,255,0.75); line-height:1.6;">Bedankt voor uw bericht. Wij nemen binnen 24 uur contact met u op.</p>
           </div>
-          <div id="error-message" style="display: none; text-align: center; padding: 1rem; color: #dc3545; background: rgba(220, 53, 69, 0.1); border-radius: 12px; margin-top: 1rem;">
+          <div id="error-message" style="display:none; padding:1rem; color:#fca5a5; background:rgba(220,53,69,0.2); border-radius:12px; margin-top:1rem; text-align:center;">
             Oeps! Er ging iets mis bij het verzenden. Probeer het later opnieuw.
           </div>
         </div>
 
         <script is:inline>
+          let preferredMethod = 'email';
+
+          // Toggle
+          document.querySelectorAll('.toggle-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.toggle-opt').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              preferredMethod = btn.dataset.method;
+              const emailInput = document.getElementById('input-email');
+              const phoneInput = document.getElementById('input-phone');
+              emailInput.required = preferredMethod === 'email';
+              phoneInput.required = preferredMethod === 'phone';
+              clearError(emailInput, 'error-email');
+              clearError(phoneInput, 'error-phone');
+            });
+          });
+
+          // Validation helpers
+          function validateEmail(val) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val.trim());
+          }
+          function validatePhone(val) {
+            const cleaned = val.replace(/[\s\-\.\(\)]/g, '');
+            return /^(\+31|0)[0-9]{9}$/.test(cleaned);
+          }
+          function setError(input, errorId, msg) {
+            input.classList.add('field-invalid');
+            document.getElementById(errorId).textContent = msg;
+          }
+          function clearError(input, errorId) {
+            input.classList.remove('field-invalid');
+            document.getElementById(errorId).textContent = '';
+          }
+
+          // Live validation on blur
+          const emailInput = document.getElementById('input-email');
+          const phoneInput = document.getElementById('input-phone');
+
+          emailInput.addEventListener('blur', () => {
+            if (emailInput.value && !validateEmail(emailInput.value))
+              setError(emailInput, 'error-email', 'Voer een geldig e-mailadres in.');
+            else clearError(emailInput, 'error-email');
+          });
+          phoneInput.addEventListener('blur', () => {
+            if (phoneInput.value && !validatePhone(phoneInput.value))
+              setError(phoneInput, 'error-phone', 'Voer een geldig telefoonnummer in (bijv. 06-12345678 of +31612345678).');
+            else clearError(phoneInput, 'error-phone');
+          });
+
+          // Submit
           const form = document.getElementById('contact-form');
           const formContainer = document.getElementById('form-container');
           const successMessage = document.getElementById('success-message');
@@ -53,39 +130,53 @@ import Footer from '../components/Footer.astro';
 
           form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            // Show loading state
+            let valid = true;
+
+            // Validate required contact field
+            if (preferredMethod === 'email') {
+              if (!emailInput.value || !validateEmail(emailInput.value)) {
+                setError(emailInput, 'error-email', 'Voer een geldig e-mailadres in.');
+                valid = false;
+              } else clearError(emailInput, 'error-email');
+            } else {
+              if (!phoneInput.value || !validatePhone(phoneInput.value)) {
+                setError(phoneInput, 'error-phone', 'Voer een geldig telefoonnummer in (bijv. 06-12345678).');
+                valid = false;
+              } else clearError(phoneInput, 'error-phone');
+            }
+
+            // Validate optional field if filled in
+            if (preferredMethod !== 'email' && emailInput.value && !validateEmail(emailInput.value)) {
+              setError(emailInput, 'error-email', 'Voer een geldig e-mailadres in.');
+              valid = false;
+            }
+            if (preferredMethod !== 'phone' && phoneInput.value && !validatePhone(phoneInput.value)) {
+              setError(phoneInput, 'error-phone', 'Voer een geldig telefoonnummer in (bijv. 06-12345678).');
+              valid = false;
+            }
+
+            if (!valid) return;
+
             submitBtn.disabled = true;
             submitBtn.innerText = 'Verzenden...';
             errorMessage.style.display = 'none';
 
-            const formData = new FormData(form);
-            
             try {
               const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                  'Accept': 'application/json'
-                }
+                method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' }
               });
-
               if (response.ok) {
                 formContainer.style.display = 'none';
                 successMessage.style.display = 'block';
               } else {
                 const data = await response.json();
-                if (data.errors) {
-                  errorMessage.innerText = data.errors.map(error => error.message).join(", ");
-                } else {
-                  errorMessage.innerText = 'Oeps! Er ging iets mis bij het verzenden.';
-                }
+                errorMessage.innerText = data.errors ? data.errors.map(err => err.message).join(', ') : 'Er ging iets mis.';
                 errorMessage.style.display = 'block';
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Bericht Verzenden';
               }
-            } catch (error) {
-              errorMessage.innerText = 'Oeps! Er ging iets mis met de verbinding.';
+            } catch {
+              errorMessage.innerText = 'Er ging iets mis met de verbinding.';
               errorMessage.style.display = 'block';
               submitBtn.disabled = false;
               submitBtn.innerText = 'Bericht Verzenden';
@@ -126,7 +217,7 @@ import Footer from '../components/Footer.astro';
               <span class="method-icon">✉️</span>
               <div class="method-text">
                 <span class="label">E-mail</span>
-                <a href="mailto:s.hudepohl@bc-capital.nl" class="value">s.hudepohl@bc-capital.nl</a>
+                <a href="mailto:info@nlsecurity.nl" class="value">info@nlsecurity.nl</a>
               </div>
             </div>
           </div>
@@ -225,6 +316,12 @@ import Footer from '../components/Footer.astro';
 
   .contact-hero {
     padding: 10rem 1rem 3rem;
+    background:
+      linear-gradient(to bottom,
+        rgba(255,255,255,0.62) 0%,
+        rgba(255,255,255,0.72) 60%,
+        rgba(255,255,255,0.88) 100%),
+      var(--hero-bg) center 20% / cover no-repeat;
   }
 
   .contact-hero h1 {
@@ -277,50 +374,138 @@ import Footer from '../components/Footer.astro';
   .contact-form-elite {
     padding: 4rem;
     border-radius: 40px;
-    background: white;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.05);
+    background: var(--brand-blue);
+    box-shadow: 0 30px 80px rgba(0,46,93,0.25);
   }
 
   .contact-form-elite h2 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    color: white;
   }
 
   .form-intro {
-    color: var(--text-secondary);
-    margin-bottom: 2.5rem;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 2rem;
   }
 
   .elite-form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
   }
 
-  .form-row {
+  .form-row-3 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 0.85rem;
   }
 
-  .elite-form input, 
+  .elite-form input,
   .elite-form textarea {
     width: 100%;
-    padding: 1.1rem 1.5rem;
-    background: var(--bg-light);
-    border: 1px solid transparent;
-    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    background: rgba(255,255,255,0.92);
+    border: 1.5px solid transparent;
+    border-radius: 14px;
     font-family: inherit;
-    font-size: 1rem;
-    transition: 0.3s;
+    font-size: 0.95rem;
+    color: var(--brand-blue);
+    transition: 0.25s;
   }
 
-  .elite-form input:focus, 
+  .elite-form input::placeholder,
+  .elite-form textarea::placeholder {
+    color: rgba(0,46,93,0.38);
+  }
+
+  .elite-form input:focus,
   .elite-form textarea:focus {
     outline: none;
     border-color: var(--brand-orange);
     background: white;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 0 0 3px rgba(255,102,0,0.18);
+  }
+
+  .elite-form input.field-invalid {
+    border-color: #f87171;
+    background: #fff5f5;
+  }
+
+  .field-error {
+    font-size: 0.75rem;
+    color: #fca5a5;
+    margin-top: 0.3rem;
+    min-height: 1rem;
+    padding-left: 0.25rem;
+  }
+
+  /* Contact toggle */
+  .contact-pref-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 0.4rem;
+  }
+
+  .contact-toggle {
+    display: flex;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50px;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    width: fit-content;
+  }
+
+  .toggle-opt {
+    padding: 0.55rem 1.4rem;
+    border-radius: 50px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+  }
+
+  .toggle-opt.active {
+    background: white;
+    color: var(--brand-blue);
+  }
+
+  .toggle-opt:hover:not(.active) {
+    color: white;
+  }
+
+  /* Submit button */
+  .form-submit-btn {
+    padding: 1rem 2rem;
+    background: var(--brand-orange);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.25s;
+    font-family: inherit;
+    margin-top: 0.5rem;
+  }
+
+  .form-submit-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255,102,0,0.35);
+  }
+
+  .form-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
   }
 
   .contact-details-elite {
