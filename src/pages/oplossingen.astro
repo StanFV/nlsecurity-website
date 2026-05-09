@@ -88,20 +88,35 @@ const solutions = [
 
   @media (max-width: 768px) {
     .solutions-hero {
-      padding: 8rem 1rem 4rem;
+      padding: 7rem 1rem 3rem;
     }
     .solutions-hero h1 {
-      font-size: 2.5rem;
+      font-size: 2.25rem;
     }
     .elite-card {
       padding: 2.5rem 1.5rem;
+      border-radius: 28px;
     }
     .solutions-grid-elite {
       padding: 4rem 1rem;
     }
     .specialist-highlight {
-      padding: 6rem 1rem;
+      padding: 4rem 1rem;
     }
+    .actions-group {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .btn-glow, .btn-outline {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .solutions-hero h1 { font-size: 1.9rem; }
+    .elite-card h3 { font-size: 1.5rem; }
+    .card-number { font-size: 1.1rem; }
   }
 
   .solutions-grid-elite {

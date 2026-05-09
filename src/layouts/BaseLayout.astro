@@ -12,7 +12,7 @@ const { title } = Astro.props;
 <html lang="nl">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}/assets/images/logo%20zonder%20tekst.png`} />
 		<title>{title} | NL Security Elite</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +33,7 @@ const { title } = Astro.props;
 						revealObserver.unobserve(entry.target);
 					}
 				});
-			}, { threshold: 0.12, rootMargin: '0px 0px -100px 0px' });
+			}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
 			document.querySelectorAll('.grid').forEach(grid => {
 				grid.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-fade').forEach((child, i) => {
@@ -130,7 +130,7 @@ const { title } = Astro.props;
 						twObserver.unobserve(entry.target);
 					}
 				});
-			}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+			}, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
 
 			sections.forEach(s => twObserver.observe(s));
 

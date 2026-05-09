@@ -685,17 +685,55 @@ import Footer from '../components/Footer.astro';
   @media (max-width: 768px) {
     .grid-3 { grid-template-columns: 1fr; }
     .section-header h2 { font-size: 2.25rem; }
-    .cta-content h2 { font-size: 2.25rem; }
+    .section-header { margin-bottom: 3rem; }
+    .cta-content h2 { font-size: 2rem; }
     .floating-call-btn span { display: none; }
     .floating-call-btn { padding: 1.25rem; border-radius: 50%; }
-    
+
     .service-card {
-      padding: 3rem 2rem;
+      padding: 2.5rem 1.5rem;
     }
-    
+
     .services-modern {
-      padding: 6rem 0;
+      padding: 5rem 0;
     }
+
+    .cta-box-elite {
+      padding: 2.5rem 1.5rem;
+      border-radius: 28px;
+    }
+
+    .cta-actions {
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-outline-white-real {
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .cta-section {
+      padding: 1rem 0 4rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-content-center h1 {
+      font-size: 2.25rem;
+    }
+    .hero-tagline {
+      font-size: 1.2rem !important;
+    }
+    .hero-description {
+      font-size: 0.95rem !important;
+    }
+    .btn-glow, .btn-outline-white {
+      max-width: 100%;
+      width: 100%;
+    }
+    .section-header h2 { font-size: 1.9rem; }
   }
 </style>
 
