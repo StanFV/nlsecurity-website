@@ -746,6 +746,7 @@ const base = import.meta.env.BASE_URL;
     font-weight: 700;
     text-decoration: none;
     transition: 0.2s;
+    cursor: pointer;
   }
   .back-btn:hover {
     background: white;
@@ -815,6 +816,7 @@ const base = import.meta.env.BASE_URL;
     font-weight: 700;
     text-decoration: none;
     transition: 0.2s;
+    cursor: pointer;
   }
   .topbar-back:hover { background: var(--brand-orange); }
 
@@ -1076,7 +1078,7 @@ const base = import.meta.env.BASE_URL;
   /* ── Activity feed ── */
   .dash-row-bottom { display: grid; grid-template-columns: 1fr 1.6fr; gap: 1rem; margin-bottom: 0; }
   .activity-feed { padding: 0.5rem 0; max-height: 200px; overflow: hidden; }
-  .activity-item {
+  :global(.activity-item) {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -1089,14 +1091,14 @@ const base = import.meta.env.BASE_URL;
     from { opacity: 0; transform: translateX(-12px); }
     to { opacity: 1; transform: translateX(0); }
   }
-  .activity-item:last-child { border-bottom: none; }
-  .act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .act-dot.green { background: #22c55e; }
-  .act-dot.blue { background: var(--brand-blue); }
-  .act-dot.orange { background: var(--brand-orange); }
-  .act-time { color: #94a3b8; font-weight: 700; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
-  .act-text { color: #475569; flex: 1; }
-  .act-new { background: #f0f9ff; }
+  :global(.activity-item:last-child) { border-bottom: none; }
+  :global(.act-dot) { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  :global(.act-dot.green) { background: #22c55e; }
+  :global(.act-dot.blue) { background: var(--brand-blue); }
+  :global(.act-dot.orange) { background: var(--brand-orange); }
+  :global(.act-time) { color: #94a3b8; font-weight: 700; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+  :global(.act-text) { color: #475569; flex: 1; }
+  :global(.act-new) { background: #f0f9ff; }
 
   /* ── Mobile tabs ── */
   .mobile-tabs {
@@ -1327,7 +1329,7 @@ const base = import.meta.env.BASE_URL;
     .pform { padding: 1rem; }
     .stat-row { padding: 0.7rem 1rem; }
     .loc-item { padding: 0.75rem 1rem; }
-    .activity-item { padding: 0.6rem 1rem; font-size: 0.75rem; }
+    :global(.activity-item) { padding: 0.6rem 1rem; font-size: 0.75rem; }
     .contact-grid { grid-template-columns: 1fr; }
     .two-col { grid-template-columns: 1fr; }
     .demo-notice-inner { padding: 0.6rem 1rem; flex-wrap: wrap; }
@@ -1921,6 +1923,7 @@ const base = import.meta.env.BASE_URL;
     showTourStep(tourStep);
   });
   document.getElementById('tour-skip-btn')?.addEventListener('click', endTour);
+  tourOverlay.addEventListener('click', endTour);
 
   // Start tour after a short delay
   setTimeout(startTour, 900);
