@@ -74,6 +74,14 @@ const initSetup = async () => {
 		refresh_token: getCookie("sb-refresh-token"),
 	});
 
+	// Check if already has a factor
+	const { data: factors } = await supabase.auth.mfa.listFactors();
+	const unverifiedFactor = factors?.totp?.find(f => f.status === "unverified");
+
+	if (unverifiedFactor) {
+		await supabase.auth.mfa.unenroll({ factorId: unverifiedFactor.id });
+	}
+
 	// Enroll TOTP factor
 	const { data: enrollData, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: "totp" });
 	if (enrollError) {
@@ -84,14 +92,26 @@ const initSetup = async () => {
 	const { id: factorId, totp } = enrollData;
 
 	// QR code renderen via qrcode.js
-	const script = document.createElement("script");
-	script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-	script.onload = () => {
+	const renderQR = () => {
+		if (typeof QRCode === "undefined") {
+			setTimeout(renderQR, 100);
+			return;
+		}
 		document.getElementById("qr-loading").style.display = "none";
 		const canvas = document.getElementById("qr-canvas");
 		canvas.style.display = "block";
-		new QRCode(canvas, { text: totp.uri, width: 200, height: 200 });
+		canvas.innerHTML = ""; // Clear
+		new QRCode(canvas, { 
+			text: totp.uri, 
+			width: 200, 
+			height: 200,
+			correctLevel: QRCode.CorrectLevel.H
+		});
 	};
+
+	const script = document.createElement("script");
+	script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+	script.onload = renderQR;
 	document.head.appendChild(script);
 
 	document.getElementById("totp-secret").textContent = totp.secret;
@@ -185,36 +205,6 @@ initSetup();
 }
 h1 { font-size: 2rem; margin: 0.5rem 0 1rem; }
 p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
-.qr-wrapper { display: flex; justify-content: center; margin: 1.5rem 0; }
-#qr-canvas { border-radius: 12px; }
-.secret-wrapper { margin: 1rem 0; }
-.secret-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem; }
-.totp-secret {
-	display: block;
-	background: #f1f5f9;
-	padding: 0.75rem 1rem;
-	border-radius: 10px;
-	font-size: 0.85rem;
-	letter-spacing: 0.1em;
-	word-break: break-all;
-}
-#verify-code {
-	width: 100%;
-	padding: 1rem;
-	text-align: center;
-	font-size: 2rem;
-	letter-spacing: 0.4em;
-	border-radius: 14px;
-	border: 2px solid rgba(0,0,0,0.1);
-	background: #f8fafc;
-	font-family: monospace;
-	transition: border-color 0.2s;
-}
-#verify-code:focus { outline: none; border-color: var(--brand-orange); background: white; }
-.btn-glow { width: 100%; }
-.error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
-</style>
--bottom: 1.5rem; font-size: 0.95rem; }
 .qr-wrapper { display: flex; justify-content: center; margin: 1.5rem 0; }
 #qr-canvas { border-radius: 12px; }
 .secret-wrapper { margin: 1rem 0; }
