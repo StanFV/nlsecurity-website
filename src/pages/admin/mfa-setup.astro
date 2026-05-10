@@ -48,8 +48,15 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 						<p>Voer de 6-cijferige code in van je authenticator-app om de instelling te bevestigen.</p>
 
 						<input type="text" id="verify-code" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" />
-						<button id="verify-btn" class="btn-glow" style="margin-top:1rem;">Bevestigen</button>
+						<button id="verify-btn" class="btn-glow" style="margin-top:1rem;">BEVESTIGEN</button>
 						<p id="verify-error" class="error-text" style="display:none;"></p>
+						
+						<div class="debug-log" id="debug-log">
+							<p>Systeem Status:</p>
+							<ul id="log-list">
+								<li>Wachten op invoer...</li>
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -59,132 +66,153 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 	<Footer />
 </BaseLayout>
 
+<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
-const initSetup = async () => {
-	const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-	const supabase = createClient(supabaseUrl, supabaseKey);
+// Globale status
+let currentFactorId = null;
+let supabase = null;
 
-	const getCookie = (name) => {
-		const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-		return match ? match[2] : null;
-	};
+function addLog(msg) {
+	const list = document.getElementById("log-list");
+	const li = document.createElement("li");
+	li.textContent = "> " + msg;
+	list.appendChild(li);
+	console.log("MFA LOG:", msg);
+}
 
-	await supabase.auth.setSession({
-		access_token: getCookie("sb-access-token"),
-		refresh_token: getCookie("sb-refresh-token"),
-	});
+async function initSupabase() {
+	try {
+		addLog("Verbinding maken met beveiligingsserver...");
+		supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-	// Check if already has a factor
-	const { data: factors } = await supabase.auth.mfa.listFactors();
-	const unverifiedFactor = factors?.totp?.find(f => f.status === "unverified");
+		const getCookie = (name) => {
+			const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+			return match ? match[2] : null;
+		};
 
-	if (unverifiedFactor) {
-		await supabase.auth.mfa.unenroll({ factorId: unverifiedFactor.id });
-	}
+		const accessToken = getCookie("sb-access-token");
+		const refreshToken = getCookie("sb-refresh-token");
 
-	// Enroll TOTP factor
-	const { data: enrollData, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: "totp" });
-	if (enrollError) {
-		document.getElementById("qr-loading").textContent = "Fout bij laden: " + enrollError.message;
-		return;
-	}
-
-	const { id: factorId, totp } = enrollData;
-
-	// QR code renderen via qrcode.js
-	const renderQR = () => {
-		if (typeof QRCode === "undefined") {
-			setTimeout(renderQR, 100);
-			return;
+		if (accessToken && refreshToken) {
+			await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+			addLog("Sessie hersteld.");
 		}
-		document.getElementById("qr-loading").style.display = "none";
-		const canvas = document.getElementById("qr-canvas");
-		canvas.style.display = "block";
-		canvas.innerHTML = ""; // Clear
-		new QRCode(canvas, { 
-			text: totp.uri, 
-			width: 200, 
-			height: 200,
-			correctLevel: QRCode.CorrectLevel.H
-		});
-	};
 
-	const script = document.createElement("script");
-	script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-	script.onload = renderQR;
-	document.head.appendChild(script);
+		startEnroll();
+	} catch (err) {
+		addLog("Fout bij initialisatie: " + err.message);
+	}
+}
 
-	document.getElementById("totp-secret").textContent = totp.secret;
-
-	// Stap 2
-	document.getElementById("next-btn").onclick = () => {
-		document.getElementById("step-enroll").style.display = "none";
-		document.getElementById("step-verify").style.display = "block";
-		document.getElementById("verify-code").focus();
-	};
-
-	const verifyInput = document.getElementById("verify-code");
-	const verifyBtn = document.getElementById("verify-btn");
-	const verifyError = document.getElementById("verify-error");
-
-	verifyInput.addEventListener("input", () => {
-		if (verifyInput.value.length === 6) verifyBtn.click();
-	});
-
-	verifyBtn.onclick = async () => {
-		const code = verifyInput.value.trim();
-		if (code.length !== 6) return;
-
-		console.log("Start MFA verificatie voor code:", code);
-		verifyBtn.disabled = true;
-		verifyBtn.textContent = "Verifiëren...";
-		verifyError.style.display = "none";
-
-		try {
-			console.log("MFA Challenge aanvragen voor factor:", factorId);
-			const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
-			
-			if (challengeError) {
-				console.error("MFA Challenge Fout:", challengeError);
-				throw new Error(challengeError.message);
-			}
-
-			console.log("Challenge ontvangen, nu verifiëren...", challengeData.id);
-			const { data, error } = await supabase.auth.mfa.verify({
-				factorId,
-				challengeId: challengeData.id,
-				code,
-			});
-
-			if (error) {
-				console.error("MFA Verify Fout:", error);
-				throw new Error("Ongeldige code. Controleer je authenticator-app.");
-			}
-
-			console.log("MFA Verificatie succesvol!", data);
-
-			// Sessie opslaan met AAL2
-			const expirationDate = new Date();
-			expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-			const isSecure = location.protocol === "https:" ? "; Secure" : "";
-			document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-			document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-
-			console.log("Cookies bijgewerkt, doorsturen naar /admin...");
-			window.location.href = "/admin";
-		} catch (err) {
-			console.error("Fout tijdens MFA proces:", err);
-			verifyError.textContent = err.message;
-			verifyError.style.display = "block";
-			verifyBtn.disabled = false;
-			verifyBtn.textContent = "Bevestigen";
-			verifyInput.value = "";
-			verifyInput.focus();
+async function startEnroll() {
+	try {
+		addLog("MFA enrollment starten...");
+		const { data: factors } = await supabase.auth.mfa.listFactors();
+		const unverified = factors?.totp?.find(f => f.status === "unverified");
+		if (unverified) {
+			addLog("Oude poging opruimen...");
+			await supabase.auth.mfa.unenroll({ factorId: unverified.id });
 		}
-	};
+
+		const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+		if (error) throw error;
+
+		currentFactorId = data.id;
+		document.getElementById("totp-secret").textContent = data.totp.secret;
+
+		const qrScript = document.createElement("script");
+		qrScript.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+		qrScript.onload = () => {
+			document.getElementById("qr-loading").style.display = "none";
+			const canvas = document.getElementById("qr-canvas");
+			canvas.style.display = "block";
+			canvas.innerHTML = "";
+			new QRCode(canvas, { text: data.totp.uri, width: 200, height: 200 });
+			addLog("QR Code gereed.");
+		};
+		document.head.appendChild(qrScript);
+	} catch (err) {
+		addLog("FOUT: " + err.message);
+		alert("Fout bij laden MFA: " + err.message);
+	}
+}
+
+// Navigatie
+document.getElementById("next-btn").onclick = () => {
+	document.getElementById("step-enroll").style.display = "none";
+	document.getElementById("step-verify").style.display = "block";
+	document.getElementById("verify-code").focus();
 };
 
-initSetup();
+// Verificatie
+const verifyBtn = document.getElementById("verify-btn");
+const verifyInput = document.getElementById("verify-code");
+const verifyError = document.getElementById("verify-error");
+
+verifyBtn.onclick = async () => {
+	const code = verifyInput.value.trim();
+	if (code.length !== 6) return;
+
+	addLog("Verifiëren van code: " + code);
+	verifyBtn.disabled = true;
+	verifyBtn.textContent = "BEZIG...";
+	
+	try {
+		if (!currentFactorId) throw new Error("Geen factor ID (ververs pagina)");
+
+		addLog("Aanvragen challenge...");
+		const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: currentFactorId });
+		if (cErr) throw cErr;
+
+		addLog("Challenge ontvangen, verifiëren bij server...");
+		const { data: verify, error: vErr } = await supabase.auth.mfa.verify({
+			factorId: currentFactorId,
+			challengeId: challenge.id,
+			code
+		});
+		if (vErr) throw vErr;
+
+		addLog("Succes! Sessie bijwerken...");
+		const exp = new Date();
+		exp.setFullYear(exp.getFullYear() + 1);
+		const secure = location.protocol === "https:" ? "; Secure" : "";
+		document.cookie = `sb-access-token=${verify.session.access_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+		document.cookie = `sb-refresh-token=${verify.session.refresh_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+
+		addLog("Doorsturen naar dashboard...");
+		window.location.assign("/admin");
+	} catch (err) {
+		addLog("FOUT: " + err.message);
+		alert("MFA Fout: " + err.message);
+		verifyError.textContent = err.message;
+		verifyError.style.display = "block";
+		verifyBtn.disabled = false;
+		verifyBtn.textContent = "BEVESTIGEN";
+	}
+};
+
+verifyInput.addEventListener("input", () => {
+	if (verifyInput.value.length === 6) verifyBtn.click();
+});
+
+// Wachten op CDN script
+window.onload = () => {
+	if (window.supabase) initSupabase();
+	else {
+		addLog("Wachten op bibliotheek...");
+		let attempts = 0;
+		const check = setInterval(() => {
+			attempts++;
+			if (window.supabase) {
+				clearInterval(check);
+				initSupabase();
+			} else if (attempts > 50) {
+				clearInterval(check);
+				addLog("Fout: Kon bibliotheek niet laden.");
+			}
+		}, 100);
+	}
+};
 </script>
 
 <style>
@@ -242,4 +270,17 @@ p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
 #verify-code:focus { outline: none; border-color: var(--brand-orange); background: white; }
 .btn-glow { width: 100%; }
 .error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
+
+.debug-log {
+	margin-top: 2rem;
+	text-align: left;
+	background: #f1f5f9;
+	padding: 1rem;
+	border-radius: 12px;
+	font-family: monospace;
+	font-size: 0.75rem;
+}
+.debug-log p { margin-bottom: 0.5rem; font-weight: 700; color: #64748b; }
+.debug-log ul { list-style: none; padding: 0; margin: 0; }
+.debug-log li { color: #94a3b8; margin-bottom: 0.2rem; }
 </style>
