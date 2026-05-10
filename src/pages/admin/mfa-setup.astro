@@ -135,43 +135,52 @@ const initSetup = async () => {
 		const code = verifyInput.value.trim();
 		if (code.length !== 6) return;
 
+		console.log("Start MFA verificatie voor code:", code);
 		verifyBtn.disabled = true;
-		verifyBtn.textContent = "Bevestigen...";
+		verifyBtn.textContent = "Verifiëren...";
 		verifyError.style.display = "none";
 
-		const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
-		if (challengeError) {
-			verifyError.textContent = challengeError.message;
-			verifyError.style.display = "block";
-			verifyBtn.disabled = false;
-			verifyBtn.textContent = "Bevestigen";
-			return;
-		}
+		try {
+			console.log("MFA Challenge aanvragen voor factor:", factorId);
+			const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+			
+			if (challengeError) {
+				console.error("MFA Challenge Fout:", challengeError);
+				throw new Error(challengeError.message);
+			}
 
-		const { data, error } = await supabase.auth.mfa.verify({
-			factorId,
-			challengeId: challengeData.id,
-			code,
-		});
+			console.log("Challenge ontvangen, nu verifiëren...", challengeData.id);
+			const { data, error } = await supabase.auth.mfa.verify({
+				factorId,
+				challengeId: challengeData.id,
+				code,
+			});
 
-		if (error) {
-			verifyError.textContent = "Ongeldige code. Controleer je authenticator-app.";
+			if (error) {
+				console.error("MFA Verify Fout:", error);
+				throw new Error("Ongeldige code. Controleer je authenticator-app.");
+			}
+
+			console.log("MFA Verificatie succesvol!", data);
+
+			// Sessie opslaan met AAL2
+			const expirationDate = new Date();
+			expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+			const isSecure = location.protocol === "https:" ? "; Secure" : "";
+			document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
+			document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
+
+			console.log("Cookies bijgewerkt, doorsturen naar /admin...");
+			window.location.href = "/admin";
+		} catch (err) {
+			console.error("Fout tijdens MFA proces:", err);
+			verifyError.textContent = err.message;
 			verifyError.style.display = "block";
 			verifyBtn.disabled = false;
 			verifyBtn.textContent = "Bevestigen";
 			verifyInput.value = "";
 			verifyInput.focus();
-			return;
 		}
-
-		// Sessie opslaan met AAL2
-		const expirationDate = new Date();
-		expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-		const isSecure = location.protocol === "https:" ? "; Secure" : "";
-		document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-		document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-
-		window.location.href = "/admin";
 	};
 };
 
