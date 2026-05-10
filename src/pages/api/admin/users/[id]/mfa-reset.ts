@@ -9,10 +9,6 @@ export const POST: APIRoute = async ({ cookies, params }) => {
   const { id } = params;
   if (!id) return json({ error: 'ID ontbreekt' }, 400);
 
-  if (id === auth.user.id) {
-    return json({ error: 'Je kunt je eigen MFA niet resetten via dit paneel' }, 400);
-  }
-
   // Haal factoren op
   const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(id);
   if (getUserError || !userData?.user) {
@@ -20,15 +16,15 @@ export const POST: APIRoute = async ({ cookies, params }) => {
   }
 
   const factors = (userData.user as any).factors ?? [];
-  
-  // Verwijder alle factoren
+
+  // Verwijder alle factoren (Supabase admin SDK gebruikt `id`, niet `factorId`)
   for (const factor of factors) {
     const { error: deleteError } = await supabaseAdmin.auth.admin.mfa.deleteFactor({
       userId: id,
-      factorId: factor.id,
+      id: factor.id,
     });
     if (deleteError) {
-      console.error(`Fout bij verwijderen factor ${factor.id}:`, deleteError);
+      return json({ error: `Fout bij verwijderen factor: ${deleteError.message}` }, 500);
     }
   }
 

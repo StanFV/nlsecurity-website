@@ -41,6 +41,8 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 					<p class="help-text">
 						Geen toegang tot je authenticator? Neem contact op met een Super Admin.
 					</p>
+
+					<button id="logout-btn" class="logout-btn">← Uitloggen</button>
 				</div>
 			</div>
 		</section>
@@ -49,84 +51,113 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 	<Footer />
 </BaseLayout>
 
+<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
-const initMFA = async () => {
-	const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-	const supabase = createClient(supabaseUrl, supabaseKey);
+const input = document.getElementById("mfa-code");
+const btn = document.getElementById("verify-btn");
+const errEl = document.getElementById("mfa-error");
 
-	// Herstel sessie uit cookies
-	const getCookie = (name) => {
-		const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-		return match ? match[2] : null;
-	};
-	const accessToken = getCookie("sb-access-token");
-	const refreshToken = getCookie("sb-refresh-token");
+function showError(msg) {
+	errEl.textContent = msg;
+	errEl.style.display = "block";
+}
 
-	if (!accessToken || !refreshToken) {
-		window.location.href = "/admin";
+function resetBtn() {
+	btn.disabled = false;
+	btn.textContent = "Verifiëren";
+}
+
+function getCookie(name) {
+	const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+	return match ? decodeURIComponent(match[2]) : null;
+}
+
+input.addEventListener("input", () => {
+	if (input.value.replace(/\s/g, "").length === 6) btn.click();
+});
+
+btn.onclick = async () => {
+	const code = input.value.replace(/\s/g, "");
+	if (code.length !== 6) {
+		showError("Voer een 6-cijferige code in.");
 		return;
 	}
 
-	await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+	btn.disabled = true;
+	btn.textContent = "Verifiëren...";
+	errEl.style.display = "none";
 
-	const input = document.getElementById("mfa-code");
-	const btn = document.getElementById("verify-btn");
-	const errEl = document.getElementById("mfa-error");
+	try {
+		const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-	// Automatisch indienen bij 6 cijfers
-	input.addEventListener("input", () => {
-		if (input.value.length === 6) btn.click();
-	});
-
-	btn.onclick = async () => {
-		const code = input.value.trim();
-		if (code.length !== 6) {
-			errEl.textContent = "Voer een 6-cijferige code in.";
-			errEl.style.display = "block";
+		const accessToken = getCookie("sb-access-token");
+		const refreshToken = getCookie("sb-refresh-token");
+		if (!accessToken || !refreshToken) {
+			window.location.href = "/admin";
 			return;
 		}
 
-		btn.disabled = true;
-		btn.textContent = "Verifiëren...";
-		errEl.style.display = "none";
+		const { error: sessionError } = await supabase.auth.setSession({
+			access_token: accessToken,
+			refresh_token: refreshToken,
+		});
+		if (sessionError) throw new Error("Sessie kon niet worden hersteld: " + sessionError.message);
 
-		// Haal de enrolled factors op
 		const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
-		if (factorsError || !factorsData?.totp?.length) {
-			errEl.textContent = "Geen MFA-factor gevonden. Neem contact op met een beheerder.";
-			errEl.style.display = "block";
-			btn.disabled = false;
-			btn.textContent = "Verifiëren";
-			return;
-		}
+		if (factorsError) throw new Error("Kon MFA-factoren niet ophalen: " + factorsError.message);
+		if (!factorsData?.totp?.length) throw new Error("Geen MFA-factor gevonden. Neem contact op met een beheerder.");
 
 		const factorId = factorsData.totp[0].id;
 
-		const { data, error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
-		if (error) {
-			errEl.textContent = "Ongeldige code. Probeer het opnieuw.";
-			errEl.style.display = "block";
-			btn.disabled = false;
-			btn.textContent = "Verifiëren";
+		const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+		if (challengeError) throw new Error("Challenge mislukt: " + challengeError.message);
+
+		const { error: verifyError } = await supabase.auth.mfa.verify({
+			factorId,
+			challengeId: challengeData.id,
+			code,
+		});
+		if (verifyError) {
+			showError("Ongeldige code. Probeer het opnieuw.");
+			resetBtn();
 			input.value = "";
 			input.focus();
 			return;
 		}
 
-		// Bijwerken cookies met nieuwe sessie (AAL2)
-		const expirationDate = new Date();
-		expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-		const isSecure = location.protocol === "https:" ? "; Secure" : "";
-		document.cookie = `sb-access-token=${data.session.access_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
-		document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax${isSecure}`;
+		// Haal de bijgewerkte sessie op via getSession — verify() geeft niet altijd data.session terug
+		const { data: sessionData, error: sessionGetError } = await supabase.auth.getSession();
+		if (sessionGetError || !sessionData?.session) throw new Error("Sessie kon niet worden opgehaald na verificatie.");
+
+		const exp = new Date();
+		exp.setFullYear(exp.getFullYear() + 1);
+		const secure = location.protocol === "https:" ? "; Secure" : "";
+		document.cookie = `sb-access-token=${sessionData.session.access_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+		document.cookie = `sb-refresh-token=${sessionData.session.refresh_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
 
 		window.location.href = "/admin";
-	};
-
-	input.focus();
+	} catch (err) {
+		showError(err.message || "Er is een onbekende fout opgetreden.");
+		resetBtn();
+	}
 };
 
-initMFA();
+document.getElementById("logout-btn").onclick = () => {
+	const past = "Thu, 01 Jan 1970 00:00:00 UTC";
+	document.cookie = `sb-access-token=; path=/; expires=${past}`;
+	document.cookie = `sb-refresh-token=; path=/; expires=${past}`;
+	window.location.href = "/admin";
+};
+
+// Wacht tot Supabase CDN geladen is voordat het veld focust
+window.addEventListener("load", () => {
+	if (!window.supabase) {
+		showError("Beveiligingsbibliotheek kon niet worden geladen. Ververs de pagina.");
+		btn.disabled = true;
+	} else {
+		input.focus();
+	}
+});
 </script>
 
 <style>
@@ -173,4 +204,23 @@ p { color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem; }
 .btn-glow { width: 100%; }
 .error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
 .help-text { font-size: 0.8rem; color: #94a3b8; margin-top: 1.5rem; margin-bottom: 0; }
+.logout-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	margin-top: 1.25rem;
+	background: #fee2e2;
+	border: 1.5px solid #fecaca;
+	color: #dc2626;
+	font-size: 0.82rem;
+	font-weight: 700;
+	cursor: pointer;
+	padding: 0.55rem 1.25rem;
+	border-radius: 10px;
+	transition: 0.2s;
+	font-family: inherit;
+	width: 100%;
+}
+.logout-btn:hover { background: #dc2626; color: white; border-color: #dc2626; }
 </style>
