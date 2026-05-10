@@ -3,11 +3,24 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import Navigation from "../../components/Navigation.astro";
 import Footer from "../../components/Footer.astro";
 import { requireAdminAuth } from "../../lib/admin-auth";
+import { supabaseAdmin } from "../../lib/supabase-admin";
 
 const auth = await requireAdminAuth(Astro.cookies);
 if (!auth) return Astro.redirect("/admin");
 if (!auth.mfa_required) return Astro.redirect("/admin");
 if (auth.aal === "aal2") return Astro.redirect("/admin");
+
+// Ruim server-side alle unverified factors op zodat enroll() altijd slaagt
+const { data: userData } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
+const existingFactors: any[] = (userData?.user as any)?.factors ?? [];
+for (const factor of existingFactors) {
+	if (factor.status === "unverified") {
+		await supabaseAdmin.auth.admin.mfa.deleteFactor({
+			userId: auth.user.id,
+			id: factor.id,
+		});
+	}
+}
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
@@ -39,6 +52,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 						</div>
 
 						<button id="next-btn" class="btn-glow" style="margin-top:1.5rem;">Verder →</button>
+						<button id="logout-btn-enroll" class="logout-btn">← Uitloggen</button>
 					</div>
 
 					<!-- Stap 2: Code verifiëren -->
@@ -50,13 +64,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 						<input type="text" id="verify-code" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" />
 						<button id="verify-btn" class="btn-glow" style="margin-top:1rem;">BEVESTIGEN</button>
 						<p id="verify-error" class="error-text" style="display:none;"></p>
-						
-						<div class="debug-log" id="debug-log">
-							<p>Systeem Status:</p>
-							<ul id="log-list">
-								<li>Wachten op invoer...</li>
-							</ul>
-						</div>
+						<button id="logout-btn-verify" class="logout-btn">← Terug naar inlogscherm</button>
 					</div>
 				</div>
 			</div>
@@ -73,10 +81,6 @@ let currentFactorId = null;
 let supabase = null;
 
 function addLog(msg) {
-	const list = document.getElementById("log-list");
-	const li = document.createElement("li");
-	li.textContent = "> " + msg;
-	list.appendChild(li);
 	console.log("MFA LOG:", msg);
 }
 
@@ -107,13 +111,7 @@ async function initSupabase() {
 async function startEnroll() {
 	try {
 		addLog("MFA enrollment starten...");
-		const { data: factors } = await supabase.auth.mfa.listFactors();
-		const unverified = factors?.totp?.find(f => f.status === "unverified");
-		if (unverified) {
-			addLog("Oude poging opruimen...");
-			await supabase.auth.mfa.unenroll({ factorId: unverified.id });
-		}
-
+		// Unverified factors zijn al server-side opgeruimd voor het laden van de pagina
 		const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
 		if (error) throw error;
 
@@ -133,9 +131,19 @@ async function startEnroll() {
 		document.head.appendChild(qrScript);
 	} catch (err) {
 		addLog("FOUT: " + err.message);
-		alert("Fout bij laden MFA: " + err.message);
+		document.getElementById("qr-loading").textContent = "Fout: " + err.message;
 	}
 }
+
+// Uitloggen
+function doLogout() {
+	const past = "Thu, 01 Jan 1970 00:00:00 UTC";
+	document.cookie = `sb-access-token=; path=/; expires=${past}`;
+	document.cookie = `sb-refresh-token=; path=/; expires=${past}`;
+	window.location.href = "/admin";
+}
+document.getElementById("logout-btn-enroll").onclick = doLogout;
+document.getElementById("logout-btn-verify").onclick = doLogout;
 
 // Navigatie
 document.getElementById("next-btn").onclick = () => {
@@ -165,19 +173,23 @@ verifyBtn.onclick = async () => {
 		if (cErr) throw cErr;
 
 		addLog("Challenge ontvangen, verifiëren bij server...");
-		const { data: verify, error: vErr } = await supabase.auth.mfa.verify({
+		const { error: vErr } = await supabase.auth.mfa.verify({
 			factorId: currentFactorId,
 			challengeId: challenge.id,
 			code
 		});
 		if (vErr) throw vErr;
 
-		addLog("Succes! Sessie bijwerken...");
+		addLog("Succes! Sessie ophalen...");
+		const { data: sessionData, error: sessionGetError } = await supabase.auth.getSession();
+		if (sessionGetError || !sessionData?.session) throw new Error("Sessie kon niet worden opgehaald na verificatie.");
+
+		addLog("Sessie bijwerken...");
 		const exp = new Date();
 		exp.setFullYear(exp.getFullYear() + 1);
 		const secure = location.protocol === "https:" ? "; Secure" : "";
-		document.cookie = `sb-access-token=${verify.session.access_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
-		document.cookie = `sb-refresh-token=${verify.session.refresh_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+		document.cookie = `sb-access-token=${sessionData.session.access_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+		document.cookie = `sb-refresh-token=${sessionData.session.refresh_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
 
 		addLog("Doorsturen naar dashboard...");
 		window.location.assign("/admin");
@@ -270,17 +282,23 @@ p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
 #verify-code:focus { outline: none; border-color: var(--brand-orange); background: white; }
 .btn-glow { width: 100%; }
 .error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
-
-.debug-log {
-	margin-top: 2rem;
-	text-align: left;
-	background: #f1f5f9;
-	padding: 1rem;
-	border-radius: 12px;
-	font-family: monospace;
-	font-size: 0.75rem;
+.logout-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	margin: 1.25rem auto 0;
+	background: #fee2e2;
+	border: 1.5px solid #fecaca;
+	color: #dc2626;
+	font-size: 0.82rem;
+	font-weight: 700;
+	cursor: pointer;
+	padding: 0.55rem 1.25rem;
+	border-radius: 10px;
+	transition: 0.2s;
+	font-family: inherit;
+	width: 100%;
 }
-.debug-log p { margin-bottom: 0.5rem; font-weight: 700; color: #64748b; }
-.debug-log ul { list-style: none; padding: 0; margin: 0; }
-.debug-log li { color: #94a3b8; margin-bottom: 0.2rem; }
+.logout-btn:hover { background: #dc2626; color: white; border-color: #dc2626; }
 </style>

@@ -29,8 +29,8 @@ if (accessToken && refreshToken) {
 
 			if (mfaRequired && auth.aal !== "aal2") {
 				const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(auth.user.id);
-				const hasFactors = ((adminUser?.user as any)?.factors ?? []).length > 0;
-				return Astro.redirect(hasFactors ? "/admin/mfa" : "/admin/mfa-setup");
+				const hasVerifiedFactor = ((adminUser?.user as any)?.factors ?? []).some((f: any) => f.status === "verified");
+				return Astro.redirect(hasVerifiedFactor ? "/admin/mfa" : "/admin/mfa-setup");
 			}
 
 			const { count } = await supabase

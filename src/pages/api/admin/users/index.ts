@@ -26,25 +26,26 @@ export const POST: APIRoute = async ({ cookies, request }) => {
   const auth = await requireAdminAuth(cookies, true);
   if (!auth) return json({ error: 'Geen toegang' }, 401);
 
-  const { email, role } = await request.json();
+  const { email, role, mfa_required } = await request.json();
 
   if (!email || !email.includes('@')) {
     return json({ error: 'Voer een geldig e-mailadres in' }, 400);
   }
 
+  const mfaRequired = mfa_required !== false; // standaard true, tenzij expliciet false
   const siteUrl = import.meta.env.SITE_URL ?? 'https://nlsecurity-website.vercel.app';
   const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
     email,
-    { 
-      data: { role: role ?? 'admin', mfa_required: true },
+    {
+      data: { role: role ?? 'admin', mfa_required: mfaRequired },
       redirectTo: `${siteUrl}/admin`
     }
   );
   if (inviteError) return json({ error: inviteError.message }, 500);
 
-  // Sla rol op in app_metadata
+  // Sla rol en MFA-instelling op in app_metadata
   await supabaseAdmin.auth.admin.updateUserById(inviteData.user.id, {
-    app_metadata: { role: role ?? 'admin', mfa_required: true },
+    app_metadata: { role: role ?? 'admin', mfa_required: mfaRequired },
   });
 
   return json({ success: true });

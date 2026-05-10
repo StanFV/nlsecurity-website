@@ -16,16 +16,25 @@ if (auth.mfa_required && auth.aal !== "aal2") {
 
 const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
 
-const users = (authUsers?.users ?? []).map((u) => ({
-	id: u.id,
-	email: u.email ?? "",
-	created_at: u.created_at,
-	last_sign_in_at: u.last_sign_in_at,
-	role: u.app_metadata?.role ?? "admin",
-	mfa_required: u.app_metadata?.mfa_required ?? false,
-	mfa_enrolled: ((u as any).factors ?? []).length > 0,
-	is_self: u.id === auth.user.id,
-}));
+// listUsers() geeft geen factors terug — haal elke gebruiker individueel op
+const users = await Promise.all(
+	(authUsers?.users ?? []).map(async (u) => {
+		const { data: detail } = await supabaseAdmin.auth.admin.getUserById(u.id);
+		const factors: any[] = (detail?.user as any)?.factors ?? [];
+		const verifiedFactor = factors.find((f) => f.status === "verified");
+		return {
+			id: u.id,
+			email: u.email ?? "",
+			created_at: u.created_at,
+			last_sign_in_at: u.last_sign_in_at,
+			role: u.app_metadata?.role ?? "admin",
+			mfa_required: u.app_metadata?.mfa_required ?? false,
+			mfa_enrolled: !!verifiedFactor,
+			mfa_enrolled_at: verifiedFactor?.created_at ?? null,
+			is_self: u.id === auth.user.id,
+		};
+	})
+);
 ---
 
 <BaseLayout title="Medewerkers Beheer">
@@ -61,6 +70,15 @@ const users = (authUsers?.users ?? []).map((u) => ({
 								<option value="admin">Admin — toegang tot vacatures beheer</option>
 								<option value="super_admin">Super Admin — volledige toegang incl. gebruikersbeheer</option>
 							</select>
+						</div>
+						<div class="form-group">
+							<label class="checkbox-label">
+								<input type="checkbox" id="invite-mfa" checked />
+								<span class="checkbox-text">
+									<strong>MFA verplichten</strong>
+									<small>Medewerker moet authenticator-app instellen bij eerste login</small>
+								</span>
+							</label>
 						</div>
 						<p id="invite-error" class="error-text" style="display:none;"></p>
 						<div class="modal-actions">
@@ -103,23 +121,47 @@ const users = (authUsers?.users ?? []).map((u) => ({
 							</div>
 
 							<div class="mfa-cell">
-								{user.mfa_enrolled ? (
-									<div class="mfa-status-wrapper">
-										<span class="mfa-status enrolled">✅ Actief</span>
-										{!user.is_self && (
-											<button class="btn-mfa-reset" data-id={user.id} data-email={user.email} title="MFA-factoren verwijderen">
-												MFA Reset
+								<div class="mfa-status-wrapper">
+									{user.mfa_enrolled ? (
+										<>
+											<span class="mfa-status enrolled">✅ Actief</span>
+											{user.mfa_enrolled_at && (
+												<span class="mfa-date">
+													Ingesteld op {new Date(user.mfa_enrolled_at).toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}
+												</span>
+											)}
+											<div class="mfa-btn-row">
+												{!user.is_self && (
+													<button class="btn-mfa-reset" data-id={user.id} data-email={user.email} title="Verwijdert de huidige authenticator-koppeling. MFA blijft vereist — medewerker moet bij de volgende login een nieuwe app koppelen.">
+														Opnieuw koppelen
+													</button>
+												)}
+												<button class="btn-mfa-disable" data-id={user.id} data-email={user.email} title="Schakelt MFA volledig uit voor deze medewerker. De medewerker kan daarna inloggen zonder authenticator-code.">
+													Uitschakelen
+												</button>
+											</div>
+										</>
+									) : user.mfa_required ? (
+										<>
+											<span class="mfa-status pending">⚠️ Vereist, niet ingesteld</span>
+											<div class="mfa-btn-row">
+												<button class="btn-mfa-setup" data-id={user.id} data-email={user.email} title="MFA setup-mail sturen">
+													Setup sturen
+												</button>
+												<button class="btn-mfa-disable" data-id={user.id} data-email={user.email} title="MFA vereiste uitschakelen">
+													Uitschakelen
+												</button>
+											</div>
+										</>
+									) : (
+										<>
+											<span class="mfa-status not-enrolled">— Niet ingesteld</span>
+											<button class="btn-mfa-enable" data-id={user.id} data-email={user.email} title="MFA verplichten voor deze medewerker">
+												Inschakelen
 											</button>
-										)}
-									</div>
-								) : (
-									<div class="mfa-status-wrapper">
-										<span class="mfa-status not-enrolled">❌ Niet ingesteld</span>
-										<button class="btn-mfa-setup" data-id={user.id} data-email={user.email} title="MFA setup-mail sturen">
-											Setup sturen
-										</button>
-									</div>
-								)}
+										</>
+									)}
+								</div>
 							</div>
 
 							<div class="last-login">
@@ -293,13 +335,14 @@ document.getElementById("invite-cancel").onclick = () => {
 document.getElementById("invite-submit").onclick = async () => {
 	const email = document.getElementById("invite-email").value.trim();
 	const role = document.getElementById("invite-role").value;
+	const mfa_required = document.getElementById("invite-mfa").checked;
 	const errEl = document.getElementById("invite-error");
 	errEl.style.display = "none";
 
 	const res = await fetch(BASE, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ email, role }),
+		body: JSON.stringify({ email, role, mfa_required }),
 	});
 	const data = await res.json();
 	if (!res.ok) {
@@ -308,9 +351,71 @@ document.getElementById("invite-submit").onclick = async () => {
 		return;
 	}
 	document.getElementById("invite-modal").style.display = "none";
-	alert(`Uitnodiging verstuurd naar ${email}`);
+	alert(`Uitnodiging verstuurd naar ${email}${mfa_required ? " (MFA vereist)" : ""}`);
 	window.location.reload();
 };
+
+// --- MFA Uitschakelen (mfa_required=false + factoren verwijderen) ---
+document.querySelectorAll(".btn-mfa-disable").forEach((btn) => {
+	btn.onclick = async () => {
+		const { id, email } = btn.dataset;
+		if (!confirm(`MFA volledig uitschakelen voor ${email}?\n\nDe medewerker hoeft bij de volgende login geen authenticator-code meer in te voeren.`)) return;
+		btn.disabled = true;
+		btn.textContent = "...";
+
+		try {
+			// Verwijder eerst de factoren
+			const resetRes = await fetch(`${BASE}/${id}/mfa-reset`, { method: "POST" });
+			if (!resetRes.ok) {
+				const resetData = await resetRes.json();
+				throw new Error(resetData.error || "Fout bij verwijderen MFA-factor");
+			}
+
+			// Zet mfa_required op false
+			const patchRes = await fetch(`${BASE}/${id}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ mfa_required: false }),
+			});
+			if (!patchRes.ok) {
+				const patchData = await patchRes.json();
+				throw new Error(patchData.error || "Fout bij uitschakelen MFA-vereiste");
+			}
+
+			alert(`MFA uitgeschakeld voor ${email}`);
+			window.location.reload();
+		} catch (err) {
+			alert(`Fout: ${err.message}`);
+			btn.disabled = false;
+			btn.textContent = "Uitschakelen";
+		}
+	};
+});
+
+// --- MFA Inschakelen (mfa_required=true, geen factor-reset nodig) ---
+document.querySelectorAll(".btn-mfa-enable").forEach((btn) => {
+	btn.onclick = async () => {
+		const { id, email } = btn.dataset;
+		if (!confirm(`MFA verplichten voor ${email}?\n\nDe medewerker wordt bij de volgende login gevraagd een authenticator-app in te stellen.`)) return;
+		btn.disabled = true;
+		btn.textContent = "...";
+
+		try {
+			const res = await fetch(`${BASE}/${id}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ mfa_required: true }),
+			});
+			if (!res.ok) throw new Error("Kon MFA niet inschakelen");
+			alert(`MFA ingeschakeld voor ${email}`);
+			window.location.reload();
+		} catch (err) {
+			alert(`Fout: ${err.message}`);
+			btn.disabled = false;
+			btn.textContent = "Inschakelen";
+		}
+	};
+});
 
 // --- MFA Setup versturen ---
 document.querySelectorAll(".btn-mfa-setup").forEach((btn) => {
@@ -571,12 +676,15 @@ window.addEventListener("beforeunload", (e) => {
 .role-select:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* MFA Status */
-.mfa-cell { display: flex; align-items: center; gap: 0.6rem; }
-.mfa-status-wrapper { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-start; }
+.mfa-cell { display: flex; align-items: flex-start; }
+.mfa-status-wrapper { display: flex; flex-direction: column; gap: 0.35rem; align-items: flex-start; }
 .mfa-status { font-size: 0.75rem; font-weight: 700; }
 .mfa-status.enrolled { color: #16a34a; }
-.mfa-status.not-enrolled { color: #dc2626; }
-.btn-mfa-setup, .btn-mfa-reset {
+.mfa-status.not-enrolled { color: #94a3b8; }
+.mfa-status.pending { color: #d97706; }
+.mfa-date { font-size: 0.7rem; color: #64748b; }
+.mfa-btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.btn-mfa-setup, .btn-mfa-reset, .btn-mfa-disable, .btn-mfa-enable {
 	background: #f1f5f9;
 	color: var(--brand-blue);
 	border: 1px solid rgba(0,0,0,0.1);
@@ -587,8 +695,34 @@ window.addEventListener("beforeunload", (e) => {
 	cursor: pointer;
 	transition: 0.2s;
 }
-.btn-mfa-setup:hover { background: var(--brand-orange); color: white; border-color: var(--brand-orange); }
-.btn-mfa-reset:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+.btn-mfa-setup:hover, .btn-mfa-enable:hover { background: var(--brand-orange); color: white; border-color: var(--brand-orange); }
+.btn-mfa-reset:hover { background: #fef3c7; color: #d97706; border-color: #fde68a; }
+.btn-mfa-disable:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+
+/* Checkbox in modal */
+.checkbox-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	cursor: pointer;
+	padding: 0.85rem 1rem;
+	border-radius: 10px;
+	border: 1.5px solid rgba(0,0,0,0.12);
+	background: #f8fafc;
+	transition: border-color 0.2s;
+}
+.checkbox-label:hover { border-color: var(--brand-blue); }
+.checkbox-label input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin-top: 2px;
+	accent-color: var(--brand-blue);
+	flex-shrink: 0;
+	cursor: pointer;
+}
+.checkbox-text { display: flex; flex-direction: column; gap: 0.2rem; }
+.checkbox-text strong { font-size: 0.9rem; color: var(--brand-blue); }
+.checkbox-text small { font-size: 0.78rem; color: #64748b; font-weight: 400; }
 
 .last-login { font-size: 0.82rem; color: var(--text-secondary); }
 .user-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
