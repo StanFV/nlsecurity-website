@@ -30,7 +30,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.
 
 						<div id="qr-wrapper" class="qr-wrapper">
 							<div id="qr-loading">QR-code laden...</div>
-							<canvas id="qr-canvas" style="display:none;"></canvas>
+							<div id="qr-canvas" style="display:none;"></div>
 						</div>
 
 						<div class="secret-wrapper">
@@ -185,6 +185,36 @@ initSetup();
 }
 h1 { font-size: 2rem; margin: 0.5rem 0 1rem; }
 p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
+.qr-wrapper { display: flex; justify-content: center; margin: 1.5rem 0; }
+#qr-canvas { border-radius: 12px; }
+.secret-wrapper { margin: 1rem 0; }
+.secret-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem; }
+.totp-secret {
+	display: block;
+	background: #f1f5f9;
+	padding: 0.75rem 1rem;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	letter-spacing: 0.1em;
+	word-break: break-all;
+}
+#verify-code {
+	width: 100%;
+	padding: 1rem;
+	text-align: center;
+	font-size: 2rem;
+	letter-spacing: 0.4em;
+	border-radius: 14px;
+	border: 2px solid rgba(0,0,0,0.1);
+	background: #f8fafc;
+	font-family: monospace;
+	transition: border-color 0.2s;
+}
+#verify-code:focus { outline: none; border-color: var(--brand-orange); background: white; }
+.btn-glow { width: 100%; }
+.error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
+</style>
+-bottom: 1.5rem; font-size: 0.95rem; }
 .qr-wrapper { display: flex; justify-content: center; margin: 1.5rem 0; }
 #qr-canvas { border-radius: 12px; }
 .secret-wrapper { margin: 1rem 0; }
