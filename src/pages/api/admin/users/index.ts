@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
   const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
     email,
     { 
-      data: { role: role ?? 'admin', mfa_required: false },
+      data: { role: role ?? 'admin', mfa_required: true },
       redirectTo: `${siteUrl}/admin`
     }
   );
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
 
   // Sla rol op in app_metadata
   await supabaseAdmin.auth.admin.updateUserById(inviteData.user.id, {
-    app_metadata: { role: role ?? 'admin', mfa_required: false },
+    app_metadata: { role: role ?? 'admin', mfa_required: true },
   });
 
   return json({ success: true });
