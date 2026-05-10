@@ -75,7 +75,7 @@ const users = (authUsers?.users ?? []).map((u) => ({
 					<div class="table-header">
 						<span>Medewerker</span>
 						<span>Rol</span>
-						<span>MFA verplicht</span>
+						<span>MFA Status</span>
 						<span>Laatste login</span>
 						<span>Acties</span>
 					</div>
@@ -85,7 +85,6 @@ const users = (authUsers?.users ?? []).map((u) => ({
 							class="user-row"
 							data-id={user.id}
 							data-orig-role={user.role}
-							data-orig-mfa={user.mfa_required ? "true" : "false"}
 							data-self={user.is_self ? "true" : "false"}
 						>
 							<div class="user-info">
@@ -104,18 +103,23 @@ const users = (authUsers?.users ?? []).map((u) => ({
 							</div>
 
 							<div class="mfa-cell">
-								<label class="toggle-label">
-									<input
-										type="checkbox"
-										class="mfa-toggle"
-										data-id={user.id}
-										checked={user.mfa_required}
-									/>
-									<span class="toggle-track"></span>
-								</label>
-								{user.mfa_enrolled
-									? <span class="mfa-status enrolled">Ingeschreven</span>
-									: <span class="mfa-status not-enrolled">Niet ingeschreven</span>}
+								{user.mfa_enrolled ? (
+									<div class="mfa-status-wrapper">
+										<span class="mfa-status enrolled">✅ Actief</span>
+										{!user.is_self && (
+											<button class="btn-mfa-reset" data-id={user.id} data-email={user.email} title="MFA-factoren verwijderen">
+												MFA Reset
+											</button>
+										)}
+									</div>
+								) : (
+									<div class="mfa-status-wrapper">
+										<span class="mfa-status not-enrolled">❌ Niet ingesteld</span>
+										<button class="btn-mfa-setup" data-id={user.id} data-email={user.email} title="MFA setup-mail sturen">
+											Setup sturen
+										</button>
+									</div>
+								)}
 							</div>
 
 							<div class="last-login">
@@ -184,7 +188,7 @@ const users = (authUsers?.users ?? []).map((u) => ({
 <script is:inline>
 const BASE = "/api/admin/users";
 
-// Bijhouden van wijzigingen: { userId: { role?, mfa_required? } }
+// Bijhouden van wijzigingen: { userId: { role? } }
 const pending = {};
 
 function countChanges() {
@@ -229,35 +233,14 @@ document.querySelectorAll(".role-select").forEach((select) => {
 	});
 });
 
-// --- MFA toggle (alleen markeren, nog niet opslaan) ---
-document.querySelectorAll(".mfa-toggle").forEach((checkbox) => {
-	checkbox.addEventListener("change", (e) => {
-		const id = e.target.dataset.id;
-		const origMfa = document.querySelector(`.user-row[data-id="${id}"]`).dataset.origMfa === "true";
-		if (!pending[id]) pending[id] = {};
-		if (e.target.checked !== origMfa) {
-			pending[id].mfa_required = e.target.checked;
-			markRowPending(id);
-		} else {
-			delete pending[id].mfa_required;
-			if (Object.keys(pending[id]).length === 0) unmarkRowPending(id);
-		}
-		updateSaveBar();
-	});
-});
-
 // --- Annuleren: zet alles terug naar origineel ---
 document.getElementById("cancel-btn").onclick = () => {
 	document.querySelectorAll(".user-row").forEach((row) => {
 		const id = row.dataset.id;
 		const origRole = row.dataset.origRole;
-		const origMfa = row.dataset.origMfa === "true";
 
 		const roleSelect = row.querySelector(".role-select");
 		if (roleSelect) roleSelect.value = origRole;
-
-		const mfaToggle = row.querySelector(".mfa-toggle");
-		if (mfaToggle) mfaToggle.checked = origMfa;
 
 		row.classList.remove("pending");
 		delete pending[id];
@@ -284,7 +267,6 @@ document.getElementById("save-btn").onclick = async () => {
 			// Bijwerken originals in DOM
 			const row = document.querySelector(`.user-row[data-id="${id}"]`);
 			if (pending[id].role !== undefined) row.dataset.origRole = pending[id].role;
-			if (pending[id].mfa_required !== undefined) row.dataset.origMfa = pending[id].mfa_required ? "true" : "false";
 			delete pending[id];
 			unmarkRowPending(id);
 		} else {
@@ -329,6 +311,57 @@ document.getElementById("invite-submit").onclick = async () => {
 	alert(`Uitnodiging verstuurd naar ${email}`);
 	window.location.reload();
 };
+
+// --- MFA Setup versturen ---
+document.querySelectorAll(".btn-mfa-setup").forEach((btn) => {
+	btn.onclick = async () => {
+		const { id, email } = btn.dataset;
+		if (!confirm(`MFA setup-mail (wachtwoord reset) sturen naar ${email}?`)) return;
+		btn.disabled = true;
+		btn.textContent = "...";
+		
+		// Zorg eerst dat mfa_required op true staat
+		await fetch(`${BASE}/${id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ mfa_required: true }),
+		});
+
+		// Stuur dan reset mail
+		const res = await fetch(`${BASE}/${id}/reset-password`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: "{}",
+		});
+		
+		btn.disabled = false;
+		btn.textContent = "Setup sturen";
+		
+		if (res.ok) alert(`Setup-mail verstuurd naar ${email}`);
+		else alert("Er is iets misgegaan bij het versturen.");
+	};
+});
+
+// --- MFA Reset (factoren verwijderen) ---
+document.querySelectorAll(".btn-mfa-reset").forEach((btn) => {
+	btn.onclick = async () => {
+		const { id, email } = btn.dataset;
+		if (!confirm(`MFA factoren verwijderen voor ${email}? De medewerker moet MFA opnieuw instellen bij de volgende login.`)) return;
+		btn.disabled = true;
+		
+		const res = await fetch(`${BASE}/${id}/mfa-reset`, {
+			method: "POST",
+		});
+		
+		btn.disabled = false;
+		if (res.ok) {
+			alert(`MFA gereset voor ${email}`);
+			window.location.reload();
+		} else {
+			alert("Fout bij resetten van MFA.");
+		}
+	};
+});
 
 // --- Wachtwoord reset ---
 document.querySelectorAll(".btn-reset").forEach((btn) => {
@@ -462,7 +495,7 @@ window.addEventListener("beforeunload", (e) => {
 }
 .table-header {
 	display: grid;
-	grid-template-columns: 2fr 1.4fr 1.5fr 1fr 1.2fr;
+	grid-template-columns: 2fr 1.2fr 1.8fr 1fr 1.2fr;
 	gap: 1rem;
 	padding: 0.6rem 1rem;
 	background: #f1f5f9;
@@ -476,7 +509,7 @@ window.addEventListener("beforeunload", (e) => {
 }
 .user-row {
 	display: grid;
-	grid-template-columns: 2fr 1.4fr 1.5fr 1fr 1.2fr;
+	grid-template-columns: 2fr 1.2fr 1.8fr 1fr 1.2fr;
 	gap: 1rem;
 	align-items: center;
 	padding: 1rem;
@@ -524,34 +557,25 @@ window.addEventListener("beforeunload", (e) => {
 }
 .role-select:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* Toggle */
-.mfa-cell { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.toggle-label { display: flex; align-items: center; cursor: pointer; }
-.toggle-label input { position: absolute; opacity: 0; width: 0; height: 0; }
-.toggle-track {
-	width: 40px;
-	height: 22px;
-	background: #cbd5e1;
-	border-radius: 999px;
-	position: relative;
-	transition: background 0.2s;
-}
-.toggle-track::after {
-	content: "";
-	position: absolute;
-	top: 3px;
-	left: 3px;
-	width: 16px;
-	height: 16px;
-	border-radius: 50%;
-	background: white;
-	transition: transform 0.2s;
-}
-input:checked + .toggle-track { background: var(--brand-orange); }
-input:checked + .toggle-track::after { transform: translateX(18px); }
-.mfa-status { font-size: 0.75rem; font-weight: 600; }
+/* MFA Status */
+.mfa-cell { display: flex; align-items: center; gap: 0.6rem; }
+.mfa-status-wrapper { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-start; }
+.mfa-status { font-size: 0.75rem; font-weight: 700; }
 .mfa-status.enrolled { color: #16a34a; }
-.mfa-status.not-enrolled { color: #94a3b8; }
+.mfa-status.not-enrolled { color: #dc2626; }
+.btn-mfa-setup, .btn-mfa-reset {
+	background: #f1f5f9;
+	color: var(--brand-blue);
+	border: 1px solid rgba(0,0,0,0.1);
+	padding: 0.25rem 0.6rem;
+	border-radius: 6px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition: 0.2s;
+}
+.btn-mfa-setup:hover { background: var(--brand-orange); color: white; border-color: var(--brand-orange); }
+.btn-mfa-reset:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
 
 .last-login { font-size: 0.82rem; color: var(--text-secondary); }
 .user-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
