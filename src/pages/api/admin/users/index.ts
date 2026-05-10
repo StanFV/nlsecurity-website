@@ -32,9 +32,13 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     return json({ error: 'Voer een geldig e-mailadres in' }, 400);
   }
 
+  const siteUrl = import.meta.env.SITE_URL ?? 'https://nlsecurity-website.vercel.app';
   const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
     email,
-    { data: { role: role ?? 'admin', mfa_required: false } }
+    { 
+      data: { role: role ?? 'admin', mfa_required: false },
+      redirectTo: `${siteUrl}/admin`
+    }
   );
   if (inviteError) return json({ error: inviteError.message }, 500);
 
