@@ -320,25 +320,38 @@ document.querySelectorAll(".btn-mfa-setup").forEach((btn) => {
 		btn.disabled = true;
 		btn.textContent = "...";
 		
-		// Zorg eerst dat mfa_required op true staat
-		await fetch(`${BASE}/${id}`, {
-			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ mfa_required: true }),
-		});
+		try {
+			// Zorg eerst dat mfa_required op true staat
+			const patchRes = await fetch(`${BASE}/${id}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ mfa_required: true }),
+			});
+			if (!patchRes.ok) {
+				const errorData = await patchRes.json();
+				throw new Error(errorData.error || "Fout bij bijwerken status");
+			}
 
-		// Stuur dan reset mail
-		const res = await fetch(`${BASE}/${id}/reset-password`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: "{}",
-		});
-		
-		btn.disabled = false;
-		btn.textContent = "Setup sturen";
-		
-		if (res.ok) alert(`Setup-mail verstuurd naar ${email}`);
-		else alert("Er is iets misgegaan bij het versturen.");
+			// Stuur dan reset mail
+			const res = await fetch(`${BASE}/${id}/reset-password`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: "{}",
+			});
+			
+			const data = await res.json();
+			if (res.ok) {
+				alert(`Setup-mail verstuurd naar ${email}`);
+				window.location.reload();
+			} else {
+				alert(`Fout: ${data.error || "Onbekende fout bij versturen"}`);
+			}
+		} catch (err) {
+			alert(`Fout: ${err.message}`);
+		} finally {
+			btn.disabled = false;
+			btn.textContent = "Setup sturen";
+		}
 	};
 });
 
