@@ -8,7 +8,8 @@ export const POST: APIRoute = async ({ cookies, params, request }) => {
 
   const { id } = params;
   const body = await request.json().catch(() => ({}));
-  const redirectTo = body.redirectTo ?? `${import.meta.env.SITE_URL ?? ''}/admin`;
+  const siteUrl = import.meta.env.SITE_URL ?? 'https://nlsecurity-website.vercel.app';
+  const redirectTo = body.redirectTo ?? `${siteUrl}/admin`;
 
   const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(id);
   if (getUserError || !userData?.user?.email) {
