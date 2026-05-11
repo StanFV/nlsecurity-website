@@ -1,0 +1,364 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<BaseLayout title="Account Instellen">
+	<Navigation />
+
+	<main class="setup-page">
+		<section class="setup-hero">
+			<div class="container">
+				<div class="setup-container reveal">
+
+					<!-- Laden -->
+					<div id="state-loading">
+						<div class="setup-icon">⏳</div>
+						<h1>Even geduld...</h1>
+						<p>Je uitnodiging wordt verwerkt.</p>
+					</div>
+
+					<!-- Fout -->
+					<div id="state-error" style="display:none;">
+						<div class="setup-icon">❌</div>
+						<span class="setup-badge">Fout</span>
+						<h1>Link <span class="orange-text">ongeldig</span></h1>
+						<p id="error-detail">De uitnodigingslink is verlopen of ongeldig. Vraag een beheerder om een nieuwe uitnodiging te sturen.</p>
+						<a href="/admin" class="btn-glow" style="display:block;text-align:center;text-decoration:none;margin-top:1rem;">Naar inlogpagina</a>
+					</div>
+
+					<!-- Wachtwoord instellen -->
+					<div id="state-password" style="display:none;">
+						<div class="setup-icon">🔑</div>
+						<span class="setup-badge">Welkom</span>
+						<h1>Wachtwoord <span class="orange-text">Instellen</span></h1>
+						<p>Stel een sterk wachtwoord in voor je nieuwe beheerdersaccount.</p>
+
+						<div class="setup-form">
+							<div class="input-group">
+								<label for="password">Nieuw wachtwoord</label>
+								<input type="password" id="password" placeholder="Minimaal 8 tekens" autocomplete="new-password" />
+							</div>
+							<div class="input-group">
+								<label for="password-confirm">Wachtwoord bevestigen</label>
+								<input type="password" id="password-confirm" placeholder="Herhaal wachtwoord" autocomplete="new-password" />
+							</div>
+							<div class="password-requirements">
+								<p class="req-title">Vereisten:</p>
+								<ul>
+									<li id="req-length">Minimaal 8 tekens</li>
+									<li id="req-match">Wachtwoorden komen overeen</li>
+								</ul>
+							</div>
+							<button id="set-password-btn" class="btn-glow" disabled>Wachtwoord instellen</button>
+							<p id="password-error" class="error-text" style="display:none;"></p>
+						</div>
+					</div>
+
+					<!-- MFA instellen (indien verplicht) -->
+					<div id="state-mfa-info" style="display:none;">
+						<div class="setup-icon">📱</div>
+						<span class="setup-badge">Bijna klaar</span>
+						<h1>MFA <span class="orange-text">Vereist</span></h1>
+						<p>Je beheerder heeft twee-factor authenticatie verplicht gesteld voor jouw account. Je wordt nu doorgestuurd om dit in te stellen.</p>
+						<div class="progress-bar">
+							<div id="progress-fill" class="progress-fill"></div>
+						</div>
+					</div>
+
+					<!-- Klaar (geen MFA vereist) -->
+					<div id="state-done" style="display:none;">
+						<div class="setup-icon">✅</div>
+						<span class="setup-badge">Klaar</span>
+						<h1>Account <span class="orange-text">Aangemaakt</span></h1>
+						<p>Je account is succesvol ingesteld. Je wordt doorgestuurd naar het dashboard.</p>
+						<div class="progress-bar">
+							<div id="progress-fill-done" class="progress-fill"></div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
+let supabaseClient = null;
+
+function show(stateId) {
+	["state-loading", "state-error", "state-password", "state-mfa-info", "state-done"].forEach(id => {
+		const el = document.getElementById(id);
+		if (el) el.style.display = id === stateId ? "block" : "none";
+	});
+}
+
+function showError(msg) {
+	show("state-error");
+	const detail = document.getElementById("error-detail");
+	if (detail && msg) detail.textContent = msg;
+}
+
+function setCookies(session) {
+	const exp = new Date();
+	exp.setFullYear(exp.getFullYear() + 1);
+	const secure = location.protocol === "https:" ? "; Secure" : "";
+	document.cookie = `sb-access-token=${session.access_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+	document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; expires=${exp.toUTCString()}; SameSite=Lax${secure}`;
+}
+
+async function init() {
+	// Wacht op Supabase CDN
+	if (!window.supabase) {
+		await new Promise((resolve, reject) => {
+			let attempts = 0;
+			const check = setInterval(() => {
+				if (window.supabase) { clearInterval(check); resolve(); }
+				else if (++attempts > 50) { clearInterval(check); reject(new Error("Kon beveiligingsbibliotheek niet laden.")); }
+			}, 100);
+		});
+	}
+
+	supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+	// Supabase zet tokens in de URL hash na verwerken van de invite link
+	const hash = window.location.hash.substring(1);
+	const params = new URLSearchParams(hash);
+	const accessToken = params.get("access_token");
+	const refreshToken = params.get("refresh_token");
+	const type = params.get("type");
+
+	if (!accessToken || !refreshToken || type !== "invite") {
+		showError("De uitnodigingslink is verlopen of ongeldig. Vraag een beheerder om een nieuwe uitnodiging te sturen.");
+		return;
+	}
+
+	// Sessie instellen met de invite tokens
+	const { data, error } = await supabaseClient.auth.setSession({
+		access_token: accessToken,
+		refresh_token: refreshToken,
+	});
+
+	if (error || !data?.session) {
+		showError("Sessie kon niet worden gestart: " + (error?.message ?? "Onbekende fout"));
+		return;
+	}
+
+	// Verwijder hash uit de URL zodat de tokens niet zichtbaar blijven
+	history.replaceState(null, "", window.location.pathname);
+
+	// Toon het wachtwoordformulier
+	show("state-password");
+	setupPasswordForm(data.session, data.user);
+}
+
+function setupPasswordForm(session, user) {
+	const passwordInput = document.getElementById("password");
+	const confirmInput = document.getElementById("password-confirm");
+	const setBtn = document.getElementById("set-password-btn");
+	const errorEl = document.getElementById("password-error");
+	const reqLength = document.getElementById("req-length");
+	const reqMatch = document.getElementById("req-match");
+
+	function validate() {
+		const pw = passwordInput.value;
+		const confirm = confirmInput.value;
+		const lengthOk = pw.length >= 8;
+		const matchOk = pw === confirm && pw.length > 0;
+
+		reqLength.className = lengthOk ? "req-ok" : "";
+		reqMatch.className = matchOk ? "req-ok" : "";
+
+		setBtn.disabled = !(lengthOk && matchOk);
+	}
+
+	passwordInput.addEventListener("input", validate);
+	confirmInput.addEventListener("input", validate);
+
+	setBtn.onclick = async () => {
+		const pw = passwordInput.value;
+		if (pw.length < 8 || pw !== confirmInput.value) return;
+
+		setBtn.disabled = true;
+		setBtn.textContent = "Bezig...";
+		errorEl.style.display = "none";
+
+		try {
+			// Sessie herstellen
+			await supabaseClient.auth.setSession({
+				access_token: session.access_token,
+				refresh_token: session.refresh_token,
+			});
+
+			// Wachtwoord instellen
+			const { data: updateData, error: updateError } = await supabaseClient.auth.updateUser({
+				password: pw,
+			});
+
+			if (updateError) throw updateError;
+
+			// Haal bijgewerkte sessie op
+			const { data: sessionData } = await supabaseClient.auth.getSession();
+			const activeSession = sessionData?.session ?? session;
+			setCookies(activeSession);
+
+			// Controleer of MFA vereist is via user_metadata of app_metadata
+			const meta = updateData?.user?.user_metadata ?? {};
+			const appMeta = updateData?.user?.app_metadata ?? {};
+			const mfaRequired = appMeta.mfa_required ?? meta.mfa_required ?? false;
+
+			if (mfaRequired) {
+				show("state-mfa-info");
+				animateProgress("progress-fill", () => {
+					window.location.href = "/admin/mfa-setup";
+				});
+			} else {
+				show("state-done");
+				animateProgress("progress-fill-done", () => {
+					window.location.href = "/admin";
+				});
+			}
+		} catch (err) {
+			errorEl.textContent = err.message || "Er is een fout opgetreden. Probeer het opnieuw.";
+			errorEl.style.display = "block";
+			setBtn.disabled = false;
+			setBtn.textContent = "Wachtwoord instellen";
+		}
+	};
+
+	// Submit op Enter
+	confirmInput.addEventListener("keydown", (e) => {
+		if (e.key === "Enter" && !setBtn.disabled) setBtn.click();
+	});
+}
+
+function animateProgress(fillId, callback) {
+	const fill = document.getElementById(fillId);
+	if (!fill) { setTimeout(callback, 2000); return; }
+	fill.style.width = "0%";
+	fill.style.transition = "width 2s linear";
+	requestAnimationFrame(() => {
+		requestAnimationFrame(() => {
+			fill.style.width = "100%";
+		});
+	});
+	setTimeout(callback, 2100);
+}
+
+window.addEventListener("load", () => {
+	init().catch(err => showError(err.message));
+});
+</script>
+
+<style>
+.setup-page { padding-top: 80px; min-height: 100vh; background: var(--brand-blue); }
+.setup-hero { padding: 8rem 0; display: flex; align-items: center; }
+.setup-container {
+	max-width: 460px;
+	margin: 0 auto;
+	text-align: center;
+	background: white;
+	border-radius: 28px;
+	padding: 3rem 2.5rem;
+	box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+}
+.setup-icon { font-size: 3rem; margin-bottom: 1rem; }
+.setup-badge {
+	display: inline-block;
+	background: rgba(0,46,93,0.08);
+	color: var(--brand-blue);
+	padding: 0.3rem 0.9rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.75rem;
+}
+h1 { font-size: 2rem; margin: 0.5rem 0 1rem; }
+p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+.setup-form { text-align: left; }
+.input-group { margin-bottom: 1rem; }
+.input-group label {
+	display: block;
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: var(--brand-blue);
+	margin-bottom: 0.4rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.input-group input {
+	width: 100%;
+	padding: 0.9rem 1rem;
+	border-radius: 12px;
+	border: 1.5px solid rgba(0,0,0,0.1);
+	font-family: inherit;
+	font-size: 0.95rem;
+	background: #f8fafc;
+	transition: border-color 0.2s;
+	box-sizing: border-box;
+}
+.input-group input:focus { outline: none; border-color: var(--brand-orange); background: white; }
+
+.password-requirements {
+	background: #f8fafc;
+	border-radius: 10px;
+	padding: 0.75rem 1rem;
+	margin-bottom: 1.25rem;
+	text-align: left;
+}
+.req-title {
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: #64748b;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin: 0 0 0.4rem;
+}
+.password-requirements ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.password-requirements li {
+	font-size: 0.82rem;
+	color: #94a3b8;
+	padding: 0.15rem 0;
+	transition: color 0.2s;
+}
+.password-requirements li::before { content: "✗ "; color: #dc2626; }
+.password-requirements li.req-ok { color: #16a34a; }
+.password-requirements li.req-ok::before { content: "✓ "; color: #16a34a; }
+
+.btn-glow { width: 100%; }
+.btn-glow:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	box-shadow: none;
+}
+.error-text { color: #dc2626; font-size: 0.875rem; margin-top: 0.75rem; }
+
+.progress-bar {
+	width: 100%;
+	height: 6px;
+	background: #e2e8f0;
+	border-radius: 999px;
+	overflow: hidden;
+	margin-top: 1.5rem;
+}
+.progress-fill {
+	height: 100%;
+	width: 0%;
+	background: var(--brand-orange);
+	border-radius: 999px;
+}
+</style>
