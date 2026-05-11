@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     email,
     {
       data: { role: role ?? 'admin', mfa_required: mfaRequired },
-      redirectTo: `${siteUrl}/admin`
+      redirectTo: `${siteUrl}/admin/account-setup`
     }
   );
   if (inviteError) return json({ error: inviteError.message }, 500);
